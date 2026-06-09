@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -73,4 +74,40 @@ func (m *JWTManager) GenerateToken(userID, email string, tokenType TokenType, se
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
+}
+
+func (m *JWTManager) ValidateAccessToken(token string) (*Claims, error) {
+	return m.ValidateToken(token, m.accessSecret, AccessToken)
+}
+
+func (m *JWTManager) ValidateRefreshToken(token string) (*Claims, error) {
+	return m.ValidateToken(token, m.refreshSecret, RefreshToken)
+}
+
+func (m *JWTManager) ValidateToken(tokenString string, secret string, tokenType TokenType) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&Claims{},
+		func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, errors.New("unexpected signing token method")
+			}
+			return ([]byte(secret)), nil
+		},
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse the token %w", err)
+	}
+
+	// extract claims from token
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+	if claims.TokenType != string(tokenType) {
+		return nil, errors.New("invalid token type")
+	}
+
+	return claims, nil
 }
