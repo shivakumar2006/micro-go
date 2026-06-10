@@ -17,7 +17,7 @@ const (
 
 type Claims struct {
 	UserID    string `json:"user_id"`
-	Email     string `json:"gmail"`
+	Email     string `json:"email"`
 	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
 }
@@ -35,6 +35,14 @@ type JWTManager struct {
 }
 
 func NewJWTManager(accessSecret, refreshSecret string, accessExpiry, refreshExpiry time.Duration) *JWTManager {
+	if accessSecret == "" {
+		panic("access secret is required")
+	}
+
+	if refreshSecret == "" {
+		panic("refresh secret is required")
+	}
+
 	return &JWTManager{
 		accessSecret:  accessSecret,
 		refreshSecret: refreshSecret,
