@@ -3,6 +3,7 @@ package main
 import (
 	"auth/internal/config"
 	"auth/internal/db"
+	"auth/internal/routes"
 	"log"
 	"log/slog"
 
@@ -23,8 +24,8 @@ func main() {
 	slog.Info("db started successfully", slog.String("env", config.Env), slog.String("version", "1.0.0"))
 
 	// add routes
-	rotuer := chi.NewRouter()
+	router := chi.NewRouter()
 
-	router.Post("/api/v1/auth/register")
+	router.Post("/api/v1/auth/register", routes.Register(storage))
 	// start server
 }
