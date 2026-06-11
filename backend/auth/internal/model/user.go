@@ -20,9 +20,9 @@ type RefreshToken struct {
 }
 
 type RegisterRequest struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name     string `json:"name" validate:"required, min=2, max=50"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"password, min=8"`
 }
 
 type LoginRequest struct {
@@ -35,9 +35,9 @@ type RefreshRequest struct {
 }
 
 type AuthResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	User         User   `json:"user"`
+	AccessToken  string       `json:"access_token"`
+	RefreshToken string       `json:"refresh_token"`
+	User         UserResponse `json:"user"`
 }
 
 type UserResponse struct {
