@@ -10,7 +10,7 @@ type Storage interface {
 	FindUserByEmail(email string) (*model.User, error)
 	FindUserById(id int64) (*model.User, error)
 	SaveRefreshToken(token *model.RefreshToken) error
-	FindRefreshToken(token *model.RefreshToken) error
+	FindRefreshToken(tokenString string) (*model.RefreshToken, error)
 	DeleteRefreshToken(tokenString string) error
 	DeleteAllUserTokens(ctx context.Context, userID int64) error
 }

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -21,8 +22,10 @@ type DBConfig struct {
 }
 
 type JWTConfig struct {
-	Secret string `yaml:"secret" env-required:"true"`
-	Expiry string `yaml:"expiry" env-required:"true"`
+	AccessSecret  string        `yaml:"access_secret" env-required:"true"`
+	RefreshSecret string        `yaml:"refresh_secret" env-required:"true"`
+	AccessExpiry  time.Duration `yaml:"access_expiry" env-required:"true"`
+	RefreshExpiry time.Duration `yaml:"refresh_expiry" env-required:"true"`
 }
 
 type Config struct {

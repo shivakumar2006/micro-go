@@ -3,6 +3,7 @@ package main
 import (
 	"auth/internal/config"
 	"auth/internal/db"
+	"auth/internal/pkg"
 	"auth/internal/routes"
 	"context"
 	"log"
@@ -32,7 +33,23 @@ func main() {
 	// add routes
 	router := chi.NewRouter()
 
-	router.Post("/api/v1/auth/register", routes.Register(storage))
+	jwtManager := pkg.NewJWTManager(
+		config.JWT.AccessSecret,
+		config.JWT.RefreshSecret,
+		config.JWT.AccessExpiry,
+		config.JWT.RefreshExpiry,
+	)
+
+	authService := routes.NewAuthservice(
+		storage,
+		jwtManager,
+		config.JWT.RefreshExpiry,
+	)
+
+	router.Post("/api/v1/auth/register", authService.Register())
+	router.Post("/api/v1/auth/login", authService.Login())
+	router.Post("/api/v1/auth/refresh", authService.Refresh())
+
 	// start server
 
 	server := &http.Server{
