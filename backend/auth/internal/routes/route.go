@@ -5,6 +5,7 @@ import (
 	"auth/internal/model"
 	"auth/internal/pkg"
 	"auth/internal/utils/response"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -207,6 +208,51 @@ func (a *AuthService) Refresh() http.HandlerFunc {
 
 		response.WriteJSON(w, http.StatusOK, authResponse)
 
+	}
+}
+
+func (a *AuthService) Logout() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req model.RefreshRequest
+
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
+			return
+		}
+
+		if err := validator.New().Struct(req); err != nil {
+			validateErr := err.(validator.ValidationErrors)
+			response.WriteJSON(w, http.StatusBadRequest, response.ValidateErrors(validateErr))
+			return
+		}
+
+		if err := a.UserRepo.DeleteRefreshToken(req.RefreshToken); err != nil {
+			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to delete refresh token")))
+			return
+		}
+
+		response.WriteJSON(w, http.StatusOK, response.GeneralError(fmt.Errorf("refresh token deleted successfully")))
+	}
+}
+
+func (a *AuthService) LogoutAll() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req model.RefreshRequest
+
+		if err := json.NewDecoder(r.Body); err != nil {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := a.UserRepo.DeleteAllUserTokens(ctx, UserID); err != nil {
+			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to delete refresh token")))
+			return
+		}
+
+		response.WriteJSON(w, http.StatusOK, response.GeneralError(fmt.Errorf("refresh token deleted successfully")))
 	}
 }
 
