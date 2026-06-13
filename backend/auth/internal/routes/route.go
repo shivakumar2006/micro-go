@@ -2,6 +2,7 @@ package routes
 
 import (
 	db "auth/internal/db/storage"
+	"auth/internal/middleware"
 	"auth/internal/model"
 	"auth/internal/pkg"
 	"auth/internal/utils/response"
@@ -239,7 +240,7 @@ func (a *AuthService) LogoutAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req model.RefreshRequest
 
-		if err := json.NewDecoder(r.Body); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
 			return
 		}
@@ -247,12 +248,60 @@ func (a *AuthService) LogoutAll() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		if err := a.UserRepo.DeleteAllUserTokens(ctx, UserID); err != nil {
+		token, err := a.UserRepo.FindRefreshToken(req.RefreshToken)
+		if err != nil {
+			response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("invalid refresh token")))
+			return
+		}
+
+		if err := a.UserRepo.DeleteAllUserTokens(ctx, token.UserID); err != nil {
 			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to delete refresh token")))
 			return
 		}
 
 		response.WriteJSON(w, http.StatusOK, response.GeneralError(fmt.Errorf("refresh token deleted successfully")))
+	}
+}
+
+func (a *AuthService) GetMe() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		claims, ok := r.Context().Value(middleware.UserContextKey).(*pkg.Claims)
+		if !ok {
+			response.WriteJSON(
+				w,
+				http.StatusUnauthorized,
+				response.GeneralError(fmt.Errorf("unauthorized")),
+			)
+			return
+		}
+
+		userID, err := strconv.ParseInt(claims.UserID, 10, 64)
+		if err != nil {
+			response.WriteJSON(
+				w,
+				http.StatusUnauthorized,
+				response.GeneralError(fmt.Errorf("invalid user id")),
+			)
+			return
+		}
+
+		user, err := a.UserRepo.FindUserById(userID)
+		if err != nil {
+			response.WriteJSON(
+				w,
+				http.StatusNotFound,
+				response.GeneralError(fmt.Errorf("user not found")),
+			)
+			return
+		}
+
+		response.WriteJSON(w, http.StatusOK, model.UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email:     user.Email,
+			CreatedAt: user.CreatedAt,
+		})
 	}
 }
 

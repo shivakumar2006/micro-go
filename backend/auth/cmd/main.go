@@ -3,6 +3,7 @@ package main
 import (
 	"auth/internal/config"
 	"auth/internal/db"
+	"auth/internal/middleware"
 	"auth/internal/pkg"
 	"auth/internal/routes"
 	"context"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func main() {
@@ -26,12 +28,31 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to start db : ", err)
 	}
-	_ = storage
 
 	slog.Info("db started successfully", slog.String("env", config.Env), slog.String("version", "1.0.0"))
 
 	// add routes
 	router := chi.NewRouter()
+
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"http://localhost:5173"},
+		AllowedMethods: []string{
+			"GET",
+			"POST",
+			"PUT",
+			"DELETE",
+			"OPTIONS",
+		},
+		AllowedHeaders: []string{
+			"Content-Type",
+			"Authorization",
+		},
+		ExposedHeaders: []string{
+			"Content-Length",
+		},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 
 	jwtManager := pkg.NewJWTManager(
 		config.JWT.AccessSecret,
@@ -46,9 +67,17 @@ func main() {
 		config.JWT.RefreshExpiry,
 	)
 
+	authMiddleware := middleware.NewAuthMiddleware(*jwtManager)
+
 	router.Post("/api/v1/auth/register", authService.Register())
 	router.Post("/api/v1/auth/login", authService.Login())
 	router.Post("/api/v1/auth/refresh", authService.Refresh())
+	router.With(authMiddleware.Authenticate).
+		Post("/api/v1/auth/logout", authService.Logout())
+	router.With(authMiddleware.Authenticate).
+		Post("/api/v1/auth/logoutall", authService.LogoutAll())
+	router.With(authMiddleware.Authenticate).
+		Get("/api/v1/auth/me", authService.GetMe())
 
 	// start server
 

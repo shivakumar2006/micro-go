@@ -23,7 +23,7 @@ func NewAuthMiddleware(jwtManager pkg.JWTManager) *AuthMiddleware {
 	}
 }
 
-func (a *AuthMiddleware) Authnticate(next http.Handler) http.Handler {
+func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// get authorization header
 		authHeader := r.Header.Get("Authorization")
