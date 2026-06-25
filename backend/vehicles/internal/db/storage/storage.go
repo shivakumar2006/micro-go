@@ -7,5 +7,5 @@ type Storage interface {
 	GetVehicleById(id int64) (*models.Vehicle, error)
 	GetAllVehicles() ([]models.Vehicle, error)
 	UpdateVehicle(*models.Vehicle) error
-	DeleteVehicle(*models.Vehicle) error
+	DeleteVehicle(id int64) error
 }

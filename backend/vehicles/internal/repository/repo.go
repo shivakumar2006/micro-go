@@ -52,3 +52,52 @@ func (v *VehicleRepository) GetVehicleById(id int64) (*models.Vehicle, error) {
 
 	return &vehicels, nil
 }
+
+func (v *VehicleRepository) GetAllVehicles() ([]models.Vehicle, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := v.Db.QueryRowContext(ctx, `
+		SELECT id, name, model, type, category, created_at
+		FROM vehicles 
+	`)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all vehicles : %w", err)
+	}
+
+	return []models.Vehicle{}, nil
+}
+
+func (v *VehicleRepository) UpdateVehicle(vehicles *models.Vehicle) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := v.Db.ExecContext(ctx, `
+		UPDATE vehicles
+		SET name = $1, model = $2, type = $3, category = $4
+		WHERE id = $5
+	`, vehicles.Name, vehicles.Model, vehicles.Type, vehicles.Category, vehicles.Id)
+
+	if err != nil {
+		return fmt.Errorf("failed to update vehicle : %w", err)
+	}
+
+	return nil
+}
+
+func (v *VehicleRepository) DeleteVehicle(id int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := v.Db.ExecContext(ctx, `
+		DELETE FROM vehicles
+		WHERE id = $1
+	`, id)
+
+	if err != nil {
+		return fmt.Errorf("failed to delete vehicle : %w", err)
+	}
+
+	return nil
+}
