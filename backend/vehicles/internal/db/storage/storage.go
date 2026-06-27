@@ -8,4 +8,5 @@ type Storage interface {
 	GetAllVehicles() ([]models.Vehicle, error)
 	UpdateVehicle(*models.Vehicle) error
 	DeleteVehicle(id int64) error
+	ExistByName(name string) (bool, error)
 }
