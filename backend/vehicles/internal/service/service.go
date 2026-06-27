@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"vehicles/internal/db/storage"
 	"vehicles/internal/models"
-	"vehicles/internal/repository"
 )
 
 var validTypes = map[string]bool{
@@ -26,12 +26,12 @@ var validCategories = map[string]bool{
 }
 
 type Service struct {
-	VehicleRepo *repository.VehicleRepository
+	VehicleRepo storage.Storage
 }
 
-func NewService(vr *repository.VehicleRepository) *Service {
+func NewService(repo storage.Storage) *Service {
 	return &Service{
-		VehicleRepo: vr,
+		VehicleRepo: repo,
 	}
 }
 
