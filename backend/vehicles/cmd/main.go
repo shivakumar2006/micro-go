@@ -2,8 +2,11 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"vehicles/internal/config"
 	"vehicles/internal/db"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
@@ -20,8 +23,10 @@ func main() {
 	}
 	defer database.Db.Close()
 
-	log.Println("Database initialized successfully")
+	slog.Info("database successfully initialized", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
 
 	// add routes
+	_ = chi.NewRouter()
+
 	// start server
 }
