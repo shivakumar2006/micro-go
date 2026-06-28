@@ -20,3 +20,27 @@ type PaginationResponse struct {
 	HasPrevious bool      `json:"has_previous"`
 	Data        []Vehicle `json:"data"`
 }
+
+// type Vehicle struct {
+//     Id
+
+//     Name
+
+//     Model
+
+//     Price
+
+//     Brand
+
+//     Stock
+
+//     Description
+
+//     ImageURL
+
+//     Category
+
+//     CreatedAt
+
+//     UpdatedAt
+// }
