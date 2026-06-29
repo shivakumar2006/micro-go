@@ -21,7 +21,8 @@ type DBConfig struct {
 }
 
 type JWTConfig struct {
-	AccessSecret string `yaml:"access_secret"`
+	AccessSecret  string `yaml:"access_secret"`
+	RefreshSecret string `yaml:"refresh_secret"`
 }
 
 type Config struct {

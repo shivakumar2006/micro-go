@@ -19,6 +19,12 @@ type VehicleHandler struct {
 	VehicleService *service.Service
 }
 
+func NewVehicleHandler(vehicleService *service.Service) *VehicleHandler {
+	return &VehicleHandler{
+		VehicleService: vehicleService,
+	}
+}
+
 // POST /vehicles
 func (v *VehicleHandler) CreateVehicle(w http.ResponseWriter, r *http.Request) {
 	var req models.Vehicle
