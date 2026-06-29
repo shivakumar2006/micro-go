@@ -67,7 +67,17 @@ func (v *VehicleHandler) GetAllVehicles(w http.ResponseWriter, r *http.Request) 
 		limit = 10
 	}
 
-	response, err := v.VehicleService.GetAllVehicles(page, limit)
+	query := models.VehicleQuery{
+		Page:     page,
+		Limit:    limit,
+		Search:   r.URL.Query().Get("search"),
+		Type:     r.URL.Query().Get("type"),
+		Category: r.URL.Query().Get("category"),
+		SortBy:   r.URL.Query().Get("sort_by"),
+		Order:    r.URL.Query().Get("order"),
+	}
+
+	response, err := v.VehicleService.GetAllVehicles(query)
 	if err != nil {
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.GeneralError(err))
 		return

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 	"vehicles/internal/models"
 
@@ -67,29 +68,91 @@ func (v *VehicleRepository) GetVehicleById(id int64) (*models.Vehicle, error) {
 	return &vehicle, nil
 }
 
-func (v *VehicleRepository) GetAllVehicles(page, limit int) ([]models.Vehicle, int, error) {
+func (v *VehicleRepository) GetAllVehicles(query models.VehicleQuery) ([]models.Vehicle, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	var builder strings.Builder
+	var countBuilder strings.Builder
+
+	builder.WriteString(`
+		SELECT id, name, model, type, category, created_at
+		FROM vehicles
+		WHERE 1=1
+	`)
+
+	countBuilder.WriteString(`
+		SELECT COUNT(*)
+		from vehicles
+		WHERE 1=1
+	`)
+
+	args := []interface{}{}
+	countArgs := []interface{}{}
+	argPos := 1
+
+	if query.Search != "" {
+		searchCondition := fmt.Sprintf(`
+			AND (
+				LOWER(name) LIKE LOWER($%d)
+				LOWER(model) LIKE LOWER($%d)
+				LOWER(type) LIKE LOWER($%d)
+				LOWER(category) LIKE LOWER($%d)
+			)
+		`, argPos, argPos, argPos, argPos)
+
+		builder.WriteString(searchCondition)
+		countBuilder.WriteString(searchCondition)
+
+		search := "%" + query.Search + "%"
+
+		args = append(args, search)
+		countArgs = append(countArgs, search)
+
+		argPos++
+	}
+
+	if query.Type != "" {
+		condition := fmt.Sprintf(`AND type = $%d`, argPos)
+
+		builder.WriteString(condition)
+		countBuilder.WriteString(condition)
+
+		args = append(args, query.Type)
+		countArgs = append(countArgs, query.Type)
+
+		argPos++
+	}
+
+	if query.Category != "" {
+		condition := fmt.Sprintf(`AND category = $%d`, argPos)
+
+		builder.WriteString(condition)
+		countBuilder.WriteString(condition)
+
+		args = append(args, query.Category)
+		countArgs = append(countArgs, query.Category)
+		argPos++
+	}
+
+	// sort
+	builder.WriteString(fmt.Sprintf("ORDER BY %s %s", query.SortBy, strings.ToUpper(query.Order)))
+
+	// pagination
+	offset := (query.Page - 1) * query.Limit
+
+	builder.WriteString(fmt.Sprintf("LIMIT $%d OFFSET $%d", argPos, argPos+1))
+
+	args = append(args, query.Limit, offset)
+
 	var total int
 
-	err := v.Db.QueryRowContext(ctx, `
-		SELECT COUNT(*) FROM vehicles
-	`).Scan(&total)
-
+	err := v.Db.QueryRowContext(ctx, countBuilder.String(), countArgs...).Scan(&total)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to get total vehicles : %w", err)
 	}
 
-	offset := (page - 1) * limit
-
-	rows, err := v.Db.QueryContext(ctx, `
-		SELECT id, name, model, type, category, created_at
-		FROM vehicles 
-		ORDER BY id 
-		LIMIT $1
-		OFFSET $2
-	`, limit, offset)
+	rows, err := v.Db.QueryContext(ctx, builder.String(), args...)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to get all vehicles : %w", err)
 	}

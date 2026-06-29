@@ -86,33 +86,67 @@ func (s *Service) GetVehicleById(id int64) (*models.Vehicle, error) {
 	return vehicle, nil
 }
 
-func (s *Service) GetAllVehicles(page, limit int) (*models.PaginationResponse, error) {
-	if page < 1 {
-		page = 1
+func (s *Service) GetAllVehicles(query models.VehicleQuery) (*models.PaginationResponse, error) {
+	if query.Page < 1 {
+		query.Page = 1
 	}
 
-	if limit < 1 {
-		limit = 10
+	if query.Limit < 1 {
+		query.Limit = 10
 	}
 
-	if limit > 100 {
-		limit = 100
+	if query.Limit > 100 {
+		query.Limit = 100
 	}
 
-	vehicles, total, err := s.VehicleRepo.GetAllVehicles(page, limit)
+	// search
+	query.Search = strings.TrimSpace(query.Search)
+
+	// default sorting
+	if query.SortBy == "" {
+		query.SortBy = "created_at"
+	}
+
+	if query.Order == "" {
+		query.Order = "desc"
+	}
+
+	validSortField := map[string]bool{
+		"name":        true,
+		"model":       true,
+		"ccreated_at": true,
+	}
+
+	if !validSortField[query.SortBy] {
+		return nil, errors.New("invalid sort field")
+	}
+
+	if query.Order != "asc" && query.Order != "desc" {
+		return nil, errors.New("invalid sort order")
+	}
+
+	if query.Type != "" && !validTypes[query.Type] {
+		return nil, errors.New("invalid vehicle type")
+	}
+
+	if query.Category != "" && !validCategories[query.Category] {
+		return nil, errors.New("invalid category type")
+	}
+
+	vehicles, total, err := s.VehicleRepo.GetAllVehicles(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get vehicles: %w", err)
 	}
 
-	totalPages := (total + limit - 1) / limit
+	totalPages := (total + query.Limit - 1) / query.Limit
 
 	response := &models.PaginationResponse{
-		Page:        int64(page),
-		Limit:       int64(limit),
+		Page:        int64(query.Page),
+		Limit:       int64(query.Limit),
 		Total:       int64(total),
 		TotalPages:  int64(totalPages),
-		HasNext:     page < totalPages,
-		HasPrevious: page > 1,
+		HasNext:     query.Page < totalPages,
+		HasPrevious: query.Page > 1,
 		Data:        vehicles,
 	}
 

@@ -21,6 +21,16 @@ type PaginationResponse struct {
 	Data        []Vehicle `json:"data"`
 }
 
+type VehicleQuery struct {
+	Page     int
+	Limit    int
+	Search   string
+	Type     string
+	Category string
+	SortBy   string
+	Order    string
+}
+
 // type Vehicle struct {
 //     Id
 
