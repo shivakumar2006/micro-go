@@ -64,7 +64,7 @@ func (a *AuthService) Register() http.HandlerFunc {
 			return
 		}
 
-		tokenPair, err := a.JwtManager.GenerateTokenPair(strconv.FormatInt(user.ID, 10), user.Email)
+		tokenPair, err := a.JwtManager.GenerateTokenPair(strconv.FormatInt(user.ID, 10), user.Email, user.Role)
 		if err != nil {
 			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to generate token pair : %s", err)))
 			return
@@ -114,7 +114,7 @@ func (a *AuthService) Login() http.HandlerFunc {
 			return
 		}
 
-		tokenPair, err := a.JwtManager.GenerateTokenPair(strconv.FormatInt(user.ID, 10), user.Email)
+		tokenPair, err := a.JwtManager.GenerateTokenPair(strconv.FormatInt(user.ID, 10), user.Email, user.Role)
 		if err != nil {
 			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to generate token pair : %s", err)))
 			return
@@ -188,7 +188,7 @@ func (a *AuthService) Refresh() http.HandlerFunc {
 		_ = a.UserRepo.DeleteRefreshToken(req.RefreshToken)
 
 		// generate new token pair
-		tokenPair, err := a.JwtManager.GenerateTokenPair(strconv.FormatInt(user.ID, 10), user.Email)
+		tokenPair, err := a.JwtManager.GenerateTokenPair(strconv.FormatInt(user.ID, 10), user.Email, user.Role)
 		if err != nil {
 			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to generate token pair : %s", err)))
 			return
@@ -300,6 +300,7 @@ func (a *AuthService) GetMe() http.HandlerFunc {
 			ID:        user.ID,
 			Name:      user.Name,
 			Email:     user.Email,
+			Role:      user.Role,
 			CreatedAt: user.CreatedAt,
 		})
 	}
@@ -313,6 +314,7 @@ func buildAuthResponse(tokenPair *pkg.TokenPair, user *model.User) *model.AuthRe
 			ID:        user.ID,
 			Name:      user.Name,
 			Email:     user.Email,
+			Role:      user.Role,
 			CreatedAt: user.CreatedAt,
 		},
 	}

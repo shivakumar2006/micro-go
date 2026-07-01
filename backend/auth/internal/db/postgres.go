@@ -32,6 +32,7 @@ func NewDatabase(cfg config.Config) (*Database, error) {
 			name VARCHAR(255) NOT NULL,
 			email VARCHAR(255) NOT NULL UNIQUE,
 			password TEXT NOT NULL,
+			role VARCHAR(20) NOT NULL DEFAULT 'user',
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		)
 	`)

@@ -18,6 +18,7 @@ const (
 type Claims struct {
 	UserID    string `json:"user_id"`
 	Email     string `json:"email"`
+	Role      string `json:"role"`
 	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
 }
@@ -51,13 +52,13 @@ func NewJWTManager(accessSecret, refreshSecret string, accessExpiry, refreshExpi
 	}
 }
 
-func (m *JWTManager) GenerateTokenPair(userID, email string) (*TokenPair, error) {
-	accessToken, err := m.GenerateToken(userID, email, AccessToken, m.accessSecret, m.accessExpiry)
+func (m *JWTManager) GenerateTokenPair(userID, email, role string) (*TokenPair, error) {
+	accessToken, err := m.GenerateToken(userID, email, role, AccessToken, m.accessSecret, m.accessExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate access token %w", err)
 	}
 
-	refreshToken, err := m.GenerateToken(userID, email, RefreshToken, m.refreshSecret, m.refreshExpiry)
+	refreshToken, err := m.GenerateToken(userID, email, role, RefreshToken, m.refreshSecret, m.refreshExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate refresh token %w", err)
 	}
@@ -68,10 +69,11 @@ func (m *JWTManager) GenerateTokenPair(userID, email string) (*TokenPair, error)
 	}, nil
 }
 
-func (m *JWTManager) GenerateToken(userID, email string, tokenType TokenType, secret string, expiry time.Duration) (string, error) {
+func (m *JWTManager) GenerateToken(userID, email, role string, tokenType TokenType, secret string, expiry time.Duration) (string, error) {
 	claims := &Claims{
 		UserID:    userID,
 		Email:     email,
+		Role:      role,
 		TokenType: string(tokenType),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiry)),

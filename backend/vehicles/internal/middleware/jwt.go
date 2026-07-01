@@ -15,11 +15,13 @@ type contextKey string
 const (
 	UserIDKey      contextKey = "UserID"
 	UserEmailIDKey contextKey = "UserEmail"
+	RoleKey        contextKey = "Role"
 )
 
 type Claims struct {
 	UserId    string `json:"user_id"`
 	UserEmail string `json:"user_email"`
+	Role      string `json:"role"`
 	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
 }
@@ -67,9 +69,11 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 		// add claims into request context
 		ctx := context.WithValue(r.Context(), UserIDKey, claims.UserId)
 		ctx = context.WithValue(ctx, UserEmailIDKey, claims.UserEmail)
+		ctx = context.WithValue(ctx, RoleKey, claims.Role)
 
 		r.Header.Set("X-User-ID", claims.UserId)
 		r.Header.Set("X-User-Email", claims.UserEmail)
+		r.Header.Set("X-User-Role", claims.Role)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -96,4 +100,23 @@ func parseToken(tokenString, secret string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+func (a *AuthMiddleware) RequireRole(role string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			userRole, ok := r.Context().Value(RoleKey).(string)
+			if !ok {
+				utils.WriteJSON(w, http.StatusUnauthorized, utils.GeneralError(fmt.Errorf("role not found")))
+				return
+			}
+
+			if userRole != role {
+				utils.WriteJSON(w, http.StatusUnauthorized, utils.GeneralError(fmt.Errorf("access denied")))
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }

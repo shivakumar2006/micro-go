@@ -54,9 +54,9 @@ func main() {
 
 	router.Group(func(r chi.Router) {
 		r.Use(auth.Authenticate)
-		r.Post("/api/v1/vehicles", handler.CreateVehicle)
-		r.Put("/api/v1/vehicles/{id}", handler.UpdateVehicle)
-		r.Delete("/api/v1/vehicles/{id}", handler.DeleteVehicle)
+		r.With(auth.RequireRole("admin")).Post("/api/v1/vehicles", handler.CreateVehicle)
+		r.With(auth.RequireRole("admin")).Put("/api/v1/vehicles/{id}", handler.UpdateVehicle)
+		r.With(auth.RequireRole("admin")).Delete("/api/v1/vehicles/{id}", handler.DeleteVehicle)
 	})
 	router.Get("/api/v1/vehicles", handler.GetAllVehicles)
 	router.Get("/api/v1/vehicles/{id}", handler.GetVehicleById)
