@@ -29,7 +29,7 @@ func (v *VehicleRepository) CreateVehicle(vehicles *models.Vehicle) error {
 	_, err := v.Db.ExecContext(ctx, `
 		INSERT INTO vehicles(name, model, type, price, stock, brand, description, image_url, category, created_at)
 		VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-	`, vehicles.Name, vehicles.Model, vehicles.Type, vehicles.Category, vehicles.CreatedAt)
+	`, vehicles.Name, vehicles.Model, vehicles.Type, vehicles.Price, vehicles.Stock, vehicles.Brand, vehicles.Description, vehicles.ImageURL, vehicles.Category, vehicles.CreatedAt)
 
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -56,7 +56,7 @@ func (v *VehicleRepository) GetVehicleById(id int64) (*models.Vehicle, error) {
 		SELECT id, name, model, type, price, stock, brand, description, image_url, category, created_at
 		FROM vehicles
 		WHERE id = $1
-	`, id).Scan(&vehicle.Id, &vehicle.Name, &vehicle.Model, &vehicle.Type, &vehicle.Category, &vehicle.CreatedAt)
+	`, id).Scan(&vehicle.Id, &vehicle.Name, &vehicle.Model, &vehicle.Type, &vehicle.Price, &vehicle.Stock, &vehicle.Brand, &vehicle.Description, &vehicle.ImageURL, &vehicle.Category, &vehicle.CreatedAt)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -165,12 +165,12 @@ func (v *VehicleRepository) GetAllVehicles(query models.VehicleQuery) ([]models.
 			&vehicle.Id,
 			&vehicle.Name,
 			&vehicle.Model,
+			&vehicle.Type,
 			&vehicle.Price,
 			&vehicle.Stock,
 			&vehicle.Brand,
 			&vehicle.Description,
 			&vehicle.ImageURL,
-			&vehicle.Type,
 			&vehicle.Category,
 			&vehicle.CreatedAt,
 		)
@@ -195,7 +195,7 @@ func (v *VehicleRepository) UpdateVehicle(vehicles *models.Vehicle) error {
 		UPDATE vehicles
 		SET name = $1, model = $2, type = $3, category = $4, price = $5, stock = $6, brand = $9, description = $7, image_url = $8
 		WHERE id = $10
-	`, vehicles.Name, vehicles.Model, vehicles.Type, vehicles.Category, vehicles.Id)
+	`, vehicles.Name, vehicles.Model, vehicles.Type, vehicles.Category, vehicles.Price, vehicles.Stock, vehicles.Description, vehicles.ImageURL, vehicles.Brand, vehicles.Id)
 
 	if err != nil {
 		var pgErr *pgconn.PgError

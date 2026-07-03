@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"strings"
 	"time"
@@ -40,7 +41,6 @@ func NewService(repo storage.Storage, cache storageCache.StorageCache) *Service 
 }
 
 func (s *Service) CreateVehicle(vehicles *models.Vehicle) error {
-
 	if err := s.ValidateVehicle(vehicles); err != nil {
 		return fmt.Errorf("failed to validate vehicle : %w", err)
 	}
@@ -55,6 +55,12 @@ func (s *Service) CreateVehicle(vehicles *models.Vehicle) error {
 	if err != nil {
 		return fmt.Errorf("failed to create vehicle : %w", err)
 	}
+
+	// redis
+	if err := s.VehicleCache.DeletePatterns("vehicles:*"); err != nil {
+		log.Printf("failed to invalidate vehicle cache: %v", err)
+	}
+
 	return nil
 }
 
@@ -87,10 +93,8 @@ func (s *Service) GetVehicleById(id int64) (*models.Vehicle, error) {
 
 	// redis
 	var vehicle models.Vehicle
-	if err := s.VehicleCache.GetJSON(key, &vehicle); err != nil {
-		if err == nil {
-			return &vehicle, nil
-		}
+	if err := s.VehicleCache.GetJSON(key, &vehicle); err == nil {
+		return &vehicle, nil
 	}
 
 	vehicleFromDB, err := s.VehicleRepo.GetVehicleById(id)
@@ -107,6 +111,18 @@ func (s *Service) GetVehicleById(id int64) (*models.Vehicle, error) {
 }
 
 func (s *Service) GetAllVehicles(query models.VehicleQuery) (*models.PaginationResponse, error) {
+	key := fmt.Sprintf("Vehicle:page=%d:limit=%d:search=%s:sort=%s:order=%s:type=%s:category=%s", query.Page, query.Limit, query.Search, query.SortBy, query.Order, query.Type, query.Category)
+
+	// Redis
+	var vehicles []models.Vehicle
+	if err := s.VehicleCache.GetJSON(key, &vehicles); err == nil {
+		return &models.PaginationResponse{
+			Page:  int64(query.Page),
+			Limit: int64(query.Limit),
+			Data:  vehicles,
+		}, nil
+	}
+
 	if query.Page < 1 {
 		query.Page = 1
 	}
@@ -132,9 +148,9 @@ func (s *Service) GetAllVehicles(query models.VehicleQuery) (*models.PaginationR
 	}
 
 	validSortField := map[string]bool{
-		"name":        true,
-		"model":       true,
-		"ccreated_at": true,
+		"name":       true,
+		"model":      true,
+		"created_at": true,
 	}
 
 	if !validSortField[query.SortBy] {
@@ -168,6 +184,10 @@ func (s *Service) GetAllVehicles(query models.VehicleQuery) (*models.PaginationR
 		HasNext:     query.Page < totalPages,
 		HasPrevious: query.Page > 1,
 		Data:        vehicles,
+	}
+
+	if err := s.VehicleCache.SetJSON(key, response, 10*time.Minute); err != nil {
+		slog.Error("failed to set vehicles in cache", "error", err)
 	}
 
 	return response, nil
