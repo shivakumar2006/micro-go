@@ -13,6 +13,7 @@ import (
 	"vehicles/internal/db"
 	"vehicles/internal/handler"
 	"vehicles/internal/middleware"
+	"vehicles/internal/redis"
 	"vehicles/internal/repository"
 	"vehicles/internal/service"
 
@@ -37,7 +38,13 @@ func main() {
 	slog.Info("database successfully initialized", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
 
 	repo := repository.NewVehicleRepo(database.Db)
-	service := service.NewService(repo)
+	redisCient, err := redis.NewRedis(cfg)
+	if err != nil {
+		log.Fatalf("failed to initialized redis : %v", err)
+	}
+
+	cache := redis.NewCache(redisCient.Client)
+	service := service.NewService(repo, cache)
 	handler := handler.NewVehicleHandler(service)
 
 	// add routes

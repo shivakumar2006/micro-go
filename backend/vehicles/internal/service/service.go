@@ -3,10 +3,12 @@ package service
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 	"vehicles/internal/db/storage"
 	"vehicles/internal/models"
+	storageCache "vehicles/internal/redis/storagecache"
 )
 
 var validTypes = map[string]bool{
@@ -26,12 +28,14 @@ var validCategories = map[string]bool{
 }
 
 type Service struct {
-	VehicleRepo storage.Storage
+	VehicleRepo  storage.Storage
+	VehicleCache storageCache.StorageCache
 }
 
-func NewService(repo storage.Storage) *Service {
+func NewService(repo storage.Storage, cache storageCache.StorageCache) *Service {
 	return &Service{
-		VehicleRepo: repo,
+		VehicleRepo:  repo,
+		VehicleCache: cache,
 	}
 }
 
@@ -79,11 +83,27 @@ func (s *Service) DeleteVehicle(id int64) error {
 }
 
 func (s *Service) GetVehicleById(id int64) (*models.Vehicle, error) {
-	vehicle, err := s.VehicleRepo.GetVehicleById(id)
+	key := fmt.Sprintf("Vehicle:%d", id)
+
+	// redis
+	var vehicle models.Vehicle
+	if err := s.VehicleCache.GetJSON(key, &vehicle); err != nil {
+		if err == nil {
+			return &vehicle, nil
+		}
+	}
+
+	vehicleFromDB, err := s.VehicleRepo.GetVehicleById(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get vehicle by id : %w", err)
 	}
-	return vehicle, nil
+
+	// if not present in redis then store in redis
+	if err := s.VehicleCache.SetJSON(key, vehicleFromDB, 10*time.Minute); err != nil {
+		slog.Error("failed to store vehicle in cache", "error", err)
+	}
+
+	return vehicleFromDB, nil
 }
 
 func (s *Service) GetAllVehicles(query models.VehicleQuery) (*models.PaginationResponse, error) {

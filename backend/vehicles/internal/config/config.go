@@ -20,6 +20,13 @@ type DBConfig struct {
 	DBName   string `yaml:"dbname"`
 }
 
+type RedisConfig struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	Password string `yaml:"password"`
+	Db       int    `yaml:"db"`
+}
+
 type JWTConfig struct {
 	AccessSecret  string `yaml:"access_secret"`
 	RefreshSecret string `yaml:"refresh_secret"`
@@ -29,6 +36,7 @@ type Config struct {
 	Env    string       `yaml:"env"`
 	Server ServerConfig `yaml:"server"`
 	DB     DBConfig     `yaml:"db"`
+	Redis  RedisConfig  `yaml:"redis"`
 	JWT    JWTConfig    `yaml:"jwt"`
 }
 
