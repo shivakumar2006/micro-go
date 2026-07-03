@@ -27,8 +27,8 @@ func (v *VehicleRepository) CreateVehicle(vehicles *models.Vehicle) error {
 	defer cancel()
 
 	_, err := v.Db.ExecContext(ctx, `
-		INSERT INTO vehicles(name, model, type, category, created_at)
-		VALUES($1, $2, $3, $4, $5)
+		INSERT INTO vehicles(name, model, type, price, stock, brand, description, image_url, category, created_at)
+		VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	`, vehicles.Name, vehicles.Model, vehicles.Type, vehicles.Category, vehicles.CreatedAt)
 
 	if err != nil {
@@ -53,7 +53,7 @@ func (v *VehicleRepository) GetVehicleById(id int64) (*models.Vehicle, error) {
 	var vehicle models.Vehicle
 
 	err := v.Db.QueryRowContext(ctx, `
-		SELECT id, name, model, type, category, created_at
+		SELECT id, name, model, type, price, stock, brand, description, image_url, category, created_at
 		FROM vehicles
 		WHERE id = $1
 	`, id).Scan(&vehicle.Id, &vehicle.Name, &vehicle.Model, &vehicle.Type, &vehicle.Category, &vehicle.CreatedAt)
@@ -76,7 +76,7 @@ func (v *VehicleRepository) GetAllVehicles(query models.VehicleQuery) ([]models.
 	var countBuilder strings.Builder
 
 	builder.WriteString(`
-		SELECT id, name, model, type, category, created_at
+		SELECT id, name, model, type, price, stock, brand, description, image_url, category, created_at
 		FROM vehicles
 		WHERE 1=1
 	`)
@@ -165,6 +165,11 @@ func (v *VehicleRepository) GetAllVehicles(query models.VehicleQuery) ([]models.
 			&vehicle.Id,
 			&vehicle.Name,
 			&vehicle.Model,
+			&vehicle.Price,
+			&vehicle.Stock,
+			&vehicle.Brand,
+			&vehicle.Description,
+			&vehicle.ImageURL,
 			&vehicle.Type,
 			&vehicle.Category,
 			&vehicle.CreatedAt,
@@ -188,8 +193,8 @@ func (v *VehicleRepository) UpdateVehicle(vehicles *models.Vehicle) error {
 
 	result, err := v.Db.ExecContext(ctx, `
 		UPDATE vehicles
-		SET name = $1, model = $2, type = $3, category = $4
-		WHERE id = $5
+		SET name = $1, model = $2, type = $3, category = $4, price = $5, stock = $6, brand = $9, description = $7, image_url = $8
+		WHERE id = $10
 	`, vehicles.Name, vehicles.Model, vehicles.Type, vehicles.Category, vehicles.Id)
 
 	if err != nil {

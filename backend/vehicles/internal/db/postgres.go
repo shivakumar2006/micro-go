@@ -28,7 +28,13 @@ func NewDatabase(cfg *config.Config) (*Database, error) {
 			id SERIAL PRIMARY KEY,
 			name VARCHAR(255) NOT NULL UNIQUE,
 			model VARCHAR(255) NOT NULL,
+			price NUMERIC(10,2) NOT NULL CHECK(price >= 0),
+			stock INT NOT NULL DEFAULT 0 CHECK(price >= 0),
+			brand TEXT
+			description TEXT,
+			imageurl TEXT,
 			type VARCHAR(50) NOT NULL,
+
 			category VARCHAR(50) NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		)

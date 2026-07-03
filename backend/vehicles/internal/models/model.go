@@ -3,12 +3,17 @@ package models
 import "time"
 
 type Vehicle struct {
-	Id        int64     `json:"id"`
-	Name      string    `json:"name" validate:"required,min=2,max=50"`
-	Model     string    `json:"model" validate:"required,min=2,max=50"`
-	Type      string    `json:"type" validate:"required,oneof=Car Bike Truck SUV Van Bus Other"`
-	Category  string    `json:"category" validate:"required,oneof=Normal Moderate Premium"`
-	CreatedAt time.Time `json:"created_at"`
+	Id          int64     `json:"id"`
+	Name        string    `json:"name" validate:"required,min=2,max=50"`
+	Model       string    `json:"model" validate:"required,min=2,max=50"`
+	Price       float64   `json:"price" validate:"required"`
+	Brand       string    `json:"brand" validate:"required"`
+	Stock       int64     `json:"stock" validate:"required"`
+	Description string    `json:"description" validate:"required"`
+	ImageURL    string    `json:"image_url" validte:"required"`
+	Type        string    `json:"type" validate:"required,oneof=Car Bike Truck SUV Van Bus Other"`
+	Category    string    `json:"category" validate:"required,oneof=Normal Moderate Premium"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type PaginationResponse struct {
