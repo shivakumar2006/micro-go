@@ -21,7 +21,7 @@ func NewRedis(cfg *config.Config) (*Redis, error) {
 		DB:       cfg.Redis.Db,
 	})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := client.Ping(ctx).Err(); err != nil {
@@ -29,4 +29,8 @@ func NewRedis(cfg *config.Config) (*Redis, error) {
 	}
 
 	return &Redis{Client: client}, nil
+}
+
+func (r *Redis) Close() error {
+	return r.Client.Close()
 }

@@ -43,6 +43,10 @@ func main() {
 		log.Fatalf("failed to initialized redis : %v", err)
 	}
 
+	slog.Info("Redis connected successfully", slog.String("env", cfg.Env))
+
+	defer redisCient.Close()
+
 	cache := redis.NewCache(redisCient.Client)
 	service := service.NewService(repo, cache)
 	handler := handler.NewVehicleHandler(service)

@@ -39,6 +39,8 @@ func (v *VehicleHandler) CreateVehicle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer r.Body.Close()
+
 	if err := validate.Struct(req); err != nil {
 		validationErrs := err.(validator.ValidationErrors)
 		utils.WriteJSON(w, http.StatusBadRequest, utils.ValidateErrors(validationErrs))
@@ -128,6 +130,8 @@ func (v *VehicleHandler) UpdateVehicle(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJSON(w, http.StatusBadRequest, utils.GeneralError(fmt.Errorf("invalid request body")))
 		return
 	}
+
+	defer r.Body.Close()
 
 	if err := validate.Struct(req); err != nil {
 		validateErr := err.(validator.ValidationErrors)

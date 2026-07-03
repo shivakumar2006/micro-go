@@ -56,7 +56,7 @@ func (s *Service) CreateVehicle(vehicles *models.Vehicle) error {
 		return fmt.Errorf("failed to create vehicle : %w", err)
 	}
 
-	// redis
+	// redis invalidate cache
 	if err := s.VehicleCache.DeletePatterns("vehicles:*"); err != nil {
 		log.Printf("failed to invalidate vehicle cache: %v", err)
 	}
@@ -77,6 +77,18 @@ func (s *Service) UpdateVehicle(vehicle *models.Vehicle) error {
 	if err != nil {
 		return fmt.Errorf("failed to update vehicle: %w", err)
 	}
+
+	key := fmt.Sprintf("vehicle:%d", vehicle.Id)
+
+	// redis
+	if err := s.VehicleCache.Delete(key); err != nil {
+		log.Printf("failed to delete vehicle from cache: %v", err)
+	}
+
+	if err := s.VehicleCache.DeletePatterns("vehicles:*"); err != nil {
+		log.Printf("failed to delete vehicle from cache: %v", err)
+	}
+
 	return nil
 }
 
@@ -85,11 +97,22 @@ func (s *Service) DeleteVehicle(id int64) error {
 		return fmt.Errorf("failed to delete vehicle : %w", err)
 	}
 
+	key := fmt.Sprintf("vehicle:%d", id)
+
+	// redis
+	if err := s.VehicleCache.Delete(key); err != nil {
+		log.Printf("failed to delete vehicle from cache: %v", err)
+	}
+
+	if err := s.VehicleCache.DeletePatterns("vehicles:*"); err != nil {
+		log.Printf("failed to delete vehicle from cache: %v", err)
+	}
+
 	return nil
 }
 
 func (s *Service) GetVehicleById(id int64) (*models.Vehicle, error) {
-	key := fmt.Sprintf("Vehicle:%d", id)
+	key := fmt.Sprintf("vehicle:%d", id)
 
 	// redis
 	var vehicle models.Vehicle
@@ -111,18 +134,6 @@ func (s *Service) GetVehicleById(id int64) (*models.Vehicle, error) {
 }
 
 func (s *Service) GetAllVehicles(query models.VehicleQuery) (*models.PaginationResponse, error) {
-	key := fmt.Sprintf("Vehicle:page=%d:limit=%d:search=%s:sort=%s:order=%s:type=%s:category=%s", query.Page, query.Limit, query.Search, query.SortBy, query.Order, query.Type, query.Category)
-
-	// Redis
-	var vehicles []models.Vehicle
-	if err := s.VehicleCache.GetJSON(key, &vehicles); err == nil {
-		return &models.PaginationResponse{
-			Page:  int64(query.Page),
-			Limit: int64(query.Limit),
-			Data:  vehicles,
-		}, nil
-	}
-
 	if query.Page < 1 {
 		query.Page = 1
 	}
@@ -167,6 +178,14 @@ func (s *Service) GetAllVehicles(query models.VehicleQuery) (*models.PaginationR
 
 	if query.Category != "" && !validCategories[query.Category] {
 		return nil, errors.New("invalid category type")
+	}
+
+	// redis
+	key := fmt.Sprintf("vehicles:page=%d:limit=%d:search=%s:sort=%s:order=%s:type=%s:category=%s", query.Page, query.Limit, query.Search, query.SortBy, query.Order, query.Type, query.Category)
+
+	var cached models.PaginationResponse
+	if err := s.VehicleCache.GetJSON(key, &cached); err == nil {
+		return &cached, nil
 	}
 
 	vehicles, total, err := s.VehicleRepo.GetAllVehicles(query)
