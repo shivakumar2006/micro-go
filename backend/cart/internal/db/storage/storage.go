@@ -11,6 +11,7 @@ type CartStorage interface {
 	ExistByUserAndVehicle(userId, vehicleId int) (bool, error)
 	CountItems(userId int) (int, error)
 	GetCartItem(userId, vehicleId int64) (*models.Cart, error)
+	GetCartItemByID(cartID int64) (*models.Cart, error)
 	IncrementQuantity(userId, vehicleId int64, quantity int) (int, error)
 	DecrementQuantity(userId, vehicleId int64) (int, error)
 	GetCartTotal(userId int64) (float64, error)

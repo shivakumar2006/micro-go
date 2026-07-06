@@ -17,8 +17,18 @@ func NewCartService(repo storage.CartStorage) *CartService {
 }
 
 func (c *CartService) AddToCart(cart *models.Cart) error {
-	if err := c.CheckDuplicate(cart); err != nil {
+	exist, err := c.CartRepo.ExistByUserAndVehicle(cart.UserID, cart.VehicleId)
+	if err != nil {
 		return err
+	}
+
+	if exist {
+		_, err := c.CartRepo.IncrementQuantity(int64(cart.UserID), int64(cart.VehicleId), cart.Quantity)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	if err := c.CartRepo.AddToCart(cart); err != nil {
@@ -36,15 +46,71 @@ func (c *CartService) GetUserCart(userId int) ([]models.Cart, error) {
 	return cart, nil
 }
 
-func (c *CartService) CheckDuplicate(cart *models.Cart) error {
-	exist, err := c.CartRepo.ExistByUserAndVehicle(cart.UserID, cart.VehicleId)
+func (c *CartService) UpdateCartQuantity(cartId int, quantity int) (int, error) {
+	if quantity <= 0 {
+		return 0, errors.New("quantity must be greater than 0")
+	}
+
+	updateCart, err := c.CartRepo.UpdateCartQuantity(cartId, quantity)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	if exist {
-		return errors.New("cart item already exist")
+	return updateCart, nil
+}
+
+func (c *CartService) DeleteCartItem(id int) (int, error) {
+	item, err := c.GetCartItemByID(int64(id))
+	if err != nil {
+		return 0, err
 	}
 
-	return nil
+	if item.Quantity <= 0 {
+		return 0, errors.New("item is not found in cart")
+	}
+
+	if item.Quantity > 1 {
+		_, err := c.CartRepo.DecrementQuantity(int64(item.UserID), int64(item.VehicleId))
+		if err != nil {
+			return 0, err
+		}
+
+		return item.Quantity - 1, nil
+	}
+
+	deleteItem, err := c.CartRepo.DeleteCartItem(item.ID)
+	if err != nil {
+		return 0, err
+	}
+
+	return deleteItem, nil
+}
+
+func (c *CartService) GetCartItemByID(cartID int64) (*models.Cart, error) {
+	return c.CartRepo.GetCartItemByID(cartID)
+}
+
+func (c *CartService) DeleteCart(id int) (int, error) {
+	deleteCart, err := c.CartRepo.DeleteCart(id)
+	if err != nil {
+		return 0, err
+	}
+	return deleteCart, nil
+}
+
+func (c *CartService) GetCartItem(userId, vehicleId int64) (*models.Cart, error) {
+	items, err := c.CartRepo.GetCartItem(userId, vehicleId)
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (c *CartService) GetCartTotal(userId int) (float64, error) {
+	return c.CartRepo.GetCartTotal(int64(userId))
+}
+
+func (c *CartService) CountItems(userId int) (int, error) {
+	return c.CartRepo.CountItems(userId)
 }

@@ -307,6 +307,26 @@ func (c *CartRepository) UpdatePrice(cartID int64, price float64) error {
 	return nil
 }
 
+func (r *CartRepository) GetCartItemByID(cartID int64) (*models.Cart, error) {
+	ctx, cancel := newContext()
+	defer cancel()
+
+	var cart models.Cart
+	err := r.DB.QueryRowContext(ctx, `
+		SELECT id, user_id, vehicle_id, price, quantity, created_at, updated_at
+		FROM cart
+		WHERE id = $1
+	`, cartID).Scan(&cart.ID, &cart.UserID, &cart.VehicleId, &cart.Price, &cart.Quantity, &cart.CreatedAt, &cart.UpdatedAt)
+	if err != nil {
+		if errors.Is(sql.ErrNoRows, err) {
+			return nil, fmt.Errorf("item is not found in cart : %w", err)
+		}
+		return nil, fmt.Errorf("failed to get the cart item by their id : %w", err)
+	}
+
+	return &cart, nil
+}
+
 func newContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 10*time.Second)
 }
