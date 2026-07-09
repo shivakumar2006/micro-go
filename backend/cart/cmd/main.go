@@ -57,11 +57,11 @@ func main() {
 		r.Use(auth.Authenticate)
 		r.With(auth.RequireRole("user")).Post("/api/v1/cart", handler.AddToCart)
 		r.With(auth.RequireRole("user")).Put("/api/v1/cart/{id}", handler.UpdateCartQuantity)
-		r.With(auth.RequireRole("user")).Get("/api/v1/cart/{id}", handler.GetUserCart)
+		r.With(auth.RequireRole("user")).Get("/api/v1/cart", handler.GetUserCart)
 		r.With(auth.RequireRole("user")).Delete("/api/v1/cart/{id}", handler.DeleteCartItem)
-		r.With(auth.RequireRole("user")).Delete("/api/v1/cart/{id}", handler.DeleteCart)
-		r.With(auth.RequireRole("user")).Get("/api/v1/cart/total/{id}", handler.GetCartTotal)
-		r.With(auth.RequireRole("user")).Get("/api/v1/cart/count/{id}", handler.CountItems)
+		r.With(auth.RequireRole("user")).Delete("/api/v1/cart", handler.DeleteCart)
+		r.With(auth.RequireRole("user")).Get("/api/v1/cart/total", handler.GetCartTotal)
+		r.With(auth.RequireRole("user")).Get("/api/v1/cart/count", handler.CountItems)
 	})
 
 	// server
