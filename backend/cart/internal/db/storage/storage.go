@@ -6,7 +6,7 @@ type CartStorage interface {
 	AddToCart(cart *models.Cart) error
 	GetUserCart(userId int) ([]models.Cart, error)
 	UpdateCartQuantity(cartId int, quantity int) (int, error)
-	DeleteCartItem(id int) (int, error)
+	DeleteCartItem(userId, cartID int) (int, error)
 	DeleteCart(id int) (int, error)
 	ExistByUserAndVehicle(userId, vehicleId int) (bool, error)
 	CountItems(userId int) (int, error)

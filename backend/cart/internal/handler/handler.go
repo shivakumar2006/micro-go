@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"cart/internal/middleware"
 	"cart/internal/models"
 	"cart/internal/service"
 	"cart/internal/utils/response"
@@ -26,65 +27,66 @@ func NewCartHandler(service *service.CartService) *CartHandler {
 }
 
 func (c *CartHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
-	var cart models.Cart
+	var req models.AddToCartRequest
 
-	if r.Method != http.MethodPost {
-		response.WriteJSON(w, http.StatusMethodNotAllowed, response.GeneralError(fmt.Errorf("method not allowed")))
-		return
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&cart); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid request")))
 		return
 	}
 
-	if err := validate.Struct(cart); err != nil {
+	if err := validate.Struct(req); err != nil {
 		validationErrs := err.(validator.ValidationErrors)
 		response.WriteJSON(w, http.StatusBadRequest, response.ValidateErrors(validationErrs))
 		return
 	}
 
-	err := c.Service.AddToCart(&cart)
+	userId, err := getUserID(r)
+	if err != nil {
+		response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(err))
+		return
+	}
+
+	cart := models.Cart{
+		UserID:    userId,
+		VehicleId: req.VehicleID,
+		Quantity:  req.Quantity,
+	}
+
+	err = c.Service.AddToCart(&cart)
 	if err != nil {
 		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to add to cart: %v", err)))
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, &response.Response{
+	response.WriteJSON(w, http.StatusCreated, &response.Response{
 		Status:  response.StatusOK,
 		Message: "Item added to cart successfully",
 	})
 }
 
 func (c *CartHandler) UpdateCartQuantity(w http.ResponseWriter, r *http.Request) {
-	var cart models.Cart
+	var req models.UpdateQuantityRequest
 
-	if r.Method != http.MethodPut {
-		response.WriteJSON(w, http.StatusMethodNotAllowed, response.GeneralError(fmt.Errorf("method not allowed")))
-		return
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&cart); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid request body")))
 		return
 	}
 
-	if err := validate.Struct(cart); err != nil {
+	if err := validate.Struct(req); err != nil {
 		validateErrs := err.(validator.ValidationErrors)
 		response.WriteJSON(w, http.StatusBadRequest, response.ValidateErrors(validateErrs))
 		return
 	}
 
 	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	cartID, _ := strconv.Atoi(idStr)
+
+	userId, err := getUserID(r)
 	if err != nil {
-		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid cart id")))
-		return
+		response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(err))
 	}
 
-	cart.ID = int(id)
-
-	_, err = c.Service.UpdateCartQuantity(int(id), cart.Quantity)
+	_, err = c.Service.UpdateCartQuantity(userId, cartID, req.Quantity)
 	if err != nil {
 		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
 		return
@@ -97,14 +99,14 @@ func (c *CartHandler) UpdateCartQuantity(w http.ResponseWriter, r *http.Request)
 }
 
 func (c *CartHandler) GetUserCart(w http.ResponseWriter, r *http.Request) {
-	var cart models.Cart
 
-	if r.Method != http.MethodGet {
-		response.WriteJSON(w, http.StatusMethodNotAllowed, response.GeneralError(fmt.Errorf("method not allowed")))
+	userID, err := getUserID(r)
+	if err != nil {
+		response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(err))
 		return
 	}
 
-	cartItems, err := c.Service.GetUserCart(cart.UserID)
+	cartItems, err := c.Service.GetUserCart(userID)
 	if err != nil {
 		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
 		return
@@ -114,19 +116,16 @@ func (c *CartHandler) GetUserCart(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CartHandler) DeleteCartItem(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		response.WriteJSON(w, http.StatusMethodNotAllowed, response.GeneralError(fmt.Errorf("method not allowed")))
-		return
-	}
-
 	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	cartID, _ := strconv.Atoi(idStr)
+
+	userId, err := getUserID(r)
 	if err != nil {
-		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid cart id")))
+		response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(err))
 		return
 	}
 
-	quantity, err := c.Service.DeleteCartItem(int(id))
+	quantity, err := c.Service.DeleteCartItem(userId, cartID)
 	if err != nil {
 		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
 		return
@@ -140,19 +139,14 @@ func (c *CartHandler) DeleteCartItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CartHandler) DeleteCart(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		response.WriteJSON(w, http.StatusMethodNotAllowed, response.GeneralError(fmt.Errorf("method not allowed")))
-		return
-	}
 
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	userId, err := getUserID(r)
 	if err != nil {
-		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid id")))
+		response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(err))
 		return
 	}
 
-	deletedID, err := c.Service.DeleteCart(int(id))
+	deletedID, err := c.Service.DeleteCart(userId)
 	if err != nil {
 		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("failed to delete cart: %v", err)))
 		return
@@ -166,14 +160,14 @@ func (c *CartHandler) DeleteCart(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CartHandler) GetCartTotal(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		response.WriteJSON(w, http.StatusMethodNotAllowed, response.GeneralError(fmt.Errorf("invalid id")))
+
+	userId, err := getUserID(r)
+	if err != nil {
+		response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(err))
 		return
 	}
 
-	var cart models.Cart
-
-	cartTotal, err := c.Service.GetCartTotal(cart.UserID)
+	cartTotal, err := c.Service.GetCartTotal(userId)
 	if err != nil {
 		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to get all cart total : %v", err)))
 		return
@@ -187,14 +181,14 @@ func (c *CartHandler) GetCartTotal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CartHandler) CountItems(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		response.WriteJSON(w, http.StatusMethodNotAllowed, response.GeneralError(fmt.Errorf("invalid id")))
+
+	userId, err := getUserID(r)
+	if err != nil {
+		response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(err))
 		return
 	}
 
-	var cart models.Cart
-
-	countItems, err := c.Service.CountItems(cart.UserID)
+	countItems, err := c.Service.CountItems(userId)
 	if err != nil {
 		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to count items in cart : %v", err)))
 		return
@@ -205,4 +199,18 @@ func (c *CartHandler) CountItems(w http.ResponseWriter, r *http.Request) {
 		Message: "all cart total retrive successfully",
 		Data:    countItems,
 	})
+}
+
+func getUserID(r *http.Request) (int, error) {
+	userIdStr, ok := r.Context().Value(middleware.UserIDKey).(string)
+	if !ok {
+		return 0, fmt.Errorf("unauthorized")
+	}
+
+	userID, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		return 0, fmt.Errorf("invalid user id")
+	}
+
+	return userID, nil
 }

@@ -1,16 +1,23 @@
-package cmd
+package main
 
 import (
 	"cart/internal/config"
 	"cart/internal/db"
 	"cart/internal/handler"
+	"cart/internal/middleware"
 	"cart/internal/repository"
 	"cart/internal/service"
+	"context"
 	"log"
 	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
@@ -44,13 +51,53 @@ func main() {
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
-	router.Post("/api/v1/cart", handler.AddToCart)
-	router.Put("/api/v1/cart/{id}", handler.UpdateCartQuantity)
-	router.Get("/api/v1/cart/{id}", handler.GetUserCart)
-	router.Delete("/api/v1/cart/{id}", handler.DeleteCartItem)
-	router.Delete("/api/v1/cart/{id}", handler.DeleteCart)
-	router.Get("/api/v1/cart/total/{id}", handler.GetCartTotal)
-	router.Get("/api/v1/cart/count/{id}", handler.CountItems)
+	auth := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
+
+	router.Group(func(r chi.Router) {
+		r.Use(auth.Authenticate)
+		r.With(auth.RequireRole("user")).Post("/api/v1/cart", handler.AddToCart)
+		r.With(auth.RequireRole("user")).Put("/api/v1/cart/{id}", handler.UpdateCartQuantity)
+		r.With(auth.RequireRole("user")).Get("/api/v1/cart/{id}", handler.GetUserCart)
+		r.With(auth.RequireRole("user")).Delete("/api/v1/cart/{id}", handler.DeleteCartItem)
+		r.With(auth.RequireRole("user")).Delete("/api/v1/cart/{id}", handler.DeleteCart)
+		r.With(auth.RequireRole("user")).Get("/api/v1/cart/total/{id}", handler.GetCartTotal)
+		r.With(auth.RequireRole("user")).Get("/api/v1/cart/count/{id}", handler.CountItems)
+	})
 
 	// server
+	server := http.Server{
+		Addr:         cfg.Server.Address,
+		Handler:      router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	slog.Info("Server started successfully", slog.String("address : ", cfg.Server.Address))
+
+	quit := make(chan (os.Signal), 1)
+
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		slog.Info("HTTP server listening.....")
+		err := server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatal("failed to start server", err)
+		}
+	}()
+
+	<-quit
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	slog.Info("server shutting down gracefully...")
+
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error("server not stopped ", slog.String("error : ", err.Error()))
+		os.Exit(1)
+	}
+
+	slog.Info("server gracefully stopped")
 }

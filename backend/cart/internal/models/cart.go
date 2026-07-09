@@ -11,3 +11,12 @@ type Cart struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type UpdateQuantityRequest struct {
+	Quantity int `json:"quantity" validate:"required,gte=1"`
+}
+
+type AddToCartRequest struct {
+	VehicleID int `json:"vehicle_id" validate:"required,gt=0"`
+	Quantity  int `json:"quantity" validate:"required,gte=1,lte=100"`
+}

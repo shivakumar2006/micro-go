@@ -108,14 +108,15 @@ func (c *CartRepository) UpdateCartQuantity(cartId int, quantity int) (int, erro
 	return int(rows), nil
 }
 
-func (c *CartRepository) DeleteCartItem(id int) (int, error) {
+func (c *CartRepository) DeleteCartItem(userID, cartID int) (int, error) {
 	ctx, cancel := newContext()
 	defer cancel()
 
 	result, err := c.DB.ExecContext(ctx, `
 		DELETE from cart 
 		WHERE id = $1 
-	`, id)
+		AND user_id = $2
+	`, cartID, userID)
 
 	if err != nil {
 		return 0, fmt.Errorf("failed to delete item from cart : %w", err)
@@ -127,7 +128,7 @@ func (c *CartRepository) DeleteCartItem(id int) (int, error) {
 	}
 
 	if rows == 0 {
-		return 0, fmt.Errorf("no items in the cart : %w", err)
+		return 0, errors.New("cart item not found")
 	}
 
 	return int(rows), nil
@@ -139,7 +140,7 @@ func (c *CartRepository) DeleteCart(id int) (int, error) {
 
 	result, err := c.DB.ExecContext(ctx, `
 		DELETE FROM cart
-		WHERE user_id = $1
+		WHERE id = $1 AND user_id = $2
 	`, id)
 	if err != nil {
 		return 0, fmt.Errorf("failed to delete cart: %w", err)
@@ -299,7 +300,7 @@ func (c *CartRepository) UpdatePrice(cartID int64, price float64) error {
 		SET price = $1,
 			updated_at = NOW()
 		WHERE id = $2
-	`, cartID, price)
+	`, price, cartID)
 	if err != nil {
 		return fmt.Errorf("failed to update price : %w", err)
 	}

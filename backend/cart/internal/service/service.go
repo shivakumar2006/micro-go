@@ -46,7 +46,7 @@ func (c *CartService) GetUserCart(userId int) ([]models.Cart, error) {
 	return cart, nil
 }
 
-func (c *CartService) UpdateCartQuantity(cartId int, quantity int) (int, error) {
+func (c *CartService) UpdateCartQuantity(userId, cartId int, quantity int) (int, error) {
 	if quantity <= 0 {
 		return 0, errors.New("quantity must be greater than 0")
 	}
@@ -59,10 +59,14 @@ func (c *CartService) UpdateCartQuantity(cartId int, quantity int) (int, error) 
 	return updateCart, nil
 }
 
-func (c *CartService) DeleteCartItem(id int) (int, error) {
-	item, err := c.GetCartItemByID(int64(id))
+func (c *CartService) DeleteCartItem(userID, cartID int) (int, error) {
+	item, err := c.GetCartItemByID(int64(cartID))
 	if err != nil {
 		return 0, err
+	}
+
+	if item.UserID != userID {
+		return 0, errors.New("access denied")
 	}
 
 	if item.Quantity <= 0 {
@@ -78,7 +82,7 @@ func (c *CartService) DeleteCartItem(id int) (int, error) {
 		return item.Quantity - 1, nil
 	}
 
-	deleteItem, err := c.CartRepo.DeleteCartItem(item.ID)
+	deleteItem, err := c.CartRepo.DeleteCartItem(item.UserID, item.ID)
 	if err != nil {
 		return 0, err
 	}

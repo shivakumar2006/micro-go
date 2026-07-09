@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -21,7 +20,7 @@ const (
 
 type Claims struct {
 	UserID    string `json:"user_id"`
-	UserEmail int64  `json:"user_email"`
+	UserEmail string `json:"user_email"`
 	Role      string `json:"role"`
 	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
@@ -39,7 +38,7 @@ func NewAuthMiddleware(as, rs string) *AuthMiddleware {
 	}
 }
 
-func (a *AuthMiddleware) Authenticate(next http.Handler) http.HandlerFunc {
+func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -68,11 +67,11 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.HandlerFunc {
 		}
 
 		ctx := context.WithValue(r.Context(), UserIDKey, claims.UserID)
-		ctx = context.WithValue(r.Context(), UserEmailIDKey, claims.UserEmail)
-		ctx = context.WithValue(r.Context(), RoleKey, claims.Role)
+		ctx = context.WithValue(ctx, UserEmailIDKey, claims.UserEmail)
+		ctx = context.WithValue(ctx, RoleKey, claims.Role)
 
 		r.Header.Set("X-User-ID", claims.UserID)
-		r.Header.Set("X-User-Email", strconv.FormatInt(claims.UserEmail, 10))
+		r.Header.Set("X-User-Email", claims.UserEmail)
 		r.Header.Set("X-Role", claims.Role)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -80,7 +79,7 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.HandlerFunc {
 }
 
 func (a *AuthMiddleware) ParseToken(tokenString, secret string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, Claims{},
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{},
 		func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])

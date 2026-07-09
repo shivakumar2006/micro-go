@@ -17,12 +17,12 @@ type DBConfig struct {
 	Port     int    `yaml:"port"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
-	DBName   string `yaml:"db_name"`
+	DBName   string `yaml:"dbname"`
 }
 
 type JWTConfig struct {
-	AccessSecret  string `yaml:"access-secret"`
-	RefreshSecret string `yaml:"refresh-secret"`
+	AccessSecret  string `yaml:"access_secret"`
+	RefreshSecret string `yaml:"refresh_secret"`
 }
 
 type Config struct {
