@@ -178,5 +178,7 @@ func (c *CartService) CountItems(userId int) (int, error) {
 		return 0, nil
 	}
 
+	c.CartCache.SetJSON(key, count, 10*time.Minute)
+
 	return count, nil
 }
