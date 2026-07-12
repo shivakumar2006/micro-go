@@ -5,6 +5,7 @@ import (
 	"cart/internal/db"
 	"cart/internal/handler"
 	"cart/internal/middleware"
+	"cart/internal/redis"
 	"cart/internal/repository"
 	"cart/internal/service"
 	"context"
@@ -29,7 +30,7 @@ func main() {
 	}
 
 	// setup db
-	database, err := db.NewCartDatabase(*cfg)
+	database, err := db.NewCartDatabase(cfg)
 	if err != nil {
 		log.Fatalf("failed to setup db : %v", err.Error())
 	}
@@ -39,7 +40,17 @@ func main() {
 
 	// layers
 	repo := repository.NewCartRepository(database.DB)
-	service := service.NewCartService(repo)
+	redisClient, err := redis.NewRedis(cfg)
+	if err != nil {
+		log.Fatalf("failed to initialized redis : %v", err)
+	}
+
+	slog.Info("Redis connected successfully", slog.String("env", cfg.Env))
+
+	defer redisClient.Close()
+
+	cache := redis.NewCache(redisClient.Client)
+	service := service.NewCartService(repo, cache)
 	handler := handler.NewCartHandler(service)
 
 	// add routes

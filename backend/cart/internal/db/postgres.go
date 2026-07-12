@@ -12,7 +12,7 @@ type CartDatabase struct {
 	DB *sql.DB
 }
 
-func NewCartDatabase(cfg config.Config) (*CartDatabase, error) {
+func NewCartDatabase(cfg *config.Config) (*CartDatabase, error) {
 	db, err := sql.Open("pgx", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.DBName))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to db : %w", err)

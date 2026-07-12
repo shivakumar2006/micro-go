@@ -22,9 +22,9 @@ type DBConfig struct {
 
 type RedisConfig struct {
 	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
+	Port     int    `yaml:"port"`
 	Password string `yaml:"password"`
-	DB       int    `yaml:"db"`
+	Db       int    `yaml:"db"`
 }
 
 type JWTConfig struct {

@@ -38,16 +38,16 @@ func main() {
 	slog.Info("database successfully initialized", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
 
 	repo := repository.NewVehicleRepo(database.Db)
-	redisCient, err := redis.NewRedis(cfg)
+	redisClient, err := redis.NewRedis(cfg)
 	if err != nil {
 		log.Fatalf("failed to initialized redis : %v", err)
 	}
 
 	slog.Info("Redis connected successfully", slog.String("env", cfg.Env))
 
-	defer redisCient.Close()
+	defer redisClient.Close()
 
-	cache := redis.NewCache(redisCient.Client)
+	cache := redis.NewCache(redisClient.Client)
 	service := service.NewService(repo, cache)
 	handler := handler.NewVehicleHandler(service)
 

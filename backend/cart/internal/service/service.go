@@ -3,16 +3,21 @@ package service
 import (
 	"cart/internal/db/storage"
 	"cart/internal/models"
+	cachestorage "cart/internal/redis/cacheStorage"
 	"errors"
+	"fmt"
+	"time"
 )
 
 type CartService struct {
-	CartRepo storage.CartStorage
+	CartRepo  storage.CartStorage
+	CartCache cachestorage.CacheStorage
 }
 
-func NewCartService(repo storage.CartStorage) *CartService {
+func NewCartService(repo storage.CartStorage, cartCache cachestorage.CacheStorage) *CartService {
 	return &CartService{
-		CartRepo: repo,
+		CartRepo:  repo,
+		CartCache: cartCache,
 	}
 }
 
@@ -38,10 +43,20 @@ func (c *CartService) AddToCart(cart *models.Cart) error {
 }
 
 func (c *CartService) GetUserCart(userId int) ([]models.Cart, error) {
+	key := fmt.Sprintf("cart: %d", userId)
+
+	var cart []models.Cart
+
+	if err := c.CartCache.GetJSON(key, &cart); err == nil {
+		return cart, nil
+	}
+
 	cart, err := c.CartRepo.GetUserCart(userId)
 	if err != nil {
 		return nil, err
 	}
+
+	c.CartCache.SetJSON(key, cart, 10*time.Minute)
 
 	return cart, nil
 }
