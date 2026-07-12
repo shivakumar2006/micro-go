@@ -22,6 +22,12 @@ func NewCartService(repo storage.CartStorage, cartCache cachestorage.CacheStorag
 }
 
 func (c *CartService) AddToCart(cart *models.Cart) error {
+	defer func() {
+		c.CartCache.Delete(fmt.Sprintf("cart:%d", cart.UserID))
+		c.CartCache.Delete(fmt.Sprintf("cart:total:%d", cart.UserID))
+		c.CartCache.Delete(fmt.Sprintf("cart:count:%d", cart.UserID))
+	}()
+
 	exist, err := c.CartRepo.ExistByUserAndVehicle(cart.UserID, cart.VehicleId)
 	if err != nil {
 		return err
@@ -43,7 +49,7 @@ func (c *CartService) AddToCart(cart *models.Cart) error {
 }
 
 func (c *CartService) GetUserCart(userId int) ([]models.Cart, error) {
-	key := fmt.Sprintf("cart: %d", userId)
+	key := fmt.Sprintf("cart:%d", userId)
 
 	var cart []models.Cart
 
@@ -70,6 +76,10 @@ func (c *CartService) UpdateCartQuantity(userId, cartId int, quantity int) (int,
 	if err != nil {
 		return 0, err
 	}
+
+	c.CartCache.Delete(fmt.Sprintf("cart:%d", userId))
+	c.CartCache.Delete(fmt.Sprintf("cart:total:%d", userId))
+	c.CartCache.Delete(fmt.Sprintf("cart:count:%d", userId))
 
 	return updateCart, nil
 }
@@ -102,6 +112,10 @@ func (c *CartService) DeleteCartItem(userID, cartID int) (int, error) {
 		return 0, err
 	}
 
+	c.CartCache.Delete(fmt.Sprintf("cart:%d", userID))
+	c.CartCache.Delete(fmt.Sprintf("cart:total:%d", userID))
+	c.CartCache.Delete(fmt.Sprintf("cart:count:%d", userID))
+
 	return deleteItem, nil
 }
 
@@ -114,6 +128,11 @@ func (c *CartService) DeleteCart(id int) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	c.CartCache.Delete(fmt.Sprintf("cart:%d", id))
+	c.CartCache.Delete(fmt.Sprintf("cart:total:%d", id))
+	c.CartCache.Delete(fmt.Sprintf("cart:count:%d", id))
+
 	return deleteCart, nil
 }
 
@@ -127,9 +146,37 @@ func (c *CartService) GetCartItem(userId, vehicleId int64) (*models.Cart, error)
 }
 
 func (c *CartService) GetCartTotal(userId int) (float64, error) {
-	return c.CartRepo.GetCartTotal(int64(userId))
+	key := fmt.Sprintf("cart:total:%d", userId)
+
+	var total float64
+
+	if err := c.CartCache.GetJSON(key, &total); err == nil {
+		return total, nil
+	}
+
+	total, err := c.CartRepo.GetCartTotal(int64(userId))
+	if err != nil {
+		return 0, nil
+	}
+
+	c.CartCache.SetJSON(key, total, 10*time.Minute)
+
+	return total, nil
 }
 
 func (c *CartService) CountItems(userId int) (int, error) {
-	return c.CartRepo.CountItems(userId)
+	key := fmt.Sprintf("cart:count:%d", userId)
+
+	var count int
+
+	if err := c.CartCache.GetJSON(key, &count); err == nil {
+		return count, nil
+	}
+
+	count, err := c.CartRepo.CountItems(userId)
+	if err != nil {
+		return 0, nil
+	}
+
+	return count, nil
 }
