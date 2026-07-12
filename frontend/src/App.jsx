@@ -1,9 +1,15 @@
 import React from 'react';
-import "./App.css"
+import "./App.css";
+import {Routes, Route} from "react-router-dom";
+import Vehicles from './Pages/Vehicles';
 
 const App = () => {
   return (
-    <div>App</div>
+    <>
+    <Routes>
+        <Route path="/" element={<Vehicles />}/>
+    </Routes>
+    </>
   )
 }
 
