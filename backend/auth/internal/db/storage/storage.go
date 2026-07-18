@@ -1,16 +1,13 @@
-package db
+package storage
 
-import (
-	"auth/internal/model"
-	"context"
-)
+import "auth/internal/models"
 
 type Storage interface {
-	CreateUser(user *model.User) error
-	FindUserByEmail(email string) (*model.User, error)
-	FindUserById(id int64) (*model.User, error)
-	SaveRefreshToken(token *model.RefreshToken) error
-	FindRefreshToken(tokenString string) (*model.RefreshToken, error)
-	DeleteRefreshToken(tokenString string) error
-	DeleteAllUserTokens(ctx context.Context, userID int64) error
+	CreateUser(user *models.User) error
+	FindUserByEmail(email string) (*models.User, error)
+	FindUserById(id int) (*models.User, error)
+	SaveRefreshToken(session *models.UserSessions) error
+	FindRefreshToken(refreshTokenHash string) (*models.UserSessions, error)
+	DeleteRefreshToken(refreshTokenHash string) error
+	DeleteAllUserToken(userId int) error
 }

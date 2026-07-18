@@ -16,7 +16,7 @@ const (
 )
 
 type Claims struct {
-	UserID    string `json:"user_id"`
+	UserID    int    `json:"user_id"`
 	Email     string `json:"email"`
 	Role      string `json:"role"`
 	TokenType string `json:"token_type"`
@@ -29,38 +29,44 @@ type TokenPair struct {
 }
 
 type JWTManager struct {
-	accessSecret  string
-	refreshSecret string
-	accessExpiry  time.Duration
-	refreshExpiry time.Duration
+	AccessSecret  string
+	RefreshSecret string
+	AccessExpiry  time.Duration
+	RefreshExpiry time.Duration
 }
 
-func NewJWTManager(accessSecret, refreshSecret string, accessExpiry, refreshExpiry time.Duration) *JWTManager {
-	if accessSecret == "" {
+func NewJWTManager(as, rs string, ar, re time.Duration) (*JWTManager, error) {
+	if as == "" {
 		panic("access secret is required")
 	}
-
-	if refreshSecret == "" {
+	if rs == "" {
 		panic("refresh secret is required")
 	}
 
-	return &JWTManager{
-		accessSecret:  accessSecret,
-		refreshSecret: refreshSecret,
-		accessExpiry:  accessExpiry,
-		refreshExpiry: refreshExpiry,
+	if ar == 0 {
+		panic("access expiry is required")
 	}
+	if re == 0 {
+		panic("refresh expiry is required")
+	}
+
+	return &JWTManager{
+		AccessSecret:  as,
+		RefreshSecret: rs,
+		AccessExpiry:  ar,
+		RefreshExpiry: re,
+	}, nil
 }
 
-func (m *JWTManager) GenerateTokenPair(userID, email, role string) (*TokenPair, error) {
-	accessToken, err := m.GenerateToken(userID, email, role, AccessToken, m.accessSecret, m.accessExpiry)
+func (j *JWTManager) GenerateTokenPair(userID int, email, role string) (*TokenPair, error) {
+	accessToken, err := j.GenerateToken(userID, email, role, AccessToken, j.AccessSecret, j.AccessExpiry)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate access token %w", err)
+		return nil, fmt.Errorf("failed to generate access token : %w", err)
 	}
 
-	refreshToken, err := m.GenerateToken(userID, email, role, RefreshToken, m.refreshSecret, m.refreshExpiry)
+	refreshToken, err := j.GenerateToken(userID, email, role, RefreshToken, j.RefreshSecret, j.RefreshExpiry)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate refresh token %w", err)
+		return nil, fmt.Errorf("failed to generate refresh token : %w", err)
 	}
 
 	return &TokenPair{
@@ -69,7 +75,7 @@ func (m *JWTManager) GenerateTokenPair(userID, email, role string) (*TokenPair, 
 	}, nil
 }
 
-func (m *JWTManager) GenerateToken(userID, email, role string, tokenType TokenType, secret string, expiry time.Duration) (string, error) {
+func (j *JWTManager) GenerateToken(userID int, email, role string, tokenType TokenType, secret string, expiry time.Duration) (string, error) {
 	claims := &Claims{
 		UserID:    userID,
 		Email:     email,
@@ -86,28 +92,26 @@ func (m *JWTManager) GenerateToken(userID, email, role string, tokenType TokenTy
 	return token.SignedString([]byte(secret))
 }
 
-func (m *JWTManager) ValidateAccessToken(token string) (*Claims, error) {
-	return m.ValidateToken(token, m.accessSecret, AccessToken)
+func (j *JWTManager) ValidateAccessToken(token string) (*Claims, error) {
+	return j.ValidateToken(token, j.AccessSecret, AccessToken)
 }
 
-func (m *JWTManager) ValidateRefreshToken(token string) (*Claims, error) {
-	return m.ValidateToken(token, m.refreshSecret, RefreshToken)
+func (j *JWTManager) ValidateRefreshToken(token string) (*Claims, error) {
+	return j.ValidateToken(token, j.RefreshSecret, RefreshToken)
 }
 
-func (m *JWTManager) ValidateToken(tokenString string, secret string, tokenType TokenType) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(
-		tokenString,
-		&Claims{},
+func (j *JWTManager) ValidateToken(tokenString string, secret string, tokenType TokenType) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errors.New("unexpected signing token method")
+				return nil, errors.New("unexpected signing method")
 			}
 			return ([]byte(secret)), nil
 		},
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("cannot parse the token %w", err)
+		return nil, fmt.Errorf("cannot parse the token : %w", err)
 	}
 
 	// extract claims from token
@@ -117,6 +121,10 @@ func (m *JWTManager) ValidateToken(tokenString string, secret string, tokenType 
 	}
 	if claims.TokenType != string(tokenType) {
 		return nil, errors.New("invalid token type")
+	}
+
+	if claims.ExpiresAt.Time.Before(time.Now()) {
+		return nil, errors.New("token is expired")
 	}
 
 	return claims, nil
