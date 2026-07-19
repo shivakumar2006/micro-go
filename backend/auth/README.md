@@ -1,3 +1,5 @@
+## Overall authentication service structure
+
                               CLIENT
                                  │
                                  │ HTTP Request
