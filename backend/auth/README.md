@@ -419,3 +419,36 @@ Sent To Client Hash & Store In DB
                                       ▼
 
                                user_sessions
+
+## Database Realtionship
+
+                roles
+      ┌────────────────────┐
+      │ id                 │
+      │ role_name          │
+      └─────────┬──────────┘
+                │
+                │ 1
+                │
+                │
+                │ N
+      ┌─────────▼──────────┐
+      │ users              │
+      │ id                 │
+      │ name               │
+      │ email              │
+      │ password           │
+      │ role_id (FK)       │
+      └─────────┬──────────┘
+                │
+                │ 1
+                │
+                │
+                │ N
+      ┌─────────▼──────────────┐
+      │ user_sessions          │
+      │ id                     │
+      │ user_id (FK)           │
+      │ refresh_token_hash     │
+      │ expires_at             │
+      └────────────────────────┘
