@@ -55,20 +55,26 @@ func main() {
 		log.Fatal("failed to initialize JWT manager: ", err)
 	}
 
-	authRepo, err := repository.NewAuthRepository(database.DB)
+	repo, err := repository.NewAuthRepository(database.DB)
 	if err != nil {
 		log.Fatal("failed to initialize AuthRepository: ", err)
 	}
 
-	authService := services.NewAuthService(authRepo, jwtManager, refreshExpiry)
+	service := services.NewAuthService(repo, jwtManager, refreshExpiry)
 
-	authHandler := handler.NewAuthHandler(authService)
+	handler := handler.NewAuthHandler(service)
 
 	authMiddleware := middleware.NewAuthMiddleware(jwtManager)
 
-	router.Post("/api/v1/auth/register", authHandler.Register())
-	router.Post("/api/v1/auth/login", authHandler.Login())
-	router.Post("/api/v1/auth/refresh", authHandler.Refresh())
+	router.Post("/api/v1/auth/register", handler.Register)
+	router.Post("/api/v1/auth/login", handler.Login)
+	router.Post("/api/v1/auth/refresh", handler.Refresh)
+
+	router.Group(func(r chi.Router) {
+		r.Use(authMiddleware.Authenticate)
+		r.With(authMiddleware.RequireRole("admin")).Get("/api/v1/auth/me", handler.GetMe)
+		r.With(authMiddleware.RequireRole("admin")).Delete("/api/v1/auth/me", handler.GetMe)
+	})
 
 	// server
 }

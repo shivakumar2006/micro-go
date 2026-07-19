@@ -10,4 +10,6 @@ type Storage interface {
 	FindRefreshToken(refreshTokenHash string) (*models.UserSessions, error)
 	DeleteRefreshToken(refreshTokenHash string) error
 	DeleteAllUserToken(userId int) error
+	GetRoleByName(roleName string) (int, error)
+	AdminExist() (bool, error)
 }

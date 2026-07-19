@@ -27,19 +27,21 @@ func NewDatabase(cfg config.Config) (*Database, error) {
 		CREATE TABLE IF NOT EXISTS roles (
 			id BIGSERIAL PRIMARY KEY,
 			role_name VARCHAR(20) NOT NULL UNIQUE
-		)
+			created_at TMIESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);
 
-		CREATE TABLE users (
+		CREATE TABLE IF NOT EXISTS users (
 			id BIGSERIAL PRIMARY KEY,
 			name VARCHAR(100) NOT NULL,
 			email VARCHAR(100) UNIQUE NOT NULL,
 			password VARCHAR(255) NOT NULL,
-			role_id BIGINT REFERENCES roles(id),
+			role_id BIGINT NOT NULL REFERENCES roles(id),
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);
 
-		CREATE TABLE user_sessions (
+		CREATE TABLE IF NOT EXISTS user_sessions (
 			id BIGSERIAL PRIMARY KEY,
 			user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 			refresh_token_hash VARCHAR(255) NOT NULL,
@@ -55,6 +57,16 @@ func NewDatabase(cfg config.Config) (*Database, error) {
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tables : %w", err)
+	}
+
+	_, err = data.Exec(`
+		INSERT INTO roles (role_name)
+		VALUES ('admin'), ('customer')
+		ON CONFLICT (role_name) DO NOTHING;
+	`)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to seed roles : %w", err)
 	}
 
 	return &Database{DB: data}, nil

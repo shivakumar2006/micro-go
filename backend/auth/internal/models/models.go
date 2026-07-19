@@ -3,13 +3,21 @@ package models
 import "time"
 
 type User struct {
-	ID         int       `json:"id"`
-	Name       string    `json:"name"`
-	Email      string    `json:"email"`
-	Password   string    `json:"password"`
-	RoleID     int       `json:"role_id"`
-	Created_At time.Time `json:"created_at"`
-	Updated_At time.Time `json:"updated_at"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
+	RoleID    int       `json:"role_id"`
+	RoleName  string    `json:"role_name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Role struct {
+	ID        int       `json:"id"`
+	RoleName  string    `json:"role_name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type UserSessions struct {
@@ -33,7 +41,7 @@ type RegisterRequest struct {
 	Name     string `json:"name" validate:"required,min=2,max=50"`
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8"`
-	RoleID   int    `json:"role_id"`
+	Role     string `json:"role" validate:"required"`
 }
 
 type LoginRequest struct {
@@ -49,7 +57,7 @@ type UserResponse struct {
 	ID        int64     `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	RoleID    int64     `json:"role_id"`
+	RoleName  string    `json:"role_name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

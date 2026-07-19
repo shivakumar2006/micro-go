@@ -51,10 +51,12 @@ func (a *AuthRepository) FindUserByEmail(email string) (*models.User, error) {
 	var user models.User
 
 	err := a.Db.QueryRowContext(ctx, `
-		SELECT id, name, email, password, role_id
-		FROM users
-		WHERE email = $1
-	`, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.RoleID)
+		SELECT u.id, u.name, u.email, u.password, u.role_id, r.role_name
+		FROM users u
+		JOIN roles r 
+		ON u.role_id = r.id
+		WHERE u.email = $1
+	`, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.RoleID, &user.RoleName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("user not found: %w", err)
@@ -72,10 +74,12 @@ func (a *AuthRepository) FindUserById(id int) (*models.User, error) {
 	var user models.User
 
 	err := a.Db.QueryRowContext(ctx, `
-		SELECT id, name, email, password, role_id
-		FROM users 
-		WHERE id = $1
-	`, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.RoleID)
+		SELECT u.id, u.name, u.email, u.password, u.role_id, r.role_name
+		FROM users u
+		JOIN roles r 
+		ON u.role_id = r.id
+		WHERE u.id = $1
+	`, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.RoleID, &user.RoleName)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -160,6 +164,50 @@ func (a *AuthRepository) DeleteAllUserToken(userId int) error {
 	}
 
 	return nil
+}
+
+func (a *AuthRepository) GetRoleByName(roleName string) (int, error) {
+	ctx, cancel := NewContext()
+	defer cancel()
+
+	var role models.Role
+
+	err := a.Db.QueryRowContext(ctx, `
+		SELECT id
+		FROM roles
+		WHERE role_name = $1
+	`, roleName).Scan(&role.ID)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, fmt.Errorf("role not found : %w", err)
+		}
+		return 0, fmt.Errorf("failed to get role by name : %w", err)
+	}
+
+	return role.ID, nil
+}
+
+func (a *AuthRepository) AdminExist() (bool, error) {
+	ctx, cancel := NewContext()
+	defer cancel()
+
+	var exists bool
+
+	err := a.Db.QueryRowContext(ctx, `
+		SELECT EXISTS(
+			SELECT 1 
+			FROM users u 
+			JOIN roles r ON u.role_id = r.id
+			WHERE r.role_name = $1
+		);
+	`, "admin").Scan(&exists)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to check admin exists : %w", err)
+	}
+
+	return exists, nil
 }
 
 func NewContext() (context.Context, context.CancelFunc) {

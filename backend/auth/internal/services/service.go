@@ -7,7 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -33,27 +33,49 @@ func (s *AuthService) Register(ctx context.Context, req *models.RegisterRequest)
 		return nil, errors.New("email already in use")
 	}
 
-	if len(req.Password) < 8 {
-		return nil, errors.New("password must be at least 8 characters")
-	}
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to process password")
 	}
 
+	role := strings.TrimSpace(strings.ToLower(req.Role))
+
+	switch role {
+	case "customer", "admin":
+
+	default:
+		return nil, errors.New("invalid role")
+	}
+
+	roleID, err := s.AuthRepo.GetRoleByName(role)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get default role : %w", err)
+	}
+
+	if role == "admin" {
+		exists, err := s.AuthRepo.AdminExist()
+		if err != nil {
+			return nil, fmt.Errorf("failed to check admin exists : %w", err)
+		}
+
+		if exists {
+			return nil, errors.New("admin already exists")
+		}
+	}
+
 	user := &models.User{
 		Name:     req.Name,
 		Email:    req.Email,
-		RoleID:   req.RoleID,
 		Password: string(hashedPassword),
+		RoleID:   roleID,
+		RoleName: role,
 	}
 
 	if err := s.AuthRepo.CreateUser(user); err != nil {
 		return nil, err
 	}
 
-	tokenPair, err := s.JWTManager.GenerateTokenPair(user.ID, user.Email, strconv.Itoa(user.RoleID))
+	tokenPair, err := s.JWTManager.GenerateTokenPair(user.ID, user.Email, user.RoleName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate token pair : %w", err)
 	}
@@ -86,7 +108,7 @@ func (a *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*mod
 		return nil, fmt.Errorf("invalid password")
 	}
 
-	tokenPair, err := a.JWTManager.GenerateTokenPair(user.ID, user.Email, strconv.Itoa(user.RoleID))
+	tokenPair, err := a.JWTManager.GenerateTokenPair(user.ID, user.Email, user.RoleName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate token pair : %w", err)
 	}
@@ -134,7 +156,7 @@ func (a *AuthService) Refresh(ctx context.Context, req models.RefreshRequest) (*
 	_ = a.AuthRepo.DeleteRefreshToken(req.RefreshToken)
 
 	// generate new token pair
-	tokenPair, err := a.JWTManager.GenerateTokenPair(user.ID, user.Email, strconv.Itoa(user.RoleID))
+	tokenPair, err := a.JWTManager.GenerateTokenPair(user.ID, user.Email, user.RoleName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate token pair : %w", err)
 	}
@@ -184,9 +206,9 @@ func (a *AuthService) GetMe(userId int) (*models.UserResponse, error) {
 		ID:        int64(user.ID),
 		Name:      user.Name,
 		Email:     user.Email,
-		RoleID:    int64(user.RoleID),
-		CreatedAt: user.Created_At,
-		UpdatedAt: user.Updated_At,
+		RoleName:  user.RoleName,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
 
@@ -195,10 +217,10 @@ func buildAuthResponse(tokenPair *pkg.TokenPair, user *models.User) (*models.Aut
 		AccessToken:  tokenPair.AccessToken,
 		RefreshToken: tokenPair.RefreshToken,
 		User: models.UserResponse{
-			ID:     int64(user.ID),
-			Name:   user.Name,
-			Email:  user.Email,
-			RoleID: int64(user.RoleID),
+			ID:       int64(user.ID),
+			Name:     user.Name,
+			Email:    user.Email,
+			RoleName: user.RoleName,
 		},
 	}, nil
 }
