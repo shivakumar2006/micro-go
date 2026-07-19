@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"auth/internal/pkg"
+	"auth/internal/utils/response"
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -47,4 +49,23 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func (a *AuthMiddleware) RequireRole(role string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			userRole, ok := r.Context().Value(UserContextKey).(*pkg.Claims)
+			if !ok {
+				response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("role not found")))
+				return
+			}
+
+			if userRole.Role != role {
+				response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("access denied")))
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
