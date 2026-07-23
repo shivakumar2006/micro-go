@@ -26,8 +26,8 @@ func NewDatabase(cfg config.Config) (*Database, error) {
 	_, err = data.Exec(`
 		CREATE TABLE IF NOT EXISTS roles (
 			id BIGSERIAL PRIMARY KEY,
-			role_name VARCHAR(20) NOT NULL UNIQUE
-			created_at TMIESTAMP DEFAULT CURRENT_TIMESTAMP,
+			role_name VARCHAR(20) NOT NULL UNIQUE,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);
 
