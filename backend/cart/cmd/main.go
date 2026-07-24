@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cart/internal/client"
 	"cart/internal/config"
 	"cart/internal/db"
 	"cart/internal/handler"
@@ -50,7 +51,10 @@ func main() {
 	defer redisClient.Close()
 
 	cache := redis.NewCache(redisClient.Client)
-	service := service.NewCartService(repo, cache)
+
+	vehicleClient := client.NewVehicleClient(cfg.Vechile.URL)
+
+	service := service.NewCartService(repo, cache, vehicleClient)
 	handler := handler.NewCartHandler(service)
 
 	// add routes

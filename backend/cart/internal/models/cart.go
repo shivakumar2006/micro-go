@@ -20,3 +20,11 @@ type AddToCartRequest struct {
 	VehicleID int `json:"vehicle_id" validate:"required,gt=0"`
 	Quantity  int `json:"quantity" validate:"required,gte=1,lte=100"`
 }
+
+// for vehicel service
+type VehicleResponse struct {
+	ID    int     `json:"id"`
+	Name  string  `json:"name"`
+	Price float64 `json:"price"`
+	Stock int     `json:"stock"`
+}

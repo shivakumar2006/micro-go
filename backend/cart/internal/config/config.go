@@ -32,12 +32,17 @@ type JWTConfig struct {
 	RefreshSecret string `yaml:"refresh_secret"`
 }
 
+type VehicleConfig struct {
+	URL string `yaml:"url"`
+}
+
 type Config struct {
-	Env    string `yaml:"env"`
-	Server ServerConfig
-	Redis  RedisConfig
-	DB     DBConfig
-	JWT    JWTConfig
+	Env     string        `yaml:"env"`
+	Server  ServerConfig  `yaml:"server"`
+	Vechile VehicleConfig `yaml:"vehicle"`
+	Redis   RedisConfig   `yaml:"redis"`
+	DB      DBConfig      `yaml:"db"`
+	JWT     JWTConfig     `yaml:"jwt"`
 }
 
 func LoadConfig() (*Config, error) {

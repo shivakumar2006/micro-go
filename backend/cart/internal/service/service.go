@@ -1,6 +1,7 @@
 package service
 
 import (
+	"cart/internal/client"
 	"cart/internal/db/storage"
 	"cart/internal/models"
 	cachestorage "cart/internal/redis/cacheStorage"
@@ -10,14 +11,16 @@ import (
 )
 
 type CartService struct {
-	CartRepo  storage.CartStorage
-	CartCache cachestorage.CacheStorage
+	CartRepo      storage.CartStorage
+	CartCache     cachestorage.CacheStorage
+	VehicleClient *client.VehicleClient
 }
 
-func NewCartService(repo storage.CartStorage, cartCache cachestorage.CacheStorage) *CartService {
+func NewCartService(repo storage.CartStorage, cartCache cachestorage.CacheStorage, vehicleClient *client.VehicleClient) *CartService {
 	return &CartService{
-		CartRepo:  repo,
-		CartCache: cartCache,
+		CartRepo:      repo,
+		CartCache:     cartCache,
+		VehicleClient: vehicleClient,
 	}
 }
 
@@ -27,6 +30,18 @@ func (c *CartService) AddToCart(cart *models.Cart) error {
 		c.CartCache.Delete(fmt.Sprintf("cart:total:%d", cart.UserID))
 		c.CartCache.Delete(fmt.Sprintf("cart:count:%d", cart.UserID))
 	}()
+
+	// get data from vehicle service
+	vehicle, err := c.VehicleClient.GetVehicle(cart.VehicleId)
+	if err != nil {
+		return err
+	}
+
+	if vehicle.Stock <= 0 {
+		return fmt.Errorf("vehicle out of stock")
+	}
+
+	cart.Price = vehicle.Price
 
 	exist, err := c.CartRepo.ExistByUserAndVehicle(cart.UserID, cart.VehicleId)
 	if err != nil {
