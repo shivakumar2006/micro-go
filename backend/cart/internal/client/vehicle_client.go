@@ -33,12 +33,6 @@ func (v *VehicleClient) GetVehicle(id int) (*models.VehicleResponse, error) {
 	})
 }
 
-// func (v *VehicleClient) execute(fn func() (*models.VehicleResponse, error)) (*models.VehicleResponse, error) {
-// 	return resilience.Execute(v.CB, func() (*models.VehicleResponse, error) {
-// 		return resilience.RetryDo(v.Retry, fn)
-// 	})
-// }
-
 func (v *VehicleClient) doRequest(id int) (*models.VehicleResponse, error) {
 	url := fmt.Sprintf("%s/api/v1/vehicles/%d", v.BaseURL, id)
 
