@@ -2,24 +2,44 @@ package client
 
 import (
 	"cart/internal/models"
+	"cart/internal/resilience"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type VehicleClient struct {
 	BaseURL string
 	Client  *http.Client
+	Retry   *resilience.Retry
+	CB      *resilience.CircuitBreaker
 }
 
-func NewVehicleClient(baseURL string) *VehicleClient {
+func NewVehicleClient(baseURL string, retry *resilience.Retry, cb *resilience.CircuitBreaker) *VehicleClient {
 	return &VehicleClient{
 		BaseURL: baseURL,
-		Client:  &http.Client{},
+		Client:  &http.Client{Timeout: 10 * time.Second},
+		Retry:   retry,
+		CB:      cb,
 	}
 }
 
 func (v *VehicleClient) GetVehicle(id int) (*models.VehicleResponse, error) {
+	return resilience.Execute(v.CB, func() (*models.VehicleResponse, error) {
+		return resilience.RetryDo(v.Retry, func() (*models.VehicleResponse, error) {
+			return v.doRequest(id)
+		})
+	})
+}
+
+// func (v *VehicleClient) execute(fn func() (*models.VehicleResponse, error)) (*models.VehicleResponse, error) {
+// 	return resilience.Execute(v.CB, func() (*models.VehicleResponse, error) {
+// 		return resilience.RetryDo(v.Retry, fn)
+// 	})
+// }
+
+func (v *VehicleClient) doRequest(id int) (*models.VehicleResponse, error) {
 	url := fmt.Sprintf("%s/api/v1/vehicles/%d", v.BaseURL, id)
 
 	res, err := v.Client.Get(url)
@@ -30,7 +50,9 @@ func (v *VehicleClient) GetVehicle(id int) (*models.VehicleResponse, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("vehicle not found : %w", err)
+		return nil, &resilience.HTTPStatusError{
+			StatusCode: res.StatusCode,
+		}
 	}
 
 	var vehicle models.VehicleResponse

@@ -1,0 +1,67 @@
+package resilience
+
+import (
+	"fmt"
+	"log/slog"
+	"time"
+
+	"github.com/sony/gobreaker"
+)
+
+type CircuitBreaker struct {
+	cb *gobreaker.CircuitBreaker
+}
+
+func NewCircuitBreaker() *CircuitBreaker {
+
+	settings := gobreaker.Settings{
+		Name: "vehicle-service",
+
+		// how many requests are open in half open state
+		MaxRequests: 3,
+
+		// if there is not issue until count reset
+		Interval: time.Minute,
+
+		// open state lasts
+		Timeout: 10 * time.Second,
+
+		// when needs to open
+		ReadyToTrip: func(counts gobreaker.Counts) bool {
+			return counts.ConsecutiveFailures >= 3
+		},
+
+		OnStateChange: func(name string, from gobreaker.State, to gobreaker.State) {
+			slog.Info(
+				"circuit breaker state changed",
+				slog.String("service", name),
+				slog.String("from", from.String()),
+				slog.String("to", to.String()),
+			)
+		},
+	}
+
+	return &CircuitBreaker{
+		cb: gobreaker.NewCircuitBreaker(settings),
+	}
+}
+
+func Execute[T any](c *CircuitBreaker, fn func() (T, error)) (T, error) {
+
+	result, err := c.cb.Execute(func() (interface{}, error) {
+		return fn()
+	})
+
+	if err != nil {
+		var zero T
+		return zero, err
+	}
+
+	typed, ok := result.(T)
+	if !ok {
+		var zero T
+		return zero, fmt.Errorf("unexpected response type")
+	}
+
+	return typed, nil
+}

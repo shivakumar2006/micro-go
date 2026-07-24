@@ -8,6 +8,7 @@ import (
 	"cart/internal/middleware"
 	"cart/internal/redis"
 	"cart/internal/repository"
+	"cart/internal/resilience"
 	"cart/internal/service"
 	"context"
 	"log"
@@ -52,7 +53,11 @@ func main() {
 
 	cache := redis.NewCache(redisClient.Client)
 
-	vehicleClient := client.NewVehicleClient(cfg.Vechile.URL)
+	// retry
+	retry := resilience.NewRetry(3, 500*time.Millisecond, 5*time.Second, resilience.IsRetryable)
+	// circuit breaker
+	cb := resilience.NewCircuitBreaker()
+	vehicleClient := client.NewVehicleClient(cfg.Vechile.URL, retry, cb)
 
 	service := service.NewCartService(repo, cache, vehicleClient)
 	handler := handler.NewCartHandler(service)
