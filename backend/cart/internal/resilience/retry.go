@@ -2,6 +2,7 @@ package resilience
 
 import (
 	"errors"
+	"log/slog"
 	"time"
 )
 
@@ -32,6 +33,7 @@ func RetryDo[T any](r *Retry, fn func() (T, error)) (T, error) {
 		if err == nil {
 			return result, nil
 		}
+		slog.Warn("Retrying request", slog.Int("attempt", attempt), slog.Duration("delay", delay), slog.String("error", err.Error()))
 
 		// not retry
 		if !r.ShouldRetry(err) {
