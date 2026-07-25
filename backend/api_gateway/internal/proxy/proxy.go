@@ -37,6 +37,18 @@ func NewServiceProxy(authURL, cartURL, vehicleURL string) (*ServiceProxy, error)
 	}, nil
 }
 
+func (s *ServiceProxy) Auth(w http.ResponseWriter, r *http.Request) {
+	s.AuthProxy.ServeHTTP(w, r)
+}
+
+func (s *ServiceProxy) Cart(w http.ResponseWriter, r *http.Request) {
+	s.CartProxy.ServeHTTP(w, r)
+}
+
+func (s *ServiceProxy) Vehicle(w http.ResponseWriter, r *http.Request) {
+	s.VehicleProxy.ServeHTTP(w, r)
+}
+
 func newReverseProxy(targetURL string) (*httputil.ReverseProxy, error) {
 	target, err := url.Parse(targetURL)
 	if err != nil {
@@ -70,7 +82,7 @@ func newReverseProxy(targetURL string) (*httputil.ReverseProxy, error) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadGateway)
 		w.Write([]byte(`{
-			"error": "donwstream service unreachable",
+			"error": "downstream service unreachable",
 			"detail": "` + err.Error() + `"
 		}`))
 	}
