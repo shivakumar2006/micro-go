@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -29,6 +30,8 @@ func (c *CartRepository) AddToCart(cart *models.Cart) error {
 	`, cart.UserID, cart.VehicleId, cart.Price, cart.Quantity, cart.CreatedAt, cart.UpdatedAt)
 
 	if err != nil {
+		slog.Error("Failed to insert cart item", slog.Int("user_id", cart.UserID), slog.Int("vehicle_id", cart.VehicleId), slog.String("err", err.Error()))
+
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
@@ -54,6 +57,7 @@ func (c *CartRepository) GetUserCart(userId int) ([]models.Cart, error) {
 	`, userId)
 
 	if err != nil {
+		slog.Error("Failed to fetch user cart", slog.Int("user_id", userId), slog.String("error", err.Error()))
 		return nil, fmt.Errorf("failed to get user cart : %w", err)
 	}
 
@@ -70,6 +74,7 @@ func (c *CartRepository) GetUserCart(userId int) ([]models.Cart, error) {
 			&cartItems.CreatedAt,
 			&cartItems.UpdatedAt,
 		); err != nil {
+			slog.Error("Failed to scan cart row", slog.String("Error", err.Error()))
 			return nil, fmt.Errorf("failed to scan cart items : %w", err)
 		}
 
@@ -93,6 +98,7 @@ func (c *CartRepository) UpdateCartQuantity(cartId int, quantity int) (int, erro
 		WHERE id = $2
 	`, quantity, cartId)
 	if err != nil {
+		slog.Error("Failed to update cart quantity", slog.Int("cart_id", cartId), slog.String("error", err.Error()))
 		return 0, fmt.Errorf("failed to update cart quantity : %w", err)
 	}
 
@@ -143,6 +149,7 @@ func (c *CartRepository) DeleteCart(id int) (int, error) {
 		WHERE id = $1 AND user_id = $2
 	`, id)
 	if err != nil {
+		slog.Error("Failed to delete cart", slog.Int("cart_id", id), slog.String("error", err.Error()))
 		return 0, fmt.Errorf("failed to delete cart: %w", err)
 	}
 
@@ -173,6 +180,7 @@ func (c *CartRepository) ExistByUserAndVehicle(userId, vehicleId int) (bool, err
 	`, userId, vehicleId).Scan(&exists)
 
 	if err != nil {
+		slog.Error("Failed to check if item exists in cart", slog.Int("user_id", userId), slog.String("error", err.Error()))
 		return false, fmt.Errorf("failed to check if item exists in cart : %w", err)
 	}
 
@@ -192,6 +200,7 @@ func (c *CartRepository) CountItems(userId int) (int, error) {
 	`, userId).Scan(&count)
 
 	if err != nil {
+		slog.Error("Failed to count items in cart", slog.Int("user_id", userId), slog.String("error", err.Error()))
 		return 0, fmt.Errorf("failed to count items in cart : %w", err)
 	}
 
@@ -211,6 +220,7 @@ func (c *CartRepository) GetCartItem(userId, vehicleId int64) (*models.Cart, err
 		AND vehicle_id = $2
 	`, userId, vehicleId).Scan(&cart.ID, &cart.UserID, &cart.VehicleId, &cart.Price, &cart.Quantity, &cart.CreatedAt, &cart.UpdatedAt)
 	if err != nil {
+		slog.Error("Failed to get cart items", slog.Int64("user_id", userId), slog.Int64("vehicle_id", vehicleId), slog.String("error", err.Error()))
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("cart item not found")
 		}
@@ -232,6 +242,7 @@ func (c *CartRepository) IncrementQuantity(userId, vehicleId int64, quantity int
 		AND vehicle_id = $3
 	`, quantity, userId, vehicleId)
 	if err != nil {
+		slog.Error("Failed to increment quantity", slog.Int64("user_id", userId), slog.Int64("vehicle_id", vehicleId), slog.String("error", err.Error()))
 		return 0, fmt.Errorf("failed to increment quantity : %w", err)
 	}
 
@@ -241,6 +252,7 @@ func (c *CartRepository) IncrementQuantity(userId, vehicleId int64, quantity int
 	}
 
 	if rows == 0 {
+		slog.Warn("Failed to increment quantity", slog.Int64("user_id", userId), slog.Int64("vehicle_id", vehicleId))
 		return 0, fmt.Errorf("item is not found to increment: %w", err)
 	}
 
@@ -263,10 +275,12 @@ func (c *CartRepository) DecrementQuantity(userId, vehicleId int64) (int, error)
 	`, userId, vehicleId).Scan(&rows)
 
 	if err != nil {
+		slog.Error("Failed to decrement quantity", slog.Int64("user_id", userId), slog.Int64("vehicle_id", vehicleId), slog.String("error", err.Error()))
 		return 0, fmt.Errorf("failed to decrement quantity: %w", err)
 	}
 
 	if rows == 0 {
+		slog.Warn("Failed to decrement quantity", slog.Int64("user_id", userId), slog.Int64("vehicle_id", vehicleId))
 		return 0, fmt.Errorf("item is not found in cart to decrement: %w", err)
 	}
 
@@ -285,6 +299,7 @@ func (c *CartRepository) GetCartTotal(userId int64) (float64, error) {
 		WHERE user_id = $1
 	`, userId).Scan(&total)
 	if err != nil {
+		slog.Error("Failed to calculate cart total", slog.Int64("user_id", userId), slog.String("error", err.Error()))
 		return 0, fmt.Errorf("failed to calculate cart total: %w", err)
 	}
 
@@ -302,6 +317,7 @@ func (c *CartRepository) UpdatePrice(cartID int64, price float64) error {
 		WHERE id = $2
 	`, price, cartID)
 	if err != nil {
+		slog.Error("Failed to update price", slog.Int64("cart_id", cartID), slog.String("error", err.Error()))
 		return fmt.Errorf("failed to update price : %w", err)
 	}
 
@@ -322,6 +338,8 @@ func (r *CartRepository) GetCartItemByID(cartID int64) (*models.Cart, error) {
 		if errors.Is(sql.ErrNoRows, err) {
 			return nil, fmt.Errorf("item is not found in cart : %w", err)
 		}
+
+		slog.Error("Failed to get the cart item by their id", slog.Int64("cart_id", cartID), slog.String("error", err.Error()))
 		return nil, fmt.Errorf("failed to get the cart item by their id : %w", err)
 	}
 
