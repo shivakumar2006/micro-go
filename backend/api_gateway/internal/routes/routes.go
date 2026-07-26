@@ -22,8 +22,8 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization"},
-		ExposedHeaders:   []string{"Authorization"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Authorization", "Content-Type", "X-CSRF-Token"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
@@ -52,6 +52,36 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 			r.Get("/me", serviceProxy.Auth)
 			r.Post("/logout", serviceProxy.Auth)
 			r.Post("/logout-all", serviceProxy.Auth)
+		})
+	})
+
+	router.Route("/api/v1", func(r chi.Router) {
+		r.Group(func(r chi.Router) {
+			r.Get("/vehicles", serviceProxy.Vehicle)
+			r.Get("/vehicles/{id}", serviceProxy.Vehicle)
+		})
+
+		// protected routes
+		r.Group(func(r chi.Router) {
+			r.Use(authMiddleware.Authenticate)
+
+			r.Post("/vehicles", serviceProxy.Vehicle)
+			r.Put("/vehicles/{id}", serviceProxy.Vehicle)
+			r.Delete("/vehicles/{id}", serviceProxy.Vehicle)
+		})
+	})
+
+	router.Route("/api/v1", func(r chi.Router) {
+		r.Group(func(r chi.Router) {
+			r.Use(authMiddleware.Authenticate)
+
+			r.Post("/cart", serviceProxy.Cart)
+			r.Put("/cart/{id}", serviceProxy.Cart)
+			r.Get("/cart", serviceProxy.Cart)
+			r.Delete("/cart/{id}", serviceProxy.Cart)
+			r.Delete("/cart", serviceProxy.Cart)
+			r.Get("/cart/total", serviceProxy.Cart)
+			r.Get("/cart/count", serviceProxy.Cart)
 		})
 	})
 
