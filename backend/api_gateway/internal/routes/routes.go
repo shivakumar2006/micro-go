@@ -30,6 +30,9 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 
 	// middlewares
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
+	rateLimiter := middleware.NewRateLimiter(100, 10)
+
+	router.Use(rateLimiter.Middleware)
 
 	// health check
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
