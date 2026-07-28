@@ -41,7 +41,8 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 
 		claims, err := a.JwtManager.ValidateAccessToken(tokenString)
 		if err != nil {
-			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
+			fmt.Printf("JWT ERROR: %v\n", err)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"vehicles/internal/utils"
 
@@ -19,8 +20,8 @@ const (
 )
 
 type Claims struct {
-	UserId    string `json:"user_id"`
-	UserEmail string `json:"user_email"`
+	UserId    int    `json:"user_id"`
+	UserEmail string `json:"email"`
 	Role      string `json:"role"`
 	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
@@ -57,7 +58,8 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 
 		claims, err := parseToken(tokenString, a.JwtSecret)
 		if err != nil {
-			utils.WriteJSON(w, http.StatusUnauthorized, utils.GeneralError(fmt.Errorf("invalid or expired token")))
+			fmt.Println("JWT ERROR:", err)
+			utils.WriteJSON(w, http.StatusUnauthorized, utils.GeneralError(err))
 			return
 		}
 
@@ -71,7 +73,7 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, UserEmailIDKey, claims.UserEmail)
 		ctx = context.WithValue(ctx, RoleKey, claims.Role)
 
-		r.Header.Set("X-User-ID", claims.UserId)
+		r.Header.Set("X-User-ID", strconv.Itoa(claims.UserId))
 		r.Header.Set("X-User-Email", claims.UserEmail)
 		r.Header.Set("X-User-Role", claims.Role)
 

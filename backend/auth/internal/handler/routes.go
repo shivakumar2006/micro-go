@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"auth/internal/middleware"
 	"auth/internal/models"
+	"auth/internal/pkg"
 	"auth/internal/services"
 	"auth/internal/utils/response"
 	"encoding/json"
@@ -137,5 +139,11 @@ func (a *AuthHandler) LogoutAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *AuthHandler) GetMe(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value(middleware.UserContextKey).(*pkg.Claims)
+	if !ok {
+		response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("unauthorized")))
+		return
+	}
 
+	response.WriteJSON(w, http.StatusOK, claims)
 }

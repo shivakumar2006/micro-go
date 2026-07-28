@@ -75,13 +75,13 @@ func main() {
 
 	router.Group(func(r chi.Router) {
 		r.Use(auth.Authenticate)
-		r.With(auth.RequireRole("user")).Post("/api/v1/cart", handler.AddToCart)
-		r.With(auth.RequireRole("user")).Put("/api/v1/cart/{id}", handler.UpdateCartQuantity)
-		r.With(auth.RequireRole("user")).Get("/api/v1/cart", handler.GetUserCart)
-		r.With(auth.RequireRole("user")).Delete("/api/v1/cart/{id}", handler.DeleteCartItem)
-		r.With(auth.RequireRole("user")).Delete("/api/v1/cart", handler.DeleteCart)
-		r.With(auth.RequireRole("user")).Get("/api/v1/cart/total", handler.GetCartTotal)
-		r.With(auth.RequireRole("user")).Get("/api/v1/cart/count", handler.CountItems)
+		r.With(auth.RequireRole("customer")).Post("/api/v1/cart/add", handler.AddToCart)
+		r.With(auth.RequireRole("customer")).Put("/api/v1/cart/{id}", handler.UpdateCartQuantity)
+		r.With(auth.RequireRole("customer")).Get("/api/v1/cart", handler.GetUserCart)
+		r.With(auth.RequireRole("customer")).Delete("/api/v1/cart/{id}", handler.DeleteCartItem)
+		r.With(auth.RequireRole("customer")).Delete("/api/v1/cart", handler.DeleteCart)
+		r.With(auth.RequireRole("customer")).Get("/api/v1/cart/total", handler.GetCartTotal)
+		r.With(auth.RequireRole("customer")).Get("/api/v1/cart/count", handler.CountItems)
 	})
 
 	// server

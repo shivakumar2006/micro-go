@@ -18,7 +18,7 @@ func NewCircuitBreaker() *CircuitBreaker {
 		Name: "vehicle-service",
 
 		// how many requests are open in half open state
-		MaxRequests: 3,
+		MaxRequests: 1,
 
 		// if there is not issue until count reset
 		Interval: time.Minute,

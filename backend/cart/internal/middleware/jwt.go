@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -19,8 +20,8 @@ const (
 )
 
 type Claims struct {
-	UserID    string `json:"user_id"`
-	UserEmail string `json:"user_email"`
+	UserID    int    `json:"user_id"`
+	UserEmail string `json:"email"`
 	Role      string `json:"role"`
 	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
@@ -70,7 +71,7 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, UserEmailIDKey, claims.UserEmail)
 		ctx = context.WithValue(ctx, RoleKey, claims.Role)
 
-		r.Header.Set("X-User-ID", claims.UserID)
+		r.Header.Set("X-User-ID", strconv.Itoa(claims.UserID))
 		r.Header.Set("X-User-Email", claims.UserEmail)
 		r.Header.Set("X-Role", claims.Role)
 

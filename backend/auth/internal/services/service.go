@@ -5,6 +5,8 @@ import (
 	"auth/internal/models"
 	"auth/internal/pkg"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
@@ -80,14 +82,14 @@ func (s *AuthService) Register(ctx context.Context, req *models.RegisterRequest)
 		return nil, fmt.Errorf("failed to generate token pair : %w", err)
 	}
 
-	hashedRefreshToken, err := bcrypt.GenerateFromPassword([]byte(tokenPair.RefreshToken), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, fmt.Errorf("failed to process refresh token : %w", err)
-	}
+	// hashedRefreshToken, err := bcrypt.GenerateFromPassword([]byte(tokenPair.RefreshToken), bcrypt.DefaultCost)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to process refresh token : %w", err)
+	// }
 
 	session := &models.UserSessions{
 		UserID:           user.ID,
-		RefreshTokenHash: string(hashedRefreshToken),
+		RefreshTokenHash: HashRefreshToken(tokenPair.RefreshToken),
 		ExpiresAt:        time.Now().Add(s.RefreshExpiry),
 	}
 
@@ -96,6 +98,11 @@ func (s *AuthService) Register(ctx context.Context, req *models.RegisterRequest)
 	}
 
 	return buildAuthResponse(tokenPair, user)
+}
+
+func HashRefreshToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:])
 }
 
 func (a *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*models.AuthResponse, error) {
@@ -113,14 +120,18 @@ func (a *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*mod
 		return nil, fmt.Errorf("failed to generate token pair : %w", err)
 	}
 
-	hashedRefreshToken, err := bcrypt.GenerateFromPassword([]byte(tokenPair.RefreshToken), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, fmt.Errorf("failed to hashed refresh token : %w", err)
-	}
+	// claims, err := a.JWTManager.ValidateAccessToken(tokenPair.AccessToken)
+	// fmt.Println("SELF VALIDATION ERROR:", err)
+	// fmt.Printf("SELF CLAIMS: %+v\n", claims)
+
+	// hashedRefreshToken, err := bcrypt.GenerateFromPassword([]byte(tokenPair.RefreshToken), bcrypt.DefaultCost)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to hashed refresh token : %w", err)
+	// }
 
 	session := &models.UserSessions{
 		UserID:           user.ID,
-		RefreshTokenHash: string(hashedRefreshToken),
+		RefreshTokenHash: HashRefreshToken(tokenPair.RefreshToken),
 		ExpiresAt:        time.Now().Add(a.RefreshExpiry),
 	}
 
@@ -137,13 +148,15 @@ func (a *AuthService) Refresh(ctx context.Context, req models.RefreshRequest) (*
 		return nil, fmt.Errorf("failed to validate refresh token : %w", err)
 	}
 
-	storedToken, err := a.AuthRepo.FindRefreshToken(req.RefreshToken)
+	hashedToken := HashRefreshToken(req.RefreshToken)
+
+	storedToken, err := a.AuthRepo.FindRefreshToken(hashedToken)
 	if err != nil {
 		return nil, fmt.Errorf("refresh token not found, please login again : %w", err)
 	}
 
 	if time.Now().After(storedToken.ExpiresAt) {
-		_ = a.AuthRepo.DeleteRefreshToken(req.RefreshToken)
+		_ = a.AuthRepo.DeleteRefreshToken(hashedToken)
 		return nil, fmt.Errorf("refresh token expired")
 	}
 
@@ -161,14 +174,14 @@ func (a *AuthService) Refresh(ctx context.Context, req models.RefreshRequest) (*
 		return nil, fmt.Errorf("failed to generate token pair : %w", err)
 	}
 
-	hashedRefreshToken, err := bcrypt.GenerateFromPassword([]byte(tokenPair.RefreshToken), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, fmt.Errorf("failed to process refresh token : %w", err)
-	}
+	// hashedRefreshToken, err := bcrypt.GenerateFromPassword([]byte(tokenPair.RefreshToken), bcrypt.DefaultCost)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to process refresh token : %w", err)
+	// }
 
 	session := &models.UserSessions{
 		UserID:           user.ID,
-		RefreshTokenHash: string(hashedRefreshToken),
+		RefreshTokenHash: HashRefreshToken(tokenPair.RefreshToken),
 		ExpiresAt:        time.Now().Add(a.RefreshExpiry),
 	}
 
@@ -180,11 +193,14 @@ func (a *AuthService) Refresh(ctx context.Context, req models.RefreshRequest) (*
 }
 
 func (a *AuthService) Logout(req models.LogoutRequest) error {
-	return a.AuthRepo.DeleteRefreshToken(req.RefreshToken)
+	hashedToken := HashRefreshToken(req.RefreshToken)
+	return a.AuthRepo.DeleteRefreshToken(hashedToken)
 }
 
 func (a *AuthService) LogoutAll(req models.RefreshRequest) error {
-	token, err := a.AuthRepo.FindRefreshToken(req.RefreshToken)
+	hashedToken := HashRefreshToken(req.RefreshToken)
+
+	token, err := a.AuthRepo.FindRefreshToken(hashedToken)
 	if err != nil {
 		return err
 	}

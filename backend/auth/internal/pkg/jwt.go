@@ -88,6 +88,8 @@ func (j *JWTManager) GenerateToken(userID int, email, role string, tokenType Tok
 		},
 	}
 
+	fmt.Println("Signing Secret:", secret)
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
 }
@@ -101,31 +103,68 @@ func (j *JWTManager) ValidateRefreshToken(token string) (*Claims, error) {
 }
 
 func (j *JWTManager) ValidateToken(tokenString string, secret string, tokenType TokenType) (*Claims, error) {
+	fmt.Println("===================================")
+	fmt.Println("Incoming Token:", tokenString)
+	fmt.Println("Using Secret:", secret)
+
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{},
 		func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errors.New("unexpected signing method")
-			}
-			return ([]byte(secret)), nil
+			fmt.Println("Algorithm:", token.Method.Alg())
+			return []byte(secret), nil
 		},
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("cannot parse the token : %w", err)
+		fmt.Printf("PARSE ERROR: %#v\n", err)
+		fmt.Println("ERROR STRING:", err.Error())
+		return nil, fmt.Errorf("cannot parse token: %w", err)
 	}
 
-	// extract claims from token
+	fmt.Println("Token.Valid:", token.Valid)
+
 	claims, ok := token.Claims.(*Claims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid token")
-	}
-	if claims.TokenType != string(tokenType) {
-		return nil, errors.New("invalid token type")
+	fmt.Printf("Claims: %+v\n", claims)
+
+	if !ok {
+		fmt.Println("Claims type assertion failed")
+		return nil, errors.New("invalid claims")
 	}
 
-	if claims.ExpiresAt.Time.Before(time.Now()) {
-		return nil, errors.New("token is expired")
+	if !token.Valid {
+		fmt.Println("Token.Valid is false")
+		return nil, errors.New("invalid token")
 	}
 
 	return claims, nil
 }
+
+// func (j *JWTManager) ValidateToken(tokenString string, secret string, tokenType TokenType) (*Claims, error) {
+// 	token, err := jwt.ParseWithClaims(tokenString, &Claims{},
+// 		func(token *jwt.Token) (interface{}, error) {
+// 			fmt.Println("Using Secret:", secret)
+// 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+// 				return nil, errors.New("unexpected signing method")
+// 			}
+// 			return ([]byte(secret)), nil
+// 		},
+// 	)
+
+// 	if err != nil {
+// 		return nil, fmt.Errorf("cannot parse the token : %w", err)
+// 	}
+
+// 	// extract claims from token
+// 	claims, ok := token.Claims.(*Claims)
+// 	if !ok || !token.Valid {
+// 		return nil, errors.New("invalid token")
+// 	}
+// 	if claims.TokenType != string(tokenType) {
+// 		return nil, errors.New("invalid token type")
+// 	}
+
+// 	if claims.ExpiresAt.Time.Before(time.Now()) {
+// 		return nil, errors.New("token is expired")
+// 	}
+
+// 	return claims, nil
+// }

@@ -89,7 +89,7 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 			r.Use(authMiddleware.Authenticate)
 			r.Use(circuitBreaker.Protect("cart"))
 
-			r.Post("/cart", serviceProxy.Cart)
+			r.Post("/cart/add", serviceProxy.Cart)
 			r.Put("/cart/{id}", serviceProxy.Cart)
 			r.Get("/cart", serviceProxy.Cart)
 			r.Delete("/cart/{id}", serviceProxy.Cart)
