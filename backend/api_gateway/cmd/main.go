@@ -44,8 +44,8 @@ func main() {
 
 		log.Printf("api gateway running on port : %s", cfg.Server.Addr)
 		log.Printf("auth service : %s", cfg.Services.Auth.URL)
-		log.Printf("cart service : %s", cfg.Services.Cart.URL)
 		log.Printf("vehicle service : %s", cfg.Services.Vehicle.URL)
+		log.Printf("cart service : %s", cfg.Services.Cart.URL)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("gateway error : %v", err)
