@@ -5,6 +5,7 @@ import (
 	"api_gateway/internal/middleware"
 	"api_gateway/internal/proxy"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
@@ -31,6 +32,12 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 	// middlewares
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
 	rateLimiter := middleware.NewRateLimiter(100, 10)
+	circuitBreaker := middleware.NewCircuitBreaker(middleware.CircuitBreakerConfig{
+		FailureThreshold: 5,
+		MaxRequests:      1,
+		Interval:         time.Minute,
+		Timeout:          30 * time.Second,
+	})
 
 	router.Use(rateLimiter.Middleware)
 
@@ -42,7 +49,7 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 	})
 
 	router.Route("/api/v1/auth", func(r chi.Router) {
-		r.Group(func(r chi.Router) {
+		r.With(circuitBreaker.Protect("auth")).Group(func(r chi.Router) {
 			r.Post("/register", serviceProxy.Auth)
 			r.Post("/login", serviceProxy.Auth)
 			r.Post("/refresh", serviceProxy.Auth)
@@ -51,6 +58,7 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 		// protected routes
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware.Authenticate)
+			r.Use(circuitBreaker.Protect("auth"))
 
 			r.Get("/me", serviceProxy.Auth)
 			r.Post("/logout", serviceProxy.Auth)
@@ -59,7 +67,7 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 	})
 
 	router.Route("/api/v1", func(r chi.Router) {
-		r.Group(func(r chi.Router) {
+		r.With(circuitBreaker.Protect("vehicle")).Group(func(r chi.Router) {
 			r.Get("/vehicles", serviceProxy.Vehicle)
 			r.Get("/vehicles/{id}", serviceProxy.Vehicle)
 		})
@@ -67,6 +75,7 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 		// protected routes
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware.Authenticate)
+			r.Use(circuitBreaker.Protect("vehicle"))
 
 			r.Post("/vehicles", serviceProxy.Vehicle)
 			r.Put("/vehicles/{id}", serviceProxy.Vehicle)
@@ -77,6 +86,7 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware.Authenticate)
+			r.Use(circuitBreaker.Protect("cart"))
 
 			r.Post("/cart", serviceProxy.Cart)
 			r.Put("/cart/{id}", serviceProxy.Cart)

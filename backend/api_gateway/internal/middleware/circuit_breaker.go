@@ -1,11 +1,15 @@
 package middleware
 
 import (
+	"errors"
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/sony/gobreaker"
 )
+
+var errBackendFailure = errors.New("Backend failure")
 
 type CircuitBreakerConfig struct {
 	FailureThreshold uint32
@@ -20,14 +24,14 @@ type CircuitBreaker struct {
 	config   CircuitBreakerConfig
 }
 
-func NewCircuitBreakerConfig(cfg CircuitBreakerConfig) *CircuitBreaker {
+func NewCircuitBreaker(cfg CircuitBreakerConfig) *CircuitBreaker {
 	return &CircuitBreaker{
 		breakers: make(map[string]*gobreaker.CircuitBreaker),
 		config:   cfg,
 	}
 }
 
-func (c *CircuitBreaker) GetBreaker(serviceName string, cfg CircuitBreakerConfig) *gobreaker.CircuitBreaker {
+func (c *CircuitBreaker) GetBreaker(serviceName string) *gobreaker.CircuitBreaker {
 	// fast path (read lock)
 	c.mu.RLock()
 	breaker, exists := c.breakers[serviceName]
@@ -66,6 +70,56 @@ func (c *CircuitBreaker) GetBreaker(serviceName string, cfg CircuitBreakerConfig
 	breaker = gobreaker.NewCircuitBreaker(settings)
 	c.breakers[serviceName] = breaker
 	return breaker
+}
+
+func (c *CircuitBreaker) Protect(serviceName string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			breaker := c.GetBreaker(serviceName)
+			response := NewResponseRecorder(w)
+
+			_, err := breaker.Execute(func() (interface{}, error) {
+				next.ServeHTTP(response, r)
+
+				if response.StatusCode >= 500 {
+					return nil, errBackendFailure
+				}
+
+				return nil, nil
+			})
+
+			if err == nil {
+				return
+			}
+
+			switch {
+			case errors.Is(err, gobreaker.ErrOpenState), errors.Is(err, gobreaker.ErrTooManyRequests):
+				http.Error(w, "Service temporary unavailable", http.StatusServiceUnavailable)
+
+			case errors.Is(err, errBackendFailure):
+				return
+
+			default:
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+			}
+		})
+	}
+}
+
+type ResponseRecorder struct {
+	http.ResponseWriter
+	StatusCode int
+}
+
+func NewResponseRecorder(w http.ResponseWriter) *ResponseRecorder {
+	return &ResponseRecorder{
+		ResponseWriter: w,
+	}
+}
+
+func (r *ResponseRecorder) WriteHeader(statusCode int) {
+	r.StatusCode = statusCode
+	r.ResponseWriter.WriteHeader(statusCode)
 }
 
 func stateToString(state gobreaker.State) string {
