@@ -67,12 +67,14 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 	})
 
 	router.Route("/api/v1", func(r chi.Router) {
+
+		//  Vehicle
 		r.With(circuitBreaker.Protect("vehicle")).Group(func(r chi.Router) {
 			r.Get("/vehicles", serviceProxy.Vehicle)
 			r.Get("/vehicles/{id}", serviceProxy.Vehicle)
 		})
 
-		// protected routes
+		// Protected Vehicle
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware.Authenticate)
 			r.Use(circuitBreaker.Protect("vehicle"))
@@ -81,9 +83,8 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 			r.Put("/vehicles/{id}", serviceProxy.Vehicle)
 			r.Delete("/vehicles/{id}", serviceProxy.Vehicle)
 		})
-	})
 
-	router.Route("/api/v1", func(r chi.Router) {
+		// Cart
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware.Authenticate)
 			r.Use(circuitBreaker.Protect("cart"))

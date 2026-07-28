@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"api_gateway/internal/config"
@@ -26,7 +26,7 @@ func main() {
 	r := routes.Setup(cfg, sp)
 
 	server := &http.Server{
-		Addr:         ":" + cfg.Server.Addr,
+		Addr:         cfg.Server.Addr,
 		Handler:      r,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 20 * time.Second,
