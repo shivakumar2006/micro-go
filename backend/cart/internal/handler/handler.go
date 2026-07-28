@@ -259,16 +259,9 @@ func (c *CartHandler) CountItems(w http.ResponseWriter, r *http.Request) {
 func getUserID(r *http.Request) (int, error) {
 	slog.Info("Get user id request received", slog.String("method", r.Method), slog.String("url", r.URL.Path))
 
-	userIdStr, ok := r.Context().Value(middleware.UserIDKey).(string)
+	userID, ok := r.Context().Value(middleware.UserIDKey).(int)
 	if !ok {
-		slog.Warn("Unauthorized request", slog.String("error", "unauthorized"))
 		return 0, fmt.Errorf("unauthorized")
-	}
-
-	userID, err := strconv.Atoi(userIdStr)
-	if err != nil {
-		slog.Warn("Invalid user id", slog.String("error", err.Error()))
-		return 0, fmt.Errorf("invalid user id")
 	}
 
 	slog.Info("User id retrieved successfully", slog.Int("user_id", userID))
