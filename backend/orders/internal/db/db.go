@@ -44,6 +44,8 @@ func NewDatabase(cfg config.Config) (*Database, error) {
 			vehicle_id BIGINT NOT NULL,
 			price NUMERIC(12, 2) NOT NULL,
 			quantity INT NOT NULL,
+			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
 			CONSTRAINT fk_order
 			FOREIGN KEY (order_id)
