@@ -9,6 +9,8 @@ type Order struct {
 	TotalAmount float64   `json:"total_amount"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+
+	Items []OrderItem `json:"items"`
 }
 
 type OrderItem struct {
