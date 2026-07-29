@@ -5,4 +5,5 @@ use (
 	./backend/auth
 	./backend/vehicles
 	./backend/cart
+	./backend/orders
 )
