@@ -2,6 +2,13 @@ package models
 
 import "time"
 
+const (
+	OrderStatusPending   = "PENDING"
+	OrderStatusPaid      = "PAID"
+	OrderStatusCancelled = "CANCELLED"
+	OrderStatusDelivered = "DELIVERED"
+)
+
 type Order struct {
 	ID          int       `json:"id"`
 	UserID      int       `json:"user_id"`
