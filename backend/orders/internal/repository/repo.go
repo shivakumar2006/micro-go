@@ -186,3 +186,27 @@ func (r *Repository) GetOrdersByUserID(ctx context.Context, userID int64) ([]mod
 
 	return orders, nil
 }
+
+func (r *Repository) UpdateOrderStatus(ctx context.Context, id int64, status string) error {
+	result, err := r.DB.ExecContext(ctx, `
+		UPDATE orders
+		SET status = $2, updated_at = NOW()
+		WHERE id = $1
+	`, id, status)
+
+	if err != nil {
+		return fmt.Errorf("failed to update order status : %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return fmt.Errorf("failed to get row affected : %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("order with id %d not found", id)
+	}
+
+	return nil
+}
