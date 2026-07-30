@@ -112,3 +112,77 @@ func (r *Repository) GetOrderByID(ctx context.Context, id int64) (*models.Order,
 
 	return &order, nil
 }
+
+func (r *Repository) GetOrdersByUserID(ctx context.Context, userID int64) ([]models.Order, error) {
+	var orders []models.Order
+
+	rows, err := r.DB.QueryContext(ctx, `
+		SELECT id, user_id, total_amount, status, created_at, updated_at 
+		FROM orders 
+		WHERE user_id = $1
+	`, userID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get orders : %w", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var order models.Order
+
+		err := rows.Scan(&order.ID, &order.UserID, &order.TotalAmount, &order.Status, &order.CreatedAt, &order.UpdatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan order : %w", err)
+		}
+
+		orders = append(orders, order)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if len(orders) == 0 {
+		return orders, nil
+	}
+
+	var orderIDs []int
+	for _, order := range orders {
+		orderIDs = append(orderIDs, order.ID)
+	}
+
+	itemsRow, err := r.DB.QueryContext(ctx, `
+		SELECT id, order_id, vehicle_id, quantity, price, created_at, updated_at
+		FROM order_items
+		WHERE order_id = ANY($1)
+	`, orderIDs)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get order items : %w", err)
+	}
+
+	defer itemsRow.Close()
+
+	for itemsRow.Next() {
+		var items models.OrderItem
+
+		err := itemsRow.Scan(&items.ID, &items.OrderID, &items.VehicleID, &items.Quantity, &items.Price, &items.CreatedAt, &items.UpdatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan order items : %w", err)
+		}
+
+		for i := range orders {
+			if orders[i].ID == items.OrderID {
+				orders[i].Items = append(orders[i].Items, items)
+				break
+			}
+		}
+	}
+
+	if err := itemsRow.Err(); err != nil {
+		return nil, fmt.Errorf("failed to get order items : %w", err)
+	}
+
+	return orders, nil
+}
