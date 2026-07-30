@@ -42,7 +42,7 @@ func (r *Repository) CreateOrder(ctx context.Context, tx *sql.Tx, order *models.
 	return nil
 }
 
-func (r *Repository) CreateOrderItem(ctx context.Context, tx *sql.Tx, items []models.OrderItem) error {
+func (r *Repository) CreateOrderItems(ctx context.Context, tx *sql.Tx, items []models.OrderItem) error {
 	query := `
 		INSERT INTO order_items(order_id, vehicle_id, quantity, price, created_at, updated_at)
 		VALUES($1, $2, $3, $4, $5, $6)

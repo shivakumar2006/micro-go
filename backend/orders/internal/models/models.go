@@ -22,3 +22,14 @@ type OrderItem struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type CreateOrderRequest struct {
+	UserID int64             `json:"user_id"`
+	Items  []CreateOrderItem `json:"items"`
+}
+
+type CreateOrderItem struct {
+	VehicleID int     `json:"vehicle_id"`
+	Quantity  int     `json:"quantity"`
+	Price     float64 `json:"price"`
+}
