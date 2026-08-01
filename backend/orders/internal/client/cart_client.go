@@ -11,21 +11,26 @@ import (
 )
 
 type CartClient struct {
-	BaseURL string `json:"base_url"`
-	Client  http.Client
-	Retry   *resilience.Retry
+	BaseURL        string `json:"base_url"`
+	Client         http.Client
+	Retry          *resilience.Retry
+	CircuitBreaker *resilience.CircuitBreaker
 }
 
-func NewCartClient(baseURL string) *CartClient {
+func NewCartClient(baseURL string, retry *resilience.Retry, cb *resilience.CircuitBreaker) *CartClient {
 	return &CartClient{
-		BaseURL: baseURL,
-		Client:  http.Client{Timeout: 5 * time.Second},
+		BaseURL:        baseURL,
+		Client:         http.Client{Timeout: 5 * time.Second},
+		Retry:          retry,
+		CircuitBreaker: cb,
 	}
 }
 
 func (c *CartClient) GetCart(id int) (*models.CartResponse, error) {
-	return resilience.RetryDo(c.Retry, func() (*models.CartResponse, error) {
-		return c.doRequest(id)
+	return resilience.Execute(c.CircuitBreaker, func() (*models.CartResponse, error) {
+		return resilience.RetryDo(c.Retry, func() (*models.CartResponse, error) {
+			return c.doRequest(id)
+		})
 	})
 }
 
