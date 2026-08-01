@@ -1,16 +1,16 @@
 package main
 
 import (
-	"cart/internal/client"
-	"cart/internal/resilience"
 	"context"
 	"log"
 	"log/slog"
 	"net/http"
+	"orders/internal/client"
 	"orders/internal/config"
 	"orders/internal/db"
 	"orders/internal/handler"
 	"orders/internal/repository"
+	"orders/internal/resilience"
 	"orders/internal/services"
 	"os"
 	"os/signal"
@@ -45,10 +45,10 @@ func main() {
 	}
 
 	// retry
-	retry := resilience.NewRetry(3, 500*time.Millisecond, 5*time.Second, resilience.IsRetryable)
+	retry := resilience.NewRetry(3, 500*time.Millisecond, 5*time.Second, resilience.IsRetyrable)
 	// circuit breaker
 	cb := resilience.NewCircuitBreaker()
-	CartClient := client.NewVehicleClient(cfg.Cart.URL, retry, cb)
+	CartClient := client.NewCartClient(cfg.Cart.URL, retry, cb)
 
 	service := services.NewOrderService(*repo, CartClient)
 	handler := handler.NewOrderHandler(service)
