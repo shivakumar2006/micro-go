@@ -14,8 +14,8 @@ type Repository struct {
 	DB *sql.DB
 }
 
-func NewRepository(db *sql.DB) *Repository {
-	return &Repository{DB: db}
+func NewRepository(db *sql.DB) (*Repository, error) {
+	return &Repository{DB: db}, nil
 }
 
 func (r *Repository) BeginTx(ctx context.Context) (*sql.Tx, error) {

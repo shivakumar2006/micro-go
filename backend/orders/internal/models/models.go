@@ -31,12 +31,12 @@ type OrderItem struct {
 }
 
 type CreateOrderRequest struct {
-	UserID int64             `json:"user_id"`
-	Items  []CreateOrderItem `json:"items"`
+	UserID int64             `json:"user_id" validate:"required,min=1"`
+	Items  []CreateOrderItem `json:"items" validate:"required,min=1"`
 }
 
 type CreateOrderItem struct {
-	VehicleID int     `json:"vehicle_id"`
-	Quantity  int     `json:"quantity"`
-	Price     float64 `json:"price"`
+	VehicleID int     `json:"vehicle_id" validate:"required,min=1"`
+	Quantity  int     `json:"quantity" validate:"required,min=1"`
+	Price     float64 `json:"price" validate:"required,min=1"`
 }
