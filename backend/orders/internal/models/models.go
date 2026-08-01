@@ -40,3 +40,7 @@ type CreateOrderItem struct {
 	Quantity  int     `json:"quantity" validate:"required,min=1"`
 	Price     float64 `json:"price" validate:"required,min=1"`
 }
+
+type UpdateOrderStatusRequest struct {
+	Status string `json:"status" validate:"required,oneof=PENDING PAID CANCELLED DELIVERED"`
+}

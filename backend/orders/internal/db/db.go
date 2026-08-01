@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"orders/internal/config"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type Database struct {

@@ -1,14 +1,15 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"orders/internal/models"
 	"orders/internal/services"
 	"orders/internal/utils/response"
-	"time"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -26,8 +27,7 @@ func NewOrderHandler(orderService *services.OrderService) *OrderHandler {
 
 // POST    /orders
 func (o *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	ctx := r.Context()
 
 	var req models.CreateOrderRequest
 
@@ -48,11 +48,142 @@ func (o *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response.WriteJSON(w, http.StatusCreated, order)
+}
+
+func (o *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	order, err := o.OrderService.GetOrderByID(ctx, id)
+	if err != nil {
+		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+		return
+	}
+
 	response.WriteJSON(w, http.StatusOK, order)
 }
 
-// GET     /orders/:id
-// GET     /orders/user/:userId
+func (o *OrderHandler) GetOrdersByUserID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	userId, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	orders, err := o.OrderService.GetOrdersByUserID(ctx, userId)
+	if err != nil {
+		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, orders)
+}
+
 // PATCH   /orders/:id/status
-// PATCH   /orders/:id/cancel
+func (o *OrderHandler) UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	var req models.UpdateOrderStatusRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+		return
+	}
+
+	if err := validate.Struct(&req); err != nil {
+		validateErr := err.(validator.ValidationErrors)
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(validateErr))
+		return
+	}
+
+	if err := o.OrderService.UpdateOrderStatus(ctx, id, req.Status); err != nil {
+		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": "order status updated successfully",
+	})
+}
+
+func (o *OrderHandler) CancelOrder(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	if err := o.OrderService.CancelOrder(ctx, int64(id)); err != nil {
+		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": "order cancel successfully",
+	})
+}
+
 // PATCH   /orders/:id/pay
+func (o *OrderHandler) MarkOrderPaid(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
+		return
+	}
+
+	if err := o.OrderService.MarkOrderPaid(ctx, int64(id)); err != nil {
+		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": "order paid successfully",
+	})
+}
