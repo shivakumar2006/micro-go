@@ -1,6 +1,8 @@
 package main
 
 import (
+	"cart/internal/client"
+	"cart/internal/resilience"
 	"context"
 	"log"
 	"log/slog"
@@ -42,7 +44,13 @@ func main() {
 		log.Fatalf("failed to create repo : %v", err)
 	}
 
-	service := services.NewOrderService(*repo)
+	// retry
+	retry := resilience.NewRetry(3, 500*time.Millisecond, 5*time.Second, resilience.IsRetryable)
+	// circuit breaker
+	cb := resilience.NewCircuitBreaker()
+	CartClient := client.NewVehicleClient(cfg.Cart.URL, retry, cb)
+
+	service := services.NewOrderService(*repo, CartClient)
 	handler := handler.NewOrderHandler(service)
 
 	// routes

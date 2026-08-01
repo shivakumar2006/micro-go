@@ -4,17 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"orders/internal/client"
 	"orders/internal/models"
 	"orders/internal/repository"
 )
 
 type OrderService struct {
-	Repo repository.Repository
+	Repo       repository.Repository
+	CartClient *client.CartClient
 }
 
-func NewOrderService(repo repository.Repository) *OrderService {
+func NewOrderService(repo repository.Repository, cartClient *client.CartClient) *OrderService {
 	return &OrderService{
-		Repo: repo,
+		Repo:       repo,
+		CartClient: cartClient,
 	}
 }
 
