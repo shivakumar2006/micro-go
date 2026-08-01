@@ -44,3 +44,18 @@ type CreateOrderItem struct {
 type UpdateOrderStatusRequest struct {
 	Status string `json:"status" validate:"required,oneof=PENDING PAID CANCELLED DELIVERED"`
 }
+
+// cart service
+type CartResponse struct {
+	Status  int         `json:"cart"`
+	Message string      `json:"message"`
+	Data    []CartItems `json:"data"`
+}
+
+type CartItems struct {
+	ID        int     `json:"id"`
+	UserID    int     `json:"user_id"`
+	VehicleID int     `json:"vehicle_id"`
+	Price     float64 `json:"price"`
+	Quantity  int     `json:"quantity"`
+}
