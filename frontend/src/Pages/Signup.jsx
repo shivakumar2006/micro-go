@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
+import { useRegisterMutation } from '../Redux/features/auth/authApi';
+import { useDispatch } from 'react-redux';
+import { setTokens } from '../Redux/features/auth/authSlice';
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -139,14 +142,38 @@ function AuthFlow() {
 // ---------------------------------------------------------------------------
 
 export default function SignUp() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [role, setRole] = useState("customer");
+
   const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(false)
   const navigate = useNavigate();
 
+  const [register, { isLoading }] = useRegisterMutation();
+  
+  const dispatch = useDispatch();
+
   const emailValid = /\S+@\S+\.\S+/.test(email)
   const canSubmit = emailValid && password.length > 0
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    try{
+        const res = await register({name, email, password, role}).unwrap();
+
+        dispatch(setTokens({
+            accessToken: res.access_token,
+            refreshToken: res.refresh_token,
+        }));
+
+        navigate("/");
+    } catch(err) {
+        console.error("Error during registration:", err);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white FleetOps-body text-[#0B0E14] lg:flex">
