@@ -9,6 +9,7 @@ import (
 	"orders/internal/config"
 	"orders/internal/db"
 	"orders/internal/handler"
+	"orders/internal/middleware"
 	"orders/internal/repository"
 	"orders/internal/resilience"
 	"orders/internal/services"
@@ -68,13 +69,16 @@ func main() {
 		w.Write([]byte(`{"status": "ok", "service": "order_service"}`))
 	})
 
+	auth := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
+
 	router.Group(func(r chi.Router) {
-		r.Post("/api/v1/orders", handler.CreateOrder)
-		r.Get("/api/v1/orders/{id}", handler.GetOrderByID)
-		r.Get("/api/v1/orders/{userId}", handler.GetOrdersByUserID)
-		r.Patch("/api/v1/orders/{id}/status", handler.UpdateOrderStatus)
-		r.Patch("/api/v1/orders/{id}/cancel", handler.CancelOrder)
-		r.Patch("/api/v1/orders/{id}/pay", handler.MarkOrderPaid)
+		r.Use(auth.Authenticate)
+		r.With(auth.RequireRole("customer")).Post("/api/v1/orders", handler.CreateOrder)
+		r.With(auth.RequireRole("customer")).Get("/api/v1/orders/{id}", handler.GetOrderByID)
+		r.With(auth.RequireRole("customer")).Get("/api/v1/orders/{userId}", handler.GetOrdersByUserID)
+		r.With(auth.RequireRole("customer")).Patch("/api/v1/orders/{id}/status", handler.UpdateOrderStatus)
+		r.With(auth.RequireRole("customer")).Patch("/api/v1/orders/{id}/cancel", handler.CancelOrder)
+		r.With(auth.RequireRole("customer")).Patch("/api/v1/orders/{id}/pay", handler.MarkOrderPaid)
 	})
 
 	//server
