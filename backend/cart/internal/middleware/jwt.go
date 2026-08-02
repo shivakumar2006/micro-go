@@ -29,7 +29,7 @@ type Claims struct {
 
 type AuthMiddleware struct {
 	AccessSecret  string `json:"access-secret"`
-	RefreshSecret string `json:"refresh-token"`
+	RefreshSecret string `json:"refresh-secret"`
 }
 
 func NewAuthMiddleware(as, rs string) *AuthMiddleware {
