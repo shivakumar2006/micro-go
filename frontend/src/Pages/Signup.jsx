@@ -2,29 +2,6 @@ import { useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 
-/*
-  FleetOps — sign up
-  ------------------------------------------------------------------
-  Same design system as the marketing home page (see Home.jsx for the
-  full token notes) — paper/panel/ink/muted/signal/steel/go-cyan,
-  Space Grotesk + Manrope + IBM Plex Mono. Signal orange stays reserved
-  for the one primary action per screen (the submit button), same rule
-  as the homepage CTAs.
-
-  Signature here is a small, quieter cousin of the homepage's request-
-  flow diagram: a 4-stage vertical rail on the dark panel showing where
-  a login actually goes (client → gateway → services → session logged),
-  with the same traveling "signal" dot. Everything else on this page is
-  intentionally plain — it's a form, not a pitch.
-
-  Self-contained file: drop into a project that already has Tailwind +
-  these three Google Fonts loaded (or keep the <style> import below).
-*/
-
-// ---------------------------------------------------------------------------
-// Icon primitives
-// ---------------------------------------------------------------------------
-
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"

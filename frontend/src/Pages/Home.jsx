@@ -1,43 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-/*
-  FleetOps — marketing home page
-  ------------------------------------------------------------------
-  Design notes (kept here on purpose — future edits should read this first):
-
-  Palette
-    paper   #FFFFFF   page background
-    panel   #F3F5F8   cool light gray-blue for alternating sections (not cream)
-    ink     #0B0E14   primary text / dark footer panel
-    muted   #5B6472   secondary text
-    signal  #FF5A1F   the one accent color — used for CTAs, live-pulse dots,
-                       and small underline marks. "Signal" as in telemetry
-                       signal / hazard-vehicle orange. Used sparingly.
-    steel   #35455C   structural color for the architecture diagram's rails
-    go-cyan #00ADD8   tiny badge only, referencing the Go runtime each
-                       service is built on
-
-  Type
-    display : Space Grotesk (headline, section titles)
-    body    : Manrope (paragraphs, nav, buttons)
-    mono    : IBM Plex Mono (eyebrows, badges, architecture labels — reads
-              like config/log output, which fits an infra product)
-
-  Signature
-    The request-flow diagram is the one bold, animated moment on the page:
-    small "signal" dots travel down the real rails a request takes through
-    the system (client → LB → gateway → services → Kafka → consumers).
-    Everything else on the page stays quiet so that moment lands.
-
-  All custom classes are prefixed `FleetOps-` so this file is safe to drop
-  into a project that already has its own global styles.
-*/
-
-// ---------------------------------------------------------------------------
-// Icon primitives — plain monoline SVGs, no external icon package required
-// ---------------------------------------------------------------------------
-
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
