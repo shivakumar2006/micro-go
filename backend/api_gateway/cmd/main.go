@@ -18,7 +18,7 @@ func main() {
 	cfg := config.LoadConfig()
 
 	// service proxy
-	sp, err := proxy.NewServiceProxy(cfg.Services.Auth.URL, cfg.Services.Cart.URL, cfg.Services.Vehicle.URL)
+	sp, err := proxy.NewServiceProxy(cfg.Services.Auth.URL, cfg.Services.Cart.URL, cfg.Services.Vehicle.URL, cfg.Services.Orders.URL)
 	if err != nil {
 		log.Printf("Failed to setup proxies : %v", err)
 	}
@@ -42,10 +42,11 @@ func main() {
 	go func() {
 		slog.Info("HTTP server listening.....")
 
-		log.Printf("api gateway running on port : %s", cfg.Server.Addr)
-		log.Printf("auth service : %s", cfg.Services.Auth.URL)
-		log.Printf("vehicle service : %s", cfg.Services.Vehicle.URL)
-		log.Printf("cart service : %s", cfg.Services.Cart.URL)
+		log.Printf("🌐 api gateway running on port : %s", cfg.Server.Addr)
+		log.Printf("🔑 auth service : %s", cfg.Services.Auth.URL)
+		log.Printf("🚗 vehicle service : %s", cfg.Services.Vehicle.URL)
+		log.Printf("🛒 cart service : %s", cfg.Services.Cart.URL)
+		log.Printf("📦 order service : %s", cfg.Services.Orders.URL)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("gateway error : %v", err)

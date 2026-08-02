@@ -16,6 +16,7 @@ type ServicesConfig struct {
 	Auth    Service `yaml:"auth"`
 	Vehicle Service `yaml:"vehicle"`
 	Cart    Service `yaml:"cart"`
+	Orders  Service `yaml:"orders"`
 }
 
 type Service struct {

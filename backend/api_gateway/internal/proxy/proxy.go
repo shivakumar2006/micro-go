@@ -12,9 +12,10 @@ type ServiceProxy struct {
 	AuthProxy    *httputil.ReverseProxy
 	CartProxy    *httputil.ReverseProxy
 	VehicleProxy *httputil.ReverseProxy
+	OrderProxy   *httputil.ReverseProxy
 }
 
-func NewServiceProxy(authURL, cartURL, vehicleURL string) (*ServiceProxy, error) {
+func NewServiceProxy(authURL, cartURL, vehicleURL, orderURL string) (*ServiceProxy, error) {
 	authProxy, err := newReverseProxy(authURL)
 	if err != nil {
 		return nil, err
@@ -30,10 +31,16 @@ func NewServiceProxy(authURL, cartURL, vehicleURL string) (*ServiceProxy, error)
 		return nil, err
 	}
 
+	orderProxy, err := newReverseProxy(orderURL)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ServiceProxy{
 		AuthProxy:    authProxy,
 		CartProxy:    cartProxy,
 		VehicleProxy: vehicleProxy,
+		OrderProxy:   orderProxy,
 	}, nil
 }
 
@@ -47,6 +54,10 @@ func (s *ServiceProxy) Cart(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServiceProxy) Vehicle(w http.ResponseWriter, r *http.Request) {
 	s.VehicleProxy.ServeHTTP(w, r)
+}
+
+func (s *ServiceProxy) Orders(w http.ResponseWriter, r *http.Request) {
+	s.OrderProxy.ServeHTTP(w, r)
 }
 
 func newReverseProxy(targetURL string) (*httputil.ReverseProxy, error) {

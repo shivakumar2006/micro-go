@@ -97,6 +97,19 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 			r.Get("/cart/total", serviceProxy.Cart)
 			r.Get("/cart/count", serviceProxy.Cart)
 		})
+
+		// orders
+		r.Group(func(r chi.Router) {
+			r.Use(authMiddleware.Authenticate)
+			r.With(circuitBreaker.Protect("orders")).Group(func(r chi.Router) {
+				r.Post("/orders", serviceProxy.Orders)
+				r.Get("/orders/{id}", serviceProxy.Orders)
+				r.Get("/orders/{userId}", serviceProxy.Orders)
+				r.Patch("/orders/{id}/status", serviceProxy.Orders)
+				r.Patch("/orders/{id}/cancel", serviceProxy.Orders)
+				r.Patch("/orders/{id}/pay", serviceProxy.Orders)
+			})
+		})
 	})
 
 	return router
