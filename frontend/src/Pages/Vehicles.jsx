@@ -9,4 +9,4 @@ const Vehicles = () => {
   )
 }
 
-export default Vehicles
+export default Vehicles;

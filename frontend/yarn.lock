@@ -1120,6 +1120,11 @@ react-dom@^19.2.7:
   dependencies:
     scheduler "^0.27.0"
 
+react-icons@^5.7.0:
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/react-icons/-/react-icons-5.7.0.tgz#8969db00968ffdfc57fdc2ec9dd1ed88e35b3de9"
+  integrity sha512-LBLy340Rzqy6+/yVhZKT3B/QpP1BZaesGqasf09HPOBzRarcDIFH0WwXlXQfE7q7ipxK4MSiC5DIBWURCny6fw==
+
 react-router-dom@^7.18.1:
   version "7.18.1"
   resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-7.18.1.tgz#0d1b138e291393059ad481c3e10e366385a978a4"
