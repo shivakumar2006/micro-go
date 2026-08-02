@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 /*
-  FleetOps — sign in
+  FleetOps — sign up
   ------------------------------------------------------------------
   Same design system as the marketing home page (see Home.jsx for the
   full token notes) — paper/panel/ink/muted/signal/steel/go-cyan,
@@ -161,7 +161,7 @@ function AuthFlow() {
 // Page
 // ---------------------------------------------------------------------------
 
-export default function SignIn() {
+export default function SignUp() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -241,16 +241,16 @@ export default function SignIn() {
           <a
             className="FleetOps-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14]"
           >
-            New here? <span onClick={() => navigate("/register")} className="font-semibold text-[#0B0E14] cursor-pointer">Create an account</span>
+            Already have an account? <span onClick={() => navigate("/login")} className="font-semibold text-[#0B0E14] cursor-pointer">Sign in</span>
           </a>
         </header>
 
         <main className="flex flex-1 items-center justify-center px-6 pb-16">
           <div className="w-full max-w-[420px]">
             <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-10">
-              <span className="FleetOps-mono text-[11px] tracking-wide text-[#5B6472]">sign in</span>
+              <span className="FleetOps-mono text-[11px] tracking-wide text-[#5B6472]">sign up</span>
               <h2 className="mt-2 FleetOps-display text-2xl font-semibold tracking-tight text-[#0B0E14]">
-                Sign in to FleetOps
+                Sign up to FleetOps
               </h2>
               <p className="mt-2 FleetOps-body text-[14px] text-[#5B6472]">
                 Enter your credentials to access the dashboard.
@@ -287,6 +287,15 @@ export default function SignIn() {
                   }
                 />
 
+                <div className='flex flex-col items-start justify-between'>
+                  <p className='text-gray-500 text-sm py-2'>Select Role</p>
+                  <select className='w-full h-8 border border-gray-300 rounded-lg text-gray-500 text-sm px-2 py-1'>
+                    <option value="">Select Role</option>
+                    <option value="customer">Customer</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 FleetOps-body text-[13px] text-[#5B6472]">
                     <input
@@ -310,7 +319,7 @@ export default function SignIn() {
                   disabled={!canSubmit}
                   className="group flex w-full items-center justify-center gap-2 rounded-full bg-[#FF5A1F] px-6 py-3.5 FleetOps-body text-[14.5px] font-semibold text-white shadow-[0_12px_24px_-8px_rgba(255,90,31,0.55)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0"
                 >
-                  Sign in
+                  Sign up
                   <Icon path={icons.arrowRight} className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
               </form>
