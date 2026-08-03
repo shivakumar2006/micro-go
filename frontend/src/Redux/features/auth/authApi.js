@@ -3,10 +3,10 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const authApi = createApi({
     reducerPath: "AuthApi",
     baseQuery: fetchBaseQuery({
-        baseURL: "http://localhost:8000/api/v1/auth",
+        baseUrl: "http://localhost:8000/api/v1/auth",
 
         prepareHeaders: (headers, {getState}) => {
-            const { accessToken, refreshToken } = getState().auth;
+            const { accessToken, refreshToken } = getState().authReducer;
             if (accessToken) {
                 headers.set("Authorization", `Bearer ${accessToken}`)
             }
