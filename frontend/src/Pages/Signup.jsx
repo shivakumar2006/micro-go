@@ -54,6 +54,12 @@ const icons = {
       <path d="M14 6l6 6-6 6" />
     </>
   ),
+  person: (
+  <>
+    <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" />
+    <path d="M4 20a8 8 0 0 1 16 0" />
+  </>
+),
 }
 
 const NodeIcon = (name, className) => <Icon path={icons[name]} className={className} />
@@ -146,7 +152,6 @@ export default function SignUp() {
   const [role, setRole] = useState("customer");
 
   const [showPassword, setShowPassword] = useState(false)
-  const [remember, setRemember] = useState(false)
   const navigate = useNavigate();
 
   const [register, { isLoading }] = useRegisterMutation();
@@ -154,6 +159,10 @@ export default function SignUp() {
   const dispatch = useDispatch();
 
   const emailValid = /\S+@\S+\.\S+/.test(email)
+  const passwordError =
+  password.length > 0 && password.length < 8
+    ? "Password must be at least 8 characters."
+    : "";
   const canSubmit = name.trim() && emailValid && password.length >= 8 && role;
 
   const handleRegister = async (e) => {
@@ -320,13 +329,18 @@ export default function SignUp() {
                     </button>
                   }
                 />
+                {passwordError && (
+                    <p className="mt-2 text-sm text-red-500">
+                        {passwordError}
+                    </p>
+                )}
 
                 <div className='flex flex-col items-start justify-between'>
                   <p className='text-gray-500 text-sm py-2'>Select Role</p>
                   <select 
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className='w-full h-8 border border-gray-300 rounded-lg text-gray-500 text-sm px-2 py-1'>
+                    className="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm text-gray-500 focus:outline-none focus:ring-0 focus:border-[#0B0E14]">
                     <option value="customer">Customer</option>
                     <option value="admin">Admin</option>
                   </select>
@@ -361,9 +375,6 @@ export default function SignUp() {
                 type="button"
                 className="flex w-full items-center justify-center gap-2.5 rounded-full border border-slate-200 bg-white px-6 py-3.5 FleetOps-body text-[14px] font-semibold text-[#0B0E14] transition-colors hover:bg-[#F3F5F8]"
               >
-                {/* <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden="true">
-                  <path d={GOOGLE_PATH} />
-                </svg> */}
             
                 <FcGoogle className='text-2xl'/>
                 Continue with Google
