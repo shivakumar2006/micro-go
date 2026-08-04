@@ -19,15 +19,15 @@ export const vehicleApi = createApi({
     }),
 
     endpoints: (builder) => ({
-        getAllVehicles: builder.mutation({
-            query: () => ({
+        getAllVehicles: builder.query({
+            query: (params) => ({
                 url: "/vehicles",
                 methods: "GET",
-
+                params,
             }),
         }),
 
-        getVehicleById: builder.mutation({
+        getVehicleById: builder.query({
             query: (id) => ({
                 url: `/vehicles/${id}`,
                 methods: "GET"
@@ -36,4 +36,4 @@ export const vehicleApi = createApi({
     })
 })
 
-export const { useGetAllVehiclesMutation, useGetVehicleByIdMutation } = vehicleApi;
+export const { useGetAllVehiclesQuery, useGetVehicleByIdQuery } = vehicleApi;
