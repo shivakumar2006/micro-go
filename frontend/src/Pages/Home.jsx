@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -210,84 +208,6 @@ function FanOut({ count, insetPct }) {
         ))}
       </div>
     </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Nav
-// ---------------------------------------------------------------------------
-
-function Nav() {
-  const [open, setOpen] = useState(false)
-  const links = [
-    { label: 'Product', href: '/vehicles' },
-    { label: 'Architecture', href: '#architecture' },
-    { label: 'Docs', href: '#' },
-  ]
-  const navigate = useNavigate();
-
-  return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <a href="#top" className="flex items-center gap-2.5">
-          <span className="relative flex h-7 w-7 items-center justify-center">
-            <span className="absolute inset-0 rotate-45 rounded-[7px] bg-[#0B0E14]" />
-            <span className="relative h-1.5 w-1.5 rounded-full bg-[#FF5A1F]" />
-          </span>
-          <span className="FleetOps-display text-[17px] font-semibold tracking-tight text-[#0B0E14]">
-            FleetOps
-          </span>
-        </a>
-
-        <nav className="hidden items-center gap-8 md:flex">
-          {links.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="FleetOps-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14]"
-            >
-              {l.label}
-            </a>
-          ))}
-        </nav>
-
-        <div className="hidden items-center gap-3 md:flex cursor-pointer">
-          <a
-            onClick={() => navigate("/login")}
-            className="FleetOps-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14]"
-          >
-            Sign in
-          </a>
-          <a
-            onClick={() => navigate("/login")}
-            className="rounded-full bg-[#0B0E14] px-4 py-2 FleetOps-body text-[13.5px] font-medium text-white transition-colors hover:bg-[#1a2030]"
-          >
-            Request access
-          </a>
-        </div>
-
-        <button
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-[#0B0E14] md:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          <Icon path={open ? icons.close : icons.menu} className="h-5 w-5" />
-        </button>
-      </div>
-
-      {open && (
-        <div className="flex flex-col gap-1 border-t border-slate-200 bg-white px-6 py-4 md:hidden">
-          {links.map((l) => (
-            <a key={l.label} href={l.href} className="py-2 FleetOps-body text-sm text-[#0B0E14]">
-              {l.label}
-            </a>
-          ))}
-          <a href="#cta" className="mt-2 rounded-full bg-[#0B0E14] px-4 py-2.5 text-center FleetOps-body text-sm font-medium text-white">
-            Request access
-          </a>
-        </div>
-      )}
-    </header>
   )
 }
 
@@ -899,8 +819,6 @@ export default function Home() {
           }
         }
       `}</style>
-
-      <Nav />
       <main>
         <Hero />
         <Features />
