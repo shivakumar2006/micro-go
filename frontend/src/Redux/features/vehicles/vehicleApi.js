@@ -5,17 +5,20 @@ export const vehicleApi = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: "http://localhost:8000/api/v1",
 
-        prepareHeaders: (headers, {getState}) => {
-            const { accessToken, refreshToken } = getState.authReducer;
+        prepareHeaders: (headers, { getState }) => {
 
-            if (accessToken) {
-                headers.set("Authorization", `Bearer ${accessToken}`)
+            const auth = getState().authReducer;
+                
+            if (auth?.accessToken) {
+                headers.set("Authorization", `Bearer ${auth.accessToken}`);
             }
-            if (refreshToken) {
-                headers.set("Refresh-Token", `${refreshToken}`)
+        
+            if (auth?.refreshToken) {
+                headers.set("Refresh-Token", auth.refreshToken);
             }
+        
             return headers;
-        }
+        },
     }),
 
     endpoints: (builder) => ({

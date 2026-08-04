@@ -94,10 +94,10 @@ func (v *VehicleRepository) GetAllVehicles(query models.VehicleQuery) ([]models.
 	if query.Search != "" {
 		searchCondition := fmt.Sprintf(`
 			AND (
-				LOWER(name) LIKE LOWER($%d)
-				LOWER(model) LIKE LOWER($%d)
-				LOWER(type) LIKE LOWER($%d)
-				LOWER(category) LIKE LOWER($%d)
+			    LOWER(name) LIKE LOWER($%d)
+			    OR LOWER(model) LIKE LOWER($%d)
+			    OR LOWER(type) LIKE LOWER($%d)
+			    OR LOWER(category) LIKE LOWER($%d)
 			)
 		`, argPos, argPos, argPos, argPos)
 
@@ -136,12 +136,20 @@ func (v *VehicleRepository) GetAllVehicles(query models.VehicleQuery) ([]models.
 	}
 
 	// sort
-	builder.WriteString(fmt.Sprintf("ORDER BY %s %s", query.SortBy, strings.ToUpper(query.Order)))
+	builder.WriteString(fmt.Sprintf(
+		" ORDER BY %s %s ",
+		query.SortBy,
+		strings.ToUpper(query.Order),
+	))
 
 	// pagination
 	offset := (query.Page - 1) * query.Limit
 
-	builder.WriteString(fmt.Sprintf("LIMIT $%d OFFSET $%d", argPos, argPos+1))
+	builder.WriteString(fmt.Sprintf(
+		" LIMIT $%d OFFSET $%d",
+		argPos,
+		argPos+1,
+	))
 
 	args = append(args, query.Limit, offset)
 

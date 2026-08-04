@@ -71,15 +71,15 @@ export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const links = [
-    { key: 'vehicles', label: 'Vehicles', href: '#' },
-    { key: 'orders', label: 'Orders', href: '#' },
+    { key: 'vehicles', label: 'Vehicles' },
+    { key: 'orders', label: 'Orders' },
   ]
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <div className="flex items-center gap-8">
-          <a href="#top" className="flex items-center gap-2.5">
+          <a href="/" className="flex items-center gap-2.5">
             <span className="relative flex h-7 w-7 items-center justify-center">
               <span className="absolute inset-0 rotate-45 rounded-[7px] bg-[#0B0E14]" />
               <span className="relative h-1.5 w-1.5 rounded-full bg-[#FF5A1F]" />
@@ -89,7 +89,7 @@ export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }
             </span>
           </a>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1 md:flex cursor-pointer">
             {links.map((l) => (
               <a
                 key={l.key}

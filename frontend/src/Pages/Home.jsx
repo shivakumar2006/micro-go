@@ -220,7 +220,7 @@ function FanOut({ count, insetPct }) {
 function Nav() {
   const [open, setOpen] = useState(false)
   const links = [
-    { label: 'Product', href: '#product' },
+    { label: 'Product', href: '/vehicles' },
     { label: 'Architecture', href: '#architecture' },
     { label: 'Docs', href: '#' },
   ]
