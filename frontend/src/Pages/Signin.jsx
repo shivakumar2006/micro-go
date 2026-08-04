@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from 'react-router-dom';
+import { useLoginMutation } from '../Redux/features/auth/authApi';
+import { useDispatch } from 'react-redux';
+import { Bounce, toast } from 'react-toastify';
+import { setTokens } from '../Redux/features/auth/authSlice';
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -145,8 +149,56 @@ export default function SignIn() {
   const [remember, setRemember] = useState(false)
   const navigate = useNavigate();
 
+  const dispatch = useDispatch();
+
+  const [login, { isLoading }] = useLoginMutation();
+
   const emailValid = /\S+@\S+\.\S+/.test(email)
-  const canSubmit = emailValid && password.length > 0
+  const passwordError =
+  password.length > 0 && password.length < 8
+    ? "Password must be at least 8 characters."
+    : "";
+  const canSubmit = emailValid && password.length >= 8
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+        const res = await login({email, password}).unwrap();
+
+        dispatch(setTokens({
+            accessToken: res.access_token,
+            refreshToken: res.refresh_token,
+        }));
+
+        navigate("/vehicles")
+        toast.success('User Login successfully 🎉', {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+        });
+
+    } catch(err) {
+        console.error("Error during registration:", err);
+        toast.error('Failed to login user 😞', {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+        });
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white FleetOps-body text-[#0B0E14] lg:flex">
@@ -233,7 +285,7 @@ export default function SignIn() {
                 Enter your credentials to access the dashboard.
               </p>
 
-              <form className="mt-8 space-y-5" onSubmit={(e) => e.preventDefault()}>
+              <form className="mt-8 space-y-5" onSubmit={handleLogin}>
                 <FieldInput
                   label="Email address"
                   type="email"
@@ -263,6 +315,11 @@ export default function SignIn() {
                     </button>
                   }
                 />
+                {passwordError && (
+                    <p className="mt-2 text-sm text-red-500">
+                        {passwordError}
+                    </p>
+                )}
 
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 FleetOps-body text-[13px] text-[#5B6472]">
@@ -284,10 +341,10 @@ export default function SignIn() {
 
                 <button
                   type="submit"
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || isLoading}
                   className="group flex w-full items-center justify-center gap-2 rounded-full bg-[#FF5A1F] px-6 py-3.5 FleetOps-body text-[14.5px] font-semibold text-white shadow-[0_12px_24px_-8px_rgba(255,90,31,0.55)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0"
                 >
-                  Sign in
+                  {isLoading ? "Signing in..." : "Sign in"}
                   <Icon path={icons.arrowRight} className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
               </form>
