@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import { useGetVehicleByIdQuery } from "../Redux/features/vehicles/vehicleApi";
 
 const Icon = ({ path, className = "w-5 h-5" }) => (
   <svg
@@ -142,12 +140,6 @@ export default function VehicleCard({ vehicle, onClick }) {
   const typeKey = vehicle.type?.toLowerCase();
   const typeIcon = icons[typeKey] ? typeKey : "car";
   const stockPercentage = Math.min(vehicle.stock, 100);
-
-  const {id} = useParams();
-
-  const {data, isLoading, error} = useGetVehicleByIdQuery(id);
-
-  console.log("vehicle by id data : ", data);
 
   return (
     <div

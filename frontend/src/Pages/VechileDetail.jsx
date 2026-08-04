@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useGetVehicleByIdQuery } from '../Redux/features/vehicles/vehicleApi';
+import { useNavigate } from 'react-router-dom';
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -61,17 +64,6 @@ const icons = {
 const NodeIcon = (name, className) => <Icon path={icons[name]} className={className} />
 
 // sample payload — replace with the real fetch result for /vehicles/:id
-const sampleVehicle = {
-  name: 'Fortuner',
-  model: 'GR Sport',
-  price: 4899999,
-  brand: 'Toyota',
-  stock: 15,
-  description: 'Toyota Fortuner GR Sport 4x4 Automatic Diesel',
-  image_url: 'https://example.com/images/fortuner.jpg',
-  type: 'SUV',
-  category: 'Premium',
-}
 
 function formatPrice(amount) {
   return new Intl.NumberFormat('en-IN', {
@@ -120,9 +112,43 @@ function VehicleImage({ src, alt }) {
   )
 }
 
-export default function VehicleDetail({ vehicle = sampleVehicle }) {
-  const { name, model, price, brand, stock, description, image_url, type, category } = vehicle
+export default function VehicleDetail() {
+  const {id} = useParams();
+  const navigate = useNavigate();
+
+  const {data, isLoading, error} = useGetVehicleByIdQuery(id);
+
+  const vehicle = data;
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (error) {
+    return <div>Error loading vehicle</div>;
+  }
+  
+  if (!vehicle) {
+      return <div>No vehicle found</div>;
+  }
+
+  const {
+    name,
+    brand,
+    model,
+    stock,
+    price,
+    description,
+    image_url,
+    category,
+    type,
+    createdAt,
+} = vehicle;
+
+
   const stockInfo = stockMeta(stock)
+
+  console.log("vehicle by id data : ", data);
 
   return (
     <div className="min-h-screen bg-[#F3F5F8] fleetos-body text-[#0B0E14]">
@@ -135,7 +161,7 @@ export default function VehicleDetail({ vehicle = sampleVehicle }) {
 
       <main className="mx-auto max-w-6xl px-6 py-10">
         <a
-          href="#"
+          onClick={() => navigate("/vehicles")}
           className="inline-flex items-center gap-1.5 fleetos-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14]"
         >
           {NodeIcon('arrowLeft', 'h-4 w-4')}
@@ -182,7 +208,7 @@ export default function VehicleDetail({ vehicle = sampleVehicle }) {
               {stockInfo.label}
             </span>
 
-            <p className="mt-6 fleetos-body text-[14.5px] leading-relaxed text-[#5B6472]">{description}</p>
+            <p className="mt-6 fleetos-body text-[14.5px] leading-relaxed text-[#5B6472]">{description || "no description available"}</p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <button
@@ -193,7 +219,7 @@ export default function VehicleDetail({ vehicle = sampleVehicle }) {
                 Add to fleet
               </button>
               <a
-                href="#"
+                onClick={() => navigate("/vehicles")}
                 className="rounded-full border border-slate-200 bg-white px-6 py-3 fleetos-body text-[14px] font-semibold text-[#0B0E14] transition-colors hover:bg-[#F3F5F8]"
               >
                 Back to vehicles
@@ -208,6 +234,10 @@ export default function VehicleDetail({ vehicle = sampleVehicle }) {
               <SpecRow label="Category" value={category} />
               <SpecRow label="Stock" value={`${stock} units`} />
               <SpecRow label="Price" value={formatPrice(price)} />
+              <SpecRow
+                  label="Created"
+                  value={new Date(createdAt).toLocaleDateString()}
+              />
             </div>
           </div>
         </div>
