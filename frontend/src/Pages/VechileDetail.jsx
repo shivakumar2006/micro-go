@@ -82,8 +82,8 @@ function stockMeta(stock) {
 function SpecRow({ label, value }) {
   return (
     <div className="flex items-center justify-between border-b border-slate-100 py-3 last:border-0">
-      <span className="fleetos-mono text-[11px] uppercase tracking-wide text-[#5B6472]">{label}</span>
-      <span className="fleetos-body text-[13.5px] font-medium text-[#0B0E14]">{value}</span>
+      <span className="FleetOps-mono text-[11px] uppercase tracking-wide text-[#5B6472]">{label}</span>
+      <span className="FleetOps-body text-[13.5px] font-medium text-[#0B0E14]">{value}</span>
     </div>
   )
 }
@@ -95,7 +95,7 @@ function VehicleImage({ src, alt }) {
     return (
       <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-[28px] border border-slate-200 bg-[#F3F5F8] text-[#5B6472]">
         {NodeIcon('image', 'h-8 w-8')}
-        <span className="fleetos-mono text-[11px]">No image available</span>
+        <span className="FleetOps-mono text-[11px]">No image available</span>
       </div>
     )
   }
@@ -151,18 +151,18 @@ export default function VehicleDetail() {
   console.log("vehicle by id data : ", data);
 
   return (
-    <div className="min-h-screen bg-[#F3F5F8] fleetos-body text-[#0B0E14]">
+    <div className="min-h-screen bg-[#F3F5F8] FleetOps-body text-[#0B0E14]">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-        .fleetos-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
-        .fleetos-body { font-family: 'Manrope', ui-sans-serif, sans-serif; }
-        .fleetos-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+        .FleetOps-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+        .FleetOps-body { font-family: 'Manrope', ui-sans-serif, sans-serif; }
+        .FleetOps-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
       `}</style>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
         <a
           onClick={() => navigate("/vehicles")}
-          className="inline-flex items-center gap-1.5 fleetos-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14]"
+          className="inline-flex items-center gap-1.5 FleetOps-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14]"
         >
           {NodeIcon('arrowLeft', 'h-4 w-4')}
           Back to vehicles
@@ -177,50 +177,50 @@ export default function VehicleDetail() {
           {/* info */}
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 fleetos-mono text-[10.5px] tracking-wide text-[#5B6472]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 FleetOps-mono text-[10.5px] tracking-wide text-[#5B6472]">
                 {NodeIcon('building', 'h-3.5 w-3.5')}
                 {brand}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 fleetos-mono text-[10.5px] tracking-wide text-[#5B6472]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 FleetOps-mono text-[10.5px] tracking-wide text-[#5B6472]">
                 {NodeIcon('layers', 'h-3.5 w-3.5')}
                 {type}
               </span>
               {category && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#35455C]/25 bg-[#35455C]/[0.06] px-3 py-1 fleetos-mono text-[10.5px] tracking-wide text-[#35455C]">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#35455C]/25 bg-[#35455C]/[0.06] px-3 py-1 FleetOps-mono text-[10.5px] tracking-wide text-[#35455C]">
                   {NodeIcon('star', 'h-3.5 w-3.5')}
                   {category}
                 </span>
               )}
             </div>
 
-            <h1 className="mt-4 fleetos-display text-3xl font-semibold tracking-tight text-[#0B0E14] sm:text-4xl">
+            <h1 className="mt-4 FleetOps-display text-3xl font-semibold tracking-tight text-[#0B0E14] sm:text-4xl">
               {brand} {name}
             </h1>
-            <p className="mt-1 fleetos-mono text-[13px] tracking-wide text-[#5B6472]">{model}</p>
+            <p className="mt-1 FleetOps-mono text-[13px] tracking-wide text-[#5B6472]">{model}</p>
 
-            <p className="mt-5 fleetos-display text-2xl font-semibold text-[#0B0E14]">{formatPrice(price)}</p>
+            <p className="mt-5 FleetOps-display text-2xl font-semibold text-[#0B0E14]">{formatPrice(price)}</p>
 
             <span
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 fleetos-mono text-[10.5px] font-medium"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 FleetOps-mono text-[10.5px] font-medium"
               style={{ backgroundColor: stockInfo.bg, color: stockInfo.text }}
             >
               <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: stockInfo.dot }} />
               {stockInfo.label}
             </span>
 
-            <p className="mt-6 fleetos-body text-[14.5px] leading-relaxed text-[#5B6472]">{description || "no description available"}</p>
+            <p className="mt-6 FleetOps-body text-[14.5px] leading-relaxed text-[#5B6472]">{description || "no description available"}</p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 disabled={stock <= 0}
-                className="rounded-full bg-[#FF5A1F] px-6 py-3 fleetos-body text-[14px] font-semibold text-white shadow-[0_12px_24px_-8px_rgba(255,90,31,0.55)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+                className="rounded-full bg-[#FF5A1F] px-6 py-3 FleetOps-body text-[14px] font-semibold text-white shadow-[0_12px_24px_-8px_rgba(255,90,31,0.55)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
               >
                 Add to fleet
               </button>
               <a
                 onClick={() => navigate("/vehicles")}
-                className="rounded-full border border-slate-200 bg-white px-6 py-3 fleetos-body text-[14px] font-semibold text-[#0B0E14] transition-colors hover:bg-[#F3F5F8]"
+                className="rounded-full border border-slate-200 bg-white px-6 py-3 FleetOps-body text-[14px] font-semibold text-[#0B0E14] transition-colors hover:bg-[#F3F5F8]"
               >
                 Back to vehicles
               </a>

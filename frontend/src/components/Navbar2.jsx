@@ -130,7 +130,7 @@ export default function Nav() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <a href="#top" className="flex items-center gap-2.5">
+        <a onClick={() => navigate("/")} className="flex items-center gap-2.5">
           <span className="relative flex h-7 w-7 items-center justify-center">
             <span className="absolute inset-0 rotate-45 rounded-[7px] bg-[#0B0E14]" />
             <span className="relative h-1.5 w-1.5 rounded-full bg-[#FF5A1F]" />

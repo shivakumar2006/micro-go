@@ -113,12 +113,12 @@ function VehicleImage({ src, alt, typeIcon, typeLabel }) {
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[#5B6472]">
           {NodeIcon("image", "h-7 w-7")}
-          <span className="fleetos-mono text-[10.5px]">No image available</span>
+          <span className="FleetOps-mono text-[10.5px]">No image available</span>
         </div>
       )}
 
       {typeLabel && (
-        <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[#0B0E14]/75 px-2.5 py-1 fleetos-mono text-[10px] uppercase tracking-wide text-white backdrop-blur">
+        <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[#0B0E14]/75 px-2.5 py-1 FleetOps-mono text-[10px] uppercase tracking-wide text-white backdrop-blur">
           {NodeIcon(typeIcon, "h-3.5 w-3.5")}
           {typeLabel}
         </span>
@@ -169,7 +169,7 @@ export default function VehicleCard({ vehicle, onClick }) {
           typeLabel={vehicle.type}
         />
         <span
-          className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 fleetos-mono text-[10px] font-medium backdrop-blur"
+          className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 FleetOps-mono text-[10px] font-medium backdrop-blur"
           style={{ color: s.text }}
         >
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: s.dot }} />
@@ -179,18 +179,18 @@ export default function VehicleCard({ vehicle, onClick }) {
 
       <div className="p-5">
         <div>
-          <h3 className="fleetos-display text-[16px] font-semibold text-[#0B0E14]">{vehicle.name}</h3>
-          <p className="fleetos-mono text-[11px] tracking-wide text-[#5B6472]">
+          <h3 className="FleetOps-display text-[16px] font-semibold text-[#0B0E14]">{vehicle.name}</h3>
+          <p className="FleetOps-mono text-[11px] tracking-wide text-[#5B6472]">
             {vehicle.brand} · {vehicle.model}
           </p>
         </div>
 
-        <p className="mt-3 fleetos-display text-xl font-semibold text-[#0B0E14]">
+        <p className="mt-3 FleetOps-display text-xl font-semibold text-[#0B0E14]">
           {formatPrice(vehicle.price)}
         </p>
 
         {vehicle.description && (
-          <p className="mt-3 line-clamp-2 fleetos-body text-[13px] leading-relaxed text-[#5B6472]">
+          <p className="mt-3 line-clamp-2 FleetOps-body text-[13px] leading-relaxed text-[#5B6472]">
             {vehicle.description}
           </p>
         )}
@@ -204,11 +204,11 @@ export default function VehicleCard({ vehicle, onClick }) {
                 style={{ width: `${stockPercentage}%` }}
               />
             </div>
-            <span className="fleetos-mono text-[11px] text-[#5B6472]">{vehicle.stock}</span>
+            <span className="FleetOps-mono text-[11px] text-[#5B6472]">{vehicle.stock}</span>
           </div>
 
           {vehicle.createdAt && (
-            <span className="flex items-center gap-1.5 fleetos-mono text-[10.5px] text-[#5B6472]">
+            <span className="flex items-center gap-1.5 FleetOps-mono text-[10.5px] text-[#5B6472]">
               {NodeIcon("calendar", "h-3.5 w-3.5")}
               {formatDate(vehicle.createdAt)}
             </span>

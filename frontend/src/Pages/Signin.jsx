@@ -5,6 +5,7 @@ import { useLoginMutation } from '../Redux/features/auth/authApi';
 import { useDispatch } from 'react-redux';
 import { Bounce, toast } from 'react-toastify';
 import { setTokens } from '../Redux/features/auth/authSlice';
+import { jwtDecode } from 'jwt-decode';
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -165,14 +166,17 @@ export default function SignIn() {
 
     try {
         const res = await login({email, password}).unwrap();
+        const decoded = jwtDecode(res.access_token);
 
         dispatch(setTokens({
             accessToken: res.access_token,
             refreshToken: res.refresh_token,
+            role: decoded.role,
         }));
 
-        navigate("/vehicles")
-        toast.success('User Login successfully 🎉', {
+        if (decoded.role === "admin") {
+            navigate("/vehicles/admin");
+            toast.success('Admin Login successfully 🎉', {
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,
@@ -183,10 +187,26 @@ export default function SignIn() {
             theme: "light",
             transition: Bounce,
         });
+        } else {
+            navigate("/vehicles");
+            toast.success('User Login successfully 🎉', {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+        });
+        }
+
+        console.log(decoded);
 
     } catch(err) {
         console.error("Error during registration:", err);
-        toast.error('Failed to login user 😞', {
+        toast.error('Failed to login 😞', {
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,

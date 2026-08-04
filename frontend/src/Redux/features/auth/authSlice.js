@@ -5,6 +5,7 @@ const initialState = {
     user: null,
     accessToken: null,
     refreshToken: null,
+    role: null,
     isAuthenticated: false,
 }
 
@@ -16,12 +17,14 @@ const authSlice = createSlice({
             state.user = null
             state.accessToken = null
             state.refreshToken = null
+            state.role = null
             state.isAuthenticated = false
         },
 
         setTokens: (state, action) => {
             state.accessToken = action.payload.accessToken
             state.refreshToken = action.payload.refreshToken
+            state.role = action.payload.role
         },
     },
 
@@ -42,6 +45,7 @@ const authSlice = createSlice({
                 state.user = action.payload.user
                 state.accessToken = action.payload.access_token
                 state.refreshToken = action.payload.refresh_token
+                state.role = action.payload.role
                 state.isAuthenticated = true 
             }
         )
@@ -52,6 +56,7 @@ const authSlice = createSlice({
                 state.user = action.payload.user
                 state.accessToken = action.payload.access_token
                 state.refreshToken = action.payload.refresh_token
+                state.role = action.payload.role
                 state.isAuthenticated = true
             }
         )
@@ -74,6 +79,7 @@ const authSlice = createSlice({
             authApi.endpoints.me.matchFulfilled,
             (state, action) => {
                 state.user = action.payload
+                state.role = action.payload
                 state.isAuthenticated = true
             }
         )

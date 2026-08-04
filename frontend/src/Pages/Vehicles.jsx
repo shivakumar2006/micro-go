@@ -73,7 +73,7 @@ function SelectField({ icon, value, onChange, options, label }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none rounded-full border border-slate-200 bg-white py-2.5 pl-9 pr-8 fleetos-body text-[13px] font-medium text-[#0B0E14] transition-colors hover:border-slate-300 focus:border-[#0B0E14] focus:outline-none focus:ring-2 focus:ring-[#0B0E14]/10"
+        className="appearance-none rounded-full border border-slate-200 bg-white py-2.5 pl-9 pr-8 FleetOps-body text-[13px] font-medium text-[#0B0E14] transition-colors hover:border-slate-300 focus:border-[#0B0E14] focus:outline-none focus:ring-2 focus:ring-[#0B0E14]/10"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -89,7 +89,7 @@ function SelectField({ icon, value, onChange, options, label }) {
 function Pagination({ page, totalPages, onChange }) {
   if (totalPages <= 1) return null
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
-  const pagerBtn = 'flex h-9 w-9 items-center justify-center rounded-full fleetos-mono text-[13px] transition-colors'
+  const pagerBtn = 'flex h-9 w-9 items-center justify-center rounded-full FleetOps-mono text-[13px] transition-colors'
 
   return (
     <div className="mt-10 flex items-center justify-center gap-1.5">
@@ -209,23 +209,23 @@ const { sortBy: backendSortBy, order } =
   }
 
   return (
-    <div className="min-h-screen bg-[#F3F5F8] fleetos-body text-[#0B0E14]">
+    <div className="min-h-screen bg-[#F3F5F8] FleetOps-body text-[#0B0E14]">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-        .fleetos-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
-        .fleetos-body { font-family: 'Manrope', ui-sans-serif, sans-serif; }
-        .fleetos-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+        .FleetOps-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+        .FleetOps-body { font-family: 'Manrope', ui-sans-serif, sans-serif; }
+        .FleetOps-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
       `}</style>
 
       <main className="mx-auto max-w-7xl px-6 py-10">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <span className="fleetos-mono text-[11px] tracking-wide text-[#5B6472]">fleet</span>
-            <h1 className="mt-1 fleetos-display text-2xl font-semibold tracking-tight text-[#0B0E14] sm:text-3xl">
+            <span className="FleetOps-mono text-[11px] tracking-wide text-[#5B6472]">fleet</span>
+            <h1 className="mt-1 FleetOps-display text-2xl font-semibold tracking-tight text-[#0B0E14] sm:text-3xl">
               Vehicles
             </h1>
           </div>
-          <p className="fleetos-mono text-[12px] text-[#5B6472]">{data?.total || 0} vehicles found</p>
+          <p className="FleetOps-mono text-[12px] text-[#5B6472]">{data?.total || 0} vehicles found</p>
         </div>
 
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -239,7 +239,7 @@ const { sortBy: backendSortBy, order } =
               value={search}
               onChange={(e) => withPageReset(setSearch)(e.target.value)}
               placeholder="Search by plate or driver"
-              className="w-full rounded-full border border-slate-200 bg-white py-2.5 pl-10 pr-4 fleetos-body text-[13.5px] text-[#0B0E14] placeholder:text-slate-400 transition-colors focus:border-[#0B0E14] focus:outline-none focus:ring-2 focus:ring-[#0B0E14]/10"
+              className="w-full rounded-full border border-slate-200 bg-white py-2.5 pl-10 pr-4 FleetOps-body text-[13.5px] text-[#0B0E14] placeholder:text-slate-400 transition-colors focus:border-[#0B0E14] focus:outline-none focus:ring-2 focus:ring-[#0B0E14]/10"
             />
           </label>
 
@@ -291,7 +291,7 @@ const { sortBy: backendSortBy, order } =
 
         {vehicles.length > 0 ? (
           <>
-            <p className="mt-6 fleetos-mono text-[11px] text-[#5B6472]">
+            <p className="mt-6 FleetOps-mono text-[11px] text-[#5B6472]">
               Showing {(page - 1) * PER_PAGE + 1} - {Math.min(page * PER_PAGE, data?.total || 0)} of {data?.total || 0}
             </p>
             <div className="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -307,8 +307,8 @@ const { sortBy: backendSortBy, order } =
         ) : (
           <div className="mt-16 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300 py-16 text-center">
             {NodeIcon('inbox', 'h-8 w-8 text-[#5B6472]')}
-            <p className="fleetos-display text-[15px] font-semibold text-[#0B0E14]">No vehicles match your filters</p>
-            <p className="fleetos-body text-[13.5px] text-[#5B6472]">Try a different search term or reset the filters.</p>
+            <p className="FleetOps-display text-[15px] font-semibold text-[#0B0E14]">No vehicles match your filters</p>
+            <p className="FleetOps-body text-[13.5px] text-[#5B6472]">Try a different search term or reset the filters.</p>
             <button
               type="button"
               onClick={() => {
@@ -317,7 +317,7 @@ const { sortBy: backendSortBy, order } =
                 setTypeFilter('all')
                 setPage(1)
               }}
-              className="mt-1 rounded-full bg-[#0B0E14] px-4 py-2 fleetos-body text-[13px] font-medium text-white transition-colors hover:bg-[#1a2030]"
+              className="mt-1 rounded-full bg-[#0B0E14] px-4 py-2 FleetOps-body text-[13px] font-medium text-white transition-colors hover:bg-[#1a2030]"
             >
               Reset filters
             </button>

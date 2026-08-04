@@ -23,6 +23,12 @@ const icons = {
     </>
   ),
   chevronDown: <path d="M6 9l6 6 6-6" />,
+  arrowLeft: (
+    <>
+      <path d="M19 12H5" />
+      <path d="M11 18l-6-6 6-6" />
+    </>
+  ),
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   close: <path d="M6 6l12 12M18 6L6 18" />,
   user: (
@@ -66,20 +72,15 @@ function getInitials(name) {
     .toUpperCase()
 }
 
-export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }) {
+export default function AdminNavbar({ userName = 'Shiva Kumar' }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-
-  const links = [
-    { key: 'vehicles', label: 'Vehicles' },
-    { key: 'orders', label: 'Orders' },
-  ]
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <div className="flex items-center gap-8">
-          <a href="/" className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
+          <a href="#top" className="flex items-center gap-2.5">
             <span className="relative flex h-7 w-7 items-center justify-center">
               <span className="absolute inset-0 rotate-45 rounded-[7px] bg-[#0B0E14]" />
               <span className="relative h-1.5 w-1.5 rounded-full bg-[#FF5A1F]" />
@@ -88,25 +89,20 @@ export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }
               FleetOps
             </span>
           </a>
-
-          <nav className="hidden items-center gap-1 md:flex cursor-pointer">
-            {links.map((l) => (
-              <a
-                key={l.key}
-                href={l.href}
-                className={
-                  l.key === active
-                    ? 'rounded-full bg-[#F3F5F8] px-4 py-2 FleetOps-body text-[13.5px] font-semibold text-[#0B0E14]'
-                    : 'rounded-full px-4 py-2 FleetOps-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14]'
-                }
-              >
-                {l.label}
-              </a>
-            ))}
-          </nav>
+          <span className="rounded-full border border-[#35455C]/30 bg-[#35455C]/[0.07] px-2 py-0.5 FleetOps-mono text-[10px] font-medium tracking-wide text-[#35455C]">
+            ADMIN
+          </span>
         </div>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-5 md:flex">
+          <a
+            href="#"
+            className="flex items-center gap-1.5 FleetOps-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14]"
+          >
+            {NodeIcon('arrowLeft', 'h-4 w-4')}
+            Back to dashboard
+          </a>
+
           <button
             type="button"
             className="flex h-9 w-9 items-center justify-center rounded-full text-[#5B6472] transition-colors hover:bg-[#F3F5F8] hover:text-[#0B0E14]"
@@ -169,19 +165,10 @@ export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }
 
       {mobileOpen && (
         <div className="flex flex-col gap-1 border-t border-slate-200 bg-white px-6 py-4 md:hidden">
-          {links.map((l) => (
-            <a
-              key={l.key}
-              href={l.href}
-              className={
-                l.key === active
-                  ? 'rounded-lg bg-[#F3F5F8] px-3 py-2.5 FleetOps-body text-sm font-semibold text-[#0B0E14]'
-                  : 'rounded-lg px-3 py-2.5 FleetOps-body text-sm text-[#0B0E14]'
-              }
-            >
-              {l.label}
-            </a>
-          ))}
+          <a href="#" className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 FleetOps-body text-sm text-[#0B0E14]">
+            {NodeIcon('arrowLeft', 'h-4 w-4')}
+            Back to dashboard
+          </a>
           <div className="mt-3 flex items-center gap-2.5 border-t border-slate-100 pt-3">
             <Avatar initials={getInitials(userName)} />
             <span className="FleetOps-body text-[13.5px] font-medium text-[#0B0E14]">{userName}</span>
