@@ -54,7 +54,7 @@ export const BaseQueryWithReAuth = async (args, api, extraOptions) => {
                 setTokens({
                     accessToken: refreshResult.data.access_token,
                     refreshToken: refreshResult.data.refresh_token,
-                    user: refreshResult.data.user,
+                    user: refreshResult.data.User,
                 })
             );
 

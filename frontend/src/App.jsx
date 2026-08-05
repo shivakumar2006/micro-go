@@ -40,12 +40,8 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<SignIn />} />
         <Route path="/register" element={<Signup />} />
-
-        {/*Customer + Admin*/}
-        <Route element={<ProtectedRoutes allowRoles={["customer", "admin"]} />} >
-          <Route path="/vehicles" element={<Vehicles />}/>
-          <Route path="/vehicles/details/:id" element={<VehicleDetail />} />
-        </Route>
+        <Route path="/vehicles" element={<Vehicles />}/>
+        <Route path="/vehicles/details/:id" element={<VehicleDetail />} />xwwww
 
         <Route element={<ProtectedRoutes allowRoles={["admin"]} />}>
           <Route path="/vehicles/admin" element={<AdminVehicles />} />

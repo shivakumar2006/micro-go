@@ -22,9 +22,15 @@ const authSlice = createSlice({
         },
 
         setTokens: (state, action) => {
-            state.accessToken = action.payload.accessToken
-            state.refreshToken = action.payload.refreshToken
-            state.role = action.payload.role
+            state.accessToken = action.payload.accessToken;
+            state.refreshToken = action.payload.refreshToken;
+
+            if (action.payload.user) {
+                state.User = action.payload.user;
+                state.role = action.payload.user.role_name;
+            }
+        
+            state.isAuthenticated = true;
         },
     },
 
@@ -35,6 +41,7 @@ const authSlice = createSlice({
                 state.User = action.payload.User
                 state.accessToken = action.payload.access_token
                 state.refreshToken = action.payload.refresh_token
+                state.role = action.payload.User.role_name
                 state.isAuthenticated = true
             }
         )
@@ -45,8 +52,8 @@ const authSlice = createSlice({
                 state.User = action.payload.User
                 state.accessToken = action.payload.access_token
                 state.refreshToken = action.payload.refresh_token
-                state.role = action.payload.role
-                state.isAuthenticated = true 
+                state.role = action.payload.User.role_name
+                state.isAuthenticated = true
             }
         )
 
@@ -56,7 +63,7 @@ const authSlice = createSlice({
                 state.User = action.payload.User
                 state.accessToken = action.payload.access_token
                 state.refreshToken = action.payload.refresh_token
-                state.role = action.payload.role
+                state.role = action.payload.User.role_name
                 state.isAuthenticated = true
             }
         )
@@ -78,9 +85,9 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.me.matchFulfilled,
             (state, action) => {
-                state.User = action.payload
-                state.role = action.payload
-                state.isAuthenticated = true
+                state.User = action.payload;
+                state.role = action.payload.role_name;
+                state.isAuthenticated = true;
             }
         )
     }
