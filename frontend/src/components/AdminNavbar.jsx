@@ -195,7 +195,7 @@ export default function AdminNavbar({ userName = 'Shiva Kumar' }) {
                   <div className="my-1.5 h-px bg-slate-100" />
                   <a
                     onClick={handleLogout}
-                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 FleetOps-body text-[13.5px] text-[#0B0E14] hover:bg-[#F3F5F8]"
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 FleetOps-body text-[13.5px] text-[#0B0E14] hover:bg-[#F3F5F8] cursor-pointer"
                   >
                     {NodeIcon('logout', 'h-4 w-4 text-[#5B6472]')}
                     Sign out

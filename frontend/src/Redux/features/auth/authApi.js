@@ -1,24 +1,14 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { BaseQueryWithReAuth } from "../../BaseWithReAuth";
 
 export const authApi = createApi({
     reducerPath: "AuthApi",
-    baseQuery: fetchBaseQuery({
-        baseUrl: "http://localhost:8000/api/v1/auth",
-
-        prepareHeaders: (headers, {getState}) => {
-            const { accessToken } = getState().authReducer;
-            if (accessToken) {
-                headers.set("Authorization", `Bearer ${accessToken}`)
-            }
-
-            return headers;
-        },
-    }),
+    baseQuery: BaseQueryWithReAuth,
 
     endpoints: (builder) => ({
             register: builder.mutation({
                 query: (body) => ({
-                    url: "/register",
+                    url: "/auth/register",
                     method: "POST",
                     body,
                 }),
@@ -26,7 +16,7 @@ export const authApi = createApi({
 
             login: builder.mutation({
                 query: (body) => ({
-                    url: "/login",
+                    url: "/auth/login",
                     method: "POST",
                     body,
                 }),
@@ -34,7 +24,7 @@ export const authApi = createApi({
 
             logout: builder.mutation({
                 query: (refreshToken) => ({
-                    url: "/logout",
+                    url: "/auth/logout",
                     method: "POST",
                     body: {
                         refresh_token: refreshToken,
@@ -44,7 +34,7 @@ export const authApi = createApi({
 
             logoutAll: builder.mutation({
                 query: (refreshToken) => ({
-                    url: "/logout-all",
+                    url: "/auth/logout-all",
                     method: "POST",
                     body: {
                         refresh_token: refreshToken,
@@ -54,7 +44,7 @@ export const authApi = createApi({
 
             refreshToken: builder.mutation({
                 query: (refreshToken) => ({
-                    url: "/refresh",
+                    url: "/auth/refresh",
                     method: "POST",
                     body: {
                         refresh_token: refreshToken,
@@ -64,7 +54,7 @@ export const authApi = createApi({
 
             me: builder.query({
                 query: () => ({
-                    url: "/me",
+                    url: "/auth/me",
                     method: "GET",
                 }),
             })

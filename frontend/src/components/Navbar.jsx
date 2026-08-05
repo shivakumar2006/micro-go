@@ -1,4 +1,9 @@
-import { useState } from 'react'
+import { useState } from 'react';
+import { useLogoutMutation } from '../Redux/features/auth/authApi';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearAuth } from '../Redux/features/auth/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { Bounce, toast} from "react-toastify";
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -69,11 +74,58 @@ function getInitials(name) {
 export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [logout] = useLogoutMutation();
+  
+  const { refreshToken } = useSelector((state) => state.authReducer);
 
   const links = [
     { key: 'vehicles', label: 'Vehicles' },
     { key: 'orders', label: 'Orders' },
   ]
+
+  const handleLogout = async () => {
+    try {
+        await logout(refreshToken).unwrap();
+
+        dispatch(clearAuth());
+
+        toast.success('Customer Logged out successfully 🎉', {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+        });
+
+        navigate("/login");
+    } catch(err) {
+        console.error(err);
+
+        dispatch(clearAuth())
+
+        toast.error('Failed to Logged out the customer 😔', {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+        });
+
+        navigate("/login")
+    }
+  }
+
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/85 backdrop-blur-md">
@@ -146,7 +198,7 @@ export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }
                   </a>
                   <div className="my-1.5 h-px bg-slate-100" />
                   <a
-                    href="#"
+                    onClick={handleLogout}
                     className="flex items-center gap-2.5 rounded-lg px-3 py-2 FleetOps-body text-[13.5px] text-[#0B0E14] hover:bg-[#F3F5F8]"
                   >
                     {NodeIcon('logout', 'h-4 w-4 text-[#5B6472]')}

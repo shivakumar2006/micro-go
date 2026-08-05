@@ -174,6 +174,7 @@ export default function SignUp() {
         dispatch(setTokens({
             accessToken: res.access_token,
             refreshToken: res.refresh_token,
+            user: res.User,
         }));
 
         navigate("/login");

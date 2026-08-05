@@ -174,6 +174,7 @@ export default function SignIn() {
             accessToken: res.access_token,
             refreshToken: res.refresh_token,
             role: decoded.role,
+            user: res.User,
         }));
 
         if (decoded.role === "admin") {
@@ -190,6 +191,7 @@ export default function SignIn() {
             transition: Bounce,
         });
         } else {
+            navigate("/vehicles");
             toast.success('User Login successfully 🎉', {
             position: "top-right",
             autoClose: 5000,
@@ -201,7 +203,6 @@ export default function SignIn() {
             theme: "light",
             transition: Bounce,
         });
-            navigate("/vehicles");
         }
 
         console.log(decoded);
