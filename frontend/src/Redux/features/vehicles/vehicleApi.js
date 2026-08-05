@@ -8,7 +8,7 @@ export const vehicleApi = createApi({
         prepareHeaders: (headers, { getState }) => {
 
             const auth = getState().authReducer;
-                
+
             if (auth?.accessToken) {
                 headers.set("Authorization", `Bearer ${auth.accessToken}`);
             }
@@ -35,8 +35,31 @@ export const vehicleApi = createApi({
                 url: `/vehicles/${id}`,
                 methods: "GET"
             })
-        })
+        }),
+
+        createVehicle: builder.mutation({
+            query: (data) => ({
+                url: "/vehicles",
+                methods: "POST",
+                body: data,
+            }),
+        }),
+
+        updateVehicle: builder.mutation({
+            query: ({id, data}) => ({
+                url: `/vehicles/${id}`,
+                methods: "PATCH",
+                body: data,
+            }),
+        }),
+
+        deleteVehicle: builder.mutation({
+            query: (id) => ({
+                url: `/vehicles/${id}`,
+                methods: "DELETE"
+            }),
+        }),
     })
 })
 
-export const { useGetAllVehiclesQuery, useGetVehicleByIdQuery } = vehicleApi;
+export const { useGetAllVehiclesQuery, useGetVehicleByIdQuery, useCreateVehicleMutation, useUpdateVehicleMutation, useDeleteVehicleMutation } = vehicleApi;

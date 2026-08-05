@@ -161,6 +161,8 @@ export default function Vehicles() {
 
   const vehicles = data?.data || [];
 
+  console.log("vehicles : ", vehicles)
+
   const withPageReset = (setter) => (val) => {
     setter(val)
     setPage(1)
