@@ -3,7 +3,9 @@ import authReducer from "./features/auth/authSlice";
 import { authApi } from "./features/auth/authApi";
 import { vehicleApi } from "./features/vehicles/vehicleApi";
 import { persistReducer, persistStore } from "redux-persist"
-import storage from "redux-persist/lib/storage";
+import storageImport from "redux-persist/lib/storage";
+
+const storage = storageImport.default ?? storageImport;
 
 const persistConfig = {
     key: "auth",
@@ -23,7 +25,7 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
-                ignoreActions: [
+                ignoredActions: [
                     "persist/PERSIST",
                     "persist/REHYDRATE",
                     "persist/PAUSE",
