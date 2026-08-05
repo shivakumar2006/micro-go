@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '../Redux/features/auth/authApi';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { clearAuth } from '../Redux/features/auth/authSlice';
 import { Bounce, toast } from 'react-toastify';
 
@@ -86,9 +86,11 @@ export default function AdminNavbar({ userName = 'Shiva Kumar' }) {
   
   const [logout] = useLogoutMutation();
 
+  const { refreshToken } = useSelector((state) => state.authReducer);
+
   const handleLogout = async () => {
     try {
-        await logout().unwrap();
+        await logout(refreshToken).unwrap();
 
         dispatch(clearAuth());
 
