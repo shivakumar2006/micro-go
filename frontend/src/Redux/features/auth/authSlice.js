@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit"
 import { authApi } from "./authApi"
 
 const initialState = {
-    user: null,
+    User: null,
     accessToken: null,
     refreshToken: null,
     role: null,
@@ -14,7 +14,7 @@ const authSlice = createSlice({
     initialState,
     reducers: {
         clearAuth: (state) => {
-            state.user = null
+            state.User = null
             state.accessToken = null
             state.refreshToken = null
             state.role = null
@@ -32,7 +32,7 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.register.matchFulfilled,
             (state, action) => {
-                state.user = action.payload.user
+                state.User = action.payload.User
                 state.accessToken = action.payload.access_token
                 state.refreshToken = action.payload.refresh_token
                 state.isAuthenticated = true
@@ -42,7 +42,7 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.login.matchFulfilled,
             (state, action) => {
-                state.user = action.payload.user
+                state.User = action.payload.User
                 state.accessToken = action.payload.access_token
                 state.refreshToken = action.payload.refresh_token
                 state.role = action.payload.role
@@ -53,7 +53,7 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.refreshToken.matchFulfilled,
             (state, action) => {
-                state.user = action.payload.user
+                state.User = action.payload.User
                 state.accessToken = action.payload.access_token
                 state.refreshToken = action.payload.refresh_token
                 state.role = action.payload.role
@@ -78,7 +78,7 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.me.matchFulfilled,
             (state, action) => {
-                state.user = action.payload
+                state.User = action.payload
                 state.role = action.payload
                 state.isAuthenticated = true
             }

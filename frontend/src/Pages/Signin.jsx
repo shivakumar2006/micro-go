@@ -152,7 +152,9 @@ export default function SignIn() {
 
   const dispatch = useDispatch();
 
-  const [login, { isLoading }] = useLoginMutation();
+  const [login, {data, isLoading }] = useLoginMutation();
+
+  console.log("login : ", data);
 
   const emailValid = /\S+@\S+\.\S+/.test(email)
   const passwordError =

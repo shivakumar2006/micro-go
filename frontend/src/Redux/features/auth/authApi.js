@@ -6,13 +6,9 @@ export const authApi = createApi({
         baseUrl: "http://localhost:8000/api/v1/auth",
 
         prepareHeaders: (headers, {getState}) => {
-            const { accessToken, refreshToken } = getState().authReducer;
+            const { accessToken } = getState().authReducer;
             if (accessToken) {
                 headers.set("Authorization", `Bearer ${accessToken}`)
-            }
-
-            if (refreshToken) {
-                headers.set("Refresh-Token", `${refreshToken}`)
             }
 
             return headers;
@@ -37,23 +33,32 @@ export const authApi = createApi({
             }),
 
             logout: builder.mutation({
-                query: () => ({
+                query: (refreshToken) => ({
                     url: "/logout",
                     method: "POST",
+                    body: {
+                        refresh_token: refreshToken,
+                    }
                 }),
             }),
 
             logoutAll: builder.mutation({
-                query: () => ({
+                query: (refreshToken) => ({
                     url: "/logout-all",
                     method: "POST",
+                    body: {
+                        refresh_token: refreshToken,
+                    }
                 }),
             }),
 
             refreshToken: builder.mutation({
-                query: () => ({
+                query: (refreshToken) => ({
                     url: "/refresh",
                     method: "POST",
+                    body: {
+                        refresh_token: refreshToken,
+                    }
                 })
             }),
 
