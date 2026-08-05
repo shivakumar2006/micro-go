@@ -1,54 +1,73 @@
-import React from 'react';
+import React from "react";
 import "./App.css";
-import {Routes, Route, useLocation} from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 import Home from "./Pages/Home";
-import Vehicles from './Pages/Vehicles';
-import SignIn from './Pages/Signin';
+import Vehicles from "./Pages/Vehicles";
+import VehicleDetail from "./Pages/VechileDetail";
+import SignIn from "./Pages/Signin";
 import Signup from "./Pages/Signup";
-import Navbar from './components/Navbar';
+import AdminVehicles from "./Pages/AdminVehicles";
+
+import Navbar from "./components/Navbar";
 import Navbar2 from "./components/Navbar2";
-import VehicleDetail from './Pages/VechileDetail';
-import AdminVehicles from './Pages/AdminVehicles';
-import AdminNavbar from './components/AdminNavbar';
-import ProtectedRoutes from './components/ProtectedRoutes';
+import AdminNavbar from "./components/AdminNavbar";
+import ProtectedRoutes from "./components/ProtectedRoutes";
 
 const App = () => {
-
   const location = useLocation();
 
-  const hideNavbar2 = [
-    "/login", "/register",
-  ].includes(location.pathname) || location.pathname.startsWith("/vehicles/admin");
+  const { isAuthenticated, User } = useSelector(
+    (state) => state.authReducer
+  );
 
-  const hideNavbar = [
-  "/",
-  "/login",
-  "/register",
-  "/vehicles",
-].includes(location.pathname) || location.pathname.startsWith("/vehicles/details") || location.pathname.startsWith("/vehicles/admin");
+  const role = User?.role_name;
 
-  const adminNavbar = [
-    "/", "/vehicles", "/login", "/register",
-  ].includes(location.pathname) || location.pathname.startsWith("/vehicles/details/");
+  // Route Checks
+  const isHome = location.pathname === "/";
+  const isLogin = location.pathname === "/login";
+  const isRegister = location.pathname === "/register";
+  const isVehicles = location.pathname === "/vehicles";
+  const isVehicleDetails = location.pathname.startsWith("/vehicles/details");
+  const isAdminPage = location.pathname.startsWith("/vehicles/admin");
 
   return (
     <>
-    {!hideNavbar && <Navbar />}
-    {!hideNavbar2 && <Navbar2 />}
-    {!adminNavbar && <AdminNavbar />}
-    <Routes>
+      {/* Home Page -> Always Navbar2 */}
+      {isHome && <Navbar2 />}
+
+      {/* Guest Navbar */}
+      {!isAuthenticated &&
+        !isHome &&
+        !isLogin &&
+        !isRegister &&
+        !isAdminPage && <Navbar2 />}
+
+      {/* Customer Navbar */}
+      {isAuthenticated &&
+        role === "customer" &&
+        (isVehicles || isVehicleDetails) && <Navbar />}
+
+      {/* Admin Navbar */}
+      {isAuthenticated &&
+        role === "admin" &&
+        isAdminPage && <AdminNavbar />}
+
+      <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<SignIn />} />
         <Route path="/register" element={<Signup />} />
-        <Route path="/vehicles" element={<Vehicles />}/>
-        <Route path="/vehicles/details/:id" element={<VehicleDetail />} />xwwww
+
+        <Route path="/vehicles" element={<Vehicles />} />
+        <Route path="/vehicles/details/:id" element={<VehicleDetail />} />
 
         <Route element={<ProtectedRoutes allowRoles={["admin"]} />}>
           <Route path="/vehicles/admin" element={<AdminVehicles />} />
         </Route>
-    </Routes>
+      </Routes>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
