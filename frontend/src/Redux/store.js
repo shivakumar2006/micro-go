@@ -2,14 +2,37 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./features/auth/authSlice";
 import { authApi } from "./features/auth/authApi";
 import { vehicleApi } from "./features/vehicles/vehicleApi";
+import { persistReducer, persistStore } from "redux-persist"
+import storage from "redux-persist/lib/storage";
+
+const persistConfig = {
+    key: "auth",
+    storage,
+    whitelist: ["user", "accessToken", "refreshToken", "role", "isAuthenticated"],
+};
+
+const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 
 export const store = configureStore({
     reducer: {
-        authReducer: authReducer,
+        authReducer: persistedAuthReducer,
         [authApi.reducerPath]: authApi.reducer,
         [vehicleApi.reducerPath]: vehicleApi.reducer,
     },
 
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(authApi.middleware, vehicleApi.middleware)
+        getDefaultMiddleware({
+            serializableCheck: {
+                ignoreActions: [
+                    "persist/PERSIST",
+                    "persist/REHYDRATE",
+                    "persist/PAUSE",
+                    "persist/FLUSH",
+                    "persist/PURGE",
+                    "persist/REGISTER",
+                ]
+            }
+        }).concat(authApi.middleware, vehicleApi.middleware)
 })
+
+export const persistor = persistStore(store);
