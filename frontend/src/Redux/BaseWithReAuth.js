@@ -24,7 +24,7 @@ export const BaseQueryWithReAuth = async (args, api, extraOptions) => {
     console.log("ERROR", result.error);
     console.log("STATUS", result.error?.status);
 
-    if (result.error && result.error.status === 401) {
+    if (result.error && (result.error.status === 401 || result.error.originalStatus === 401)) {
 
         console.log("ACCESS TOKEN EXPIRED");
 

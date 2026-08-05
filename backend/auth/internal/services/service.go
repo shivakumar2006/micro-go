@@ -120,15 +120,6 @@ func (a *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*mod
 		return nil, fmt.Errorf("failed to generate token pair : %w", err)
 	}
 
-	// claims, err := a.JWTManager.ValidateAccessToken(tokenPair.AccessToken)
-	// fmt.Println("SELF VALIDATION ERROR:", err)
-	// fmt.Printf("SELF CLAIMS: %+v\n", claims)
-
-	// hashedRefreshToken, err := bcrypt.GenerateFromPassword([]byte(tokenPair.RefreshToken), bcrypt.DefaultCost)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to hashed refresh token : %w", err)
-	// }
-
 	session := &models.UserSessions{
 		UserID:           user.ID,
 		RefreshTokenHash: HashRefreshToken(tokenPair.RefreshToken),
@@ -173,11 +164,6 @@ func (a *AuthService) Refresh(ctx context.Context, req models.RefreshRequest) (*
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate token pair : %w", err)
 	}
-
-	// hashedRefreshToken, err := bcrypt.GenerateFromPassword([]byte(tokenPair.RefreshToken), bcrypt.DefaultCost)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to process refresh token : %w", err)
-	// }
 
 	session := &models.UserSessions{
 		UserID:           user.ID,

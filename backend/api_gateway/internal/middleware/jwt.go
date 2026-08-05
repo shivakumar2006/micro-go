@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"api_gateway/internal/utils/response"
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -41,13 +43,13 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			http.Error(w, "authorization header is required", http.StatusUnauthorized)
+			response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("authroization header is required")))
 			return
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			http.Error(w, "authorization header format must be Bearer <token>", http.StatusUnauthorized)
+			response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("authorization header format must ne Bearer <token>")))
 			return
 		}
 
@@ -55,12 +57,12 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 
 		claims, err := a.ParseToken(tokenString, a.AccessSecret)
 		if err != nil {
-			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
+			response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("invalid or expired token : %w", err)))
 			return
 		}
 
 		if claims.TokenType != "access" {
-			http.Error(w, "access token is required", http.StatusUnauthorized)
+			response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("access token is required")))
 			return
 		}
 

@@ -37,7 +37,7 @@ export const vehicleApi = createApi({
         updateVehicle: builder.mutation({
             query: ({id, data}) => ({
                 url: `/vehicles/${id}`,
-                method: "PATCH",
+                method: "PUT",
                 body: data,
             }),
             invalidatesTags: ["Vehicle"]

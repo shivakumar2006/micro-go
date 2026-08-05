@@ -648,7 +648,7 @@ export default function AdminVehicles() {
   async function handleUpdate(id, payload) {
     setFormError('')
     try {
-      await updateVehicle({ id, ...payload }).unwrap()
+      await updateVehicle({ id, data: payload }).unwrap()
       setFormState(null)
     } catch (err) {
       setFormError(err?.data?.message || 'Could not save changes. Please try again.')
