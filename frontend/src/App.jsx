@@ -10,6 +10,7 @@ import Navbar2 from "./components/Navbar2";
 import VehicleDetail from './Pages/VechileDetail';
 import AdminVehicles from './Pages/AdminVehicles';
 import AdminNavbar from './components/AdminNavbar';
+import ProtectedRoutes from './components/ProtectedRoutes';
 
 const App = () => {
 
@@ -37,11 +38,18 @@ const App = () => {
     {!adminNavbar && <AdminNavbar />}
     <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/vehicles" element={<Vehicles />}/>
         <Route path="/login" element={<SignIn />} />
         <Route path="/register" element={<Signup />} />
-        <Route path="/vehicles/details/:id" element={<VehicleDetail />} />
-        <Route path="/vehicles/admin" element={<AdminVehicles />} />
+
+        {/*Customer + Admin*/}
+        <Route element={<ProtectedRoutes allowRoles={["customer", "admin"]} />} >
+          <Route path="/vehicles" element={<Vehicles />}/>
+          <Route path="/vehicles/details/:id" element={<VehicleDetail />} />
+        </Route>
+
+        <Route element={<ProtectedRoutes allowRoles={["admin"]} />}>
+          <Route path="/vehicles/admin" element={<AdminVehicles />} />
+        </Route>
     </Routes>
     </>
   )
