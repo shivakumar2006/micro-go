@@ -36,26 +36,6 @@ type VehicleQuery struct {
 	Order    string
 }
 
-// type Vehicle struct {
-//     Id
-
-//     Name
-
-//     Model
-
-//     Price
-
-//     Brand
-
-//     Stock
-
-//     Description
-
-//     ImageURL
-
-//     Category
-
-//     CreatedAt
-
-//     UpdatedAt
-// }
+type VehicleBulkRequest struct {
+	VehicleIDs []int `json:"vehicle_ids" validate:"required,min=1,dive,gt=0"`
+}

@@ -72,28 +72,47 @@ func (c *CartService) AddToCart(cart *models.Cart) error {
 	return nil
 }
 
-func (c *CartService) GetUserCart(userId int) ([]models.Cart, error) {
+func (c *CartService) GetUserCart(userId int) ([]models.CartItemResponse, error) {
 	key := fmt.Sprintf("cart:%d", userId)
 
-	var cart []models.Cart
+	var cartResponses []models.CartItemResponse
 
-	if err := c.CartCache.GetJSON(key, &cart); err == nil {
+	if err := c.CartCache.GetJSON(key, &cartResponses); err == nil {
 		slog.Info("Cart cache hit", slog.Int("user_id", userId))
-		return cart, nil
+		return cartResponses, nil
 	}
 
 	slog.Info("Cart cache miss", slog.Int("user_id", userId))
 
-	cart, err := c.CartRepo.GetUserCart(userId)
+	dbCart, err := c.CartRepo.GetUserCart(userId)
 	if err != nil {
 		return nil, err
 	}
 
-	c.CartCache.SetJSON(key, cart, 10*time.Minute)
+	for _, item := range dbCart {
+		vehicle, err := c.VehicleClient.GetVehicle(item.VehicleId)
+		if err != nil {
+			slog.Error("Failed to fetch vehicle details for cart item", slog.Int("vehicle_id", item.VehicleId), slog.String("error", err.Error()))
+			return nil, err
+		}
+
+		cartResponses = append(cartResponses, models.CartItemResponse{
+			ID:        item.ID,
+			VehicleID: item.VehicleId,
+			Name:      vehicle.Name,
+			Image:     vehicle.ImageURL,
+			Brand:     vehicle.Brand,
+			Price:     item.Price,
+			Quantity:  item.Quantity,
+			SubTotal:  item.Price * float64(item.Quantity),
+		})
+	}
+
+	c.CartCache.SetJSON(key, cartResponses, 10*time.Minute)
 
 	slog.Info("Cart data stored in cache", slog.Int("user_id", userId))
 
-	return cart, nil
+	return cartResponses, nil
 }
 
 func (c *CartService) UpdateCartQuantity(userId, cartId int, quantity int) (int, error) {

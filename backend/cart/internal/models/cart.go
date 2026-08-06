@@ -23,8 +23,21 @@ type AddToCartRequest struct {
 
 // for vehicel service
 type VehicleResponse struct {
-	ID    int     `json:"id"`
-	Name  string  `json:"name"`
-	Price float64 `json:"price"`
-	Stock int     `json:"stock"`
+	ID       int     `json:"id"`
+	Name     string  `json:"name"`
+	Brand    string  `json:"brand"`
+	ImageURL string  `json:"image_url"`
+	Price    float64 `json:"price"`
+	Stock    int     `json:"stock"`
+}
+
+type CartItemResponse struct {
+	ID        int     `json:"id"`
+	VehicleID int     `json:"vehicle_id"`
+	Name      string  `json:"name"`
+	Image     string  `json:"image"`
+	Brand     string  `json:"brand"`
+	Price     float64 `json:"price"`
+	Quantity  int     `json:"quantity"`
+	SubTotal  float64 `json:"subTotal"`
 }

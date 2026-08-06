@@ -286,3 +286,38 @@ func (v *VehicleRepository) ExistsByNameExceptId(name string, id int64) (bool, e
 
 	return exist, nil
 }
+
+func (v *VehicleRepository) GetBulkVehicles(ids []int) ([]models.Vehicle, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var vehicles []models.Vehicle
+
+	rows, err := v.Db.QueryContext(ctx, `
+		SELECT id, name, brand, price, image_url, stock
+		FROM vehicles
+		WHERE id = ANY($1)
+	`, ids)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bulk vehicles : %w", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var vehicle models.Vehicle
+		err := rows.Scan(&vehicle.Id, &vehicle.Name, &vehicle.Brand, &vehicle.Price, &vehicle.ImageURL, &vehicle.Stock)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan vehicle : %w", err)
+		}
+		vehicles = append(vehicles, vehicle)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed during rows iteration : %w", err)
+	}
+
+	return vehicles, nil
+}
