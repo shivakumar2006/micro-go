@@ -2,6 +2,7 @@ import {useState } from 'react'
 import VehicleCard from '../components/VehicleCard';
 import { useGetAllVehiclesQuery } from '../Redux/features/vehicles/vehicleApi';
 import { useNavigate } from 'react-router-dom';
+import Loader from '../components/Loader';
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -152,7 +153,11 @@ export default function Vehicles() {
   });
 
   if (isLoading) {
-    return "Loading..."
+    return( 
+    <div className='w-full min-h-screen flex justify-center items-center'>
+      <Loader />
+    </div>
+    )
   }
 
   if (error) {
