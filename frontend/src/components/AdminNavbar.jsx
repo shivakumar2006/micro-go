@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLogoutMutation } from '../Redux/features/auth/authApi';
+import { useLogoutMutation, useMeQuery } from '../Redux/features/auth/authApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearAuth } from '../Redux/features/auth/authSlice';
 import { Bounce, toast } from 'react-toastify';
