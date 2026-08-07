@@ -14,6 +14,7 @@ import Navbar from "./components/Navbar";
 import Navbar2 from "./components/Navbar2";
 import AdminNavbar from "./components/AdminNavbar";
 import ProtectedRoutes from "./components/ProtectedRoutes";
+import Cart from "./Pages/Cart";
 
 const App = () => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const App = () => {
   const isVehicles = location.pathname === "/vehicles";
   const isVehicleDetails = location.pathname.startsWith("/vehicles/details");
   const isAdminPage = location.pathname.startsWith("/vehicles/admin");
+  const isCart = location.pathname === "/cart";
 
   return (
     <>
@@ -47,7 +49,7 @@ const App = () => {
       {/* Customer Navbar */}
       {isAuthenticated &&
         role === "customer" &&
-        (isVehicles || isVehicleDetails) && <Navbar />}
+        (isVehicles || isVehicleDetails || isCart) && <Navbar />}
 
       {/* Admin Navbar */}
       {isAuthenticated &&
@@ -61,6 +63,7 @@ const App = () => {
 
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/vehicles/details/:id" element={<VehicleDetail />} />
+        <Route path="/cart" element={<Cart />} />
 
         <Route element={<ProtectedRoutes allowRoles={["admin"]} />}>
           <Route path="/vehicles/admin" element={<AdminVehicles />} />
