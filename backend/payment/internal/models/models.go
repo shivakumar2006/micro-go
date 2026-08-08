@@ -26,4 +26,3 @@ type OrderResponse struct {
 type UpdateOrderStatusRequest struct {
 	Status string `json:"status"`
 }
-
