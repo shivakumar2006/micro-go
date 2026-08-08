@@ -7,6 +7,9 @@ import (
 	"payment/internal/models"
 )
 
+type StripeClient interface {
+}
+
 type PaymentService struct {
 	Repo   storage.Storage
 	Stripe StripeClient
@@ -22,5 +25,5 @@ func NewPaymentService(repo storage.Storage, stripe StripeClient, order *client.
 }
 
 func (p *PaymentService) CreatePayment(ctx context.Context, payment *models.Payment) error {
-
+	return nil
 }

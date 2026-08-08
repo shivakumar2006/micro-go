@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"log"
@@ -29,9 +29,11 @@ func main() {
 
 	// layers
 	repo := repository.NewPaymentRepository(database.Db)
+	_ = repo
 
 	// routes
 	router := chi.NewRouter()
+	_ = router
 
 	// server
 }

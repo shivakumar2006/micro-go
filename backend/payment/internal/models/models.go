@@ -22,3 +22,8 @@ type OrderResponse struct {
 	TotalAmount float64 `json:"total_amount"`
 	Status      string  `json:"status"`
 }
+
+type UpdateOrderStatusRequest struct {
+	Status string `json:"status"`
+}
+
