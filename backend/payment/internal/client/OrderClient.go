@@ -57,28 +57,36 @@ func (o *OrderClient) doUpdateOrderStatus(orderId int, status string) error {
 
 	body, err := json.Marshal(reqBody)
 	if err != nil {
+		slog.Error("failed to marshal request", slog.Int("order_id", orderId), slog.String("error", err.Error()))
 		return fmt.Errorf("failed to marshal request : %w", err)
 	}
+	slog.Info("request marshaled", slog.Int("order_id", orderId))
 
 	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(body))
 	if err != nil {
+		slog.Error("failed to create request", slog.Int("order_id", orderId), slog.String("error", err.Error()))
 		return fmt.Errorf("failed to create request : %w", err)
 	}
+	slog.Info("request created", slog.Int("order_id", orderId))
 
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := o.Client.Do(req)
 	if err != nil {
+		slog.Error("failed to do request", slog.Int("order_id", orderId), slog.String("error", err.Error()))
 		return fmt.Errorf("error calling order service : %w", err)
 	}
+	slog.Info("request done", slog.Int("order_id", orderId))
 
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
+		slog.Error("order service returned non-ok status", slog.Int("status_code", res.StatusCode))
 		return &resilience.HTTPStatusError{
 			StatusCode: res.StatusCode,
 		}
 	}
+	slog.Info("order service response", slog.Int("status_code", res.StatusCode))
 
 	return nil
 }
