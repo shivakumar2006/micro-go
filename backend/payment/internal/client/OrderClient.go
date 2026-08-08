@@ -6,23 +6,28 @@ import (
 	"log/slog"
 	"net/http"
 	"payment/internal/models"
+	"payment/internal/resilience"
 	"time"
 )
 
 type OrderClient struct {
 	BaseURL string `json:"base_url"`
 	Client  *http.Client
+	Retry   *resilience.Retry
 }
 
-func NewOrderClient(baseURL string) *OrderClient {
+func NewOrderClient(baseURL string, retry *resilience.Retry) *OrderClient {
 	return &OrderClient{
 		BaseURL: baseURL,
 		Client:  &http.Client{},
+		Retry:   retry,
 	}
 }
 
 func (o *OrderClient) GetOrder(orderId int) (*models.OrderResponse, error) {
-	return o.doRequest(orderId)
+	return resilience.DoRetry(o.Retry, func() (*models.OrderResponse, error) {
+		return o.doRequest(orderId)
+	})
 }
 
 func (o *OrderClient) doRequest(orderId int) (*models.OrderResponse, error) {
@@ -44,7 +49,9 @@ func (o *OrderClient) doRequest(orderId int) (*models.OrderResponse, error) {
 
 	if res.StatusCode != http.StatusOK {
 		slog.Error("order service returned non-ok status", slog.Int("status_code", res.StatusCode))
-		return nil, fmt.Errorf("order service returned non-ok status: %d", res.StatusCode)
+		return nil, &resilience.HTTPStatusError{
+			StatusCode: res.StatusCode,
+		}
 	}
 
 	var orderResponse models.OrderResponse
