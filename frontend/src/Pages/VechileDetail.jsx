@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetVehicleByIdQuery } from '../Redux/features/vehicles/vehicleApi';
 import { useNavigate } from 'react-router-dom';
+import { useAddToCartMutation } from '../Redux/features/cart/cartApi';
+import { toast, Bounce } from "react-toastify";
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -120,6 +122,39 @@ export default function VehicleDetail() {
 
   const vehicle = data;
 
+  const [cart, { isLoading: cartLoading, error: cartError }] = useAddToCartMutation();
+
+  const handleAddToCart = () => {
+    try {
+        cart({ vehicleId: vehicle.id, quantity: 1 });
+    toast.success('Item Added to Cart 🎉', {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+    })
+    } catch(err) {
+        console.error(err)
+
+        toast.error('Failed to add item 😢', {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+        })
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -147,8 +182,6 @@ export default function VehicleDetail() {
 
 
   const stockInfo = stockMeta(stock)
-
-  console.log("vehicle by id data : ", data);
 
   return (
     <div className="min-h-screen bg-[#F3F5F8] FleetOps-body text-[#0B0E14]">
@@ -214,9 +247,10 @@ export default function VehicleDetail() {
               <button
                 type="button"
                 disabled={stock <= 0}
+                onClick={handleAddToCart}
                 className="rounded-full bg-[#FF5A1F] px-6 py-3 FleetOps-body text-[14px] font-semibold text-white shadow-[0_12px_24px_-8px_rgba(255,90,31,0.55)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
               >
-                Add to fleet
+                Add to Cart
               </button>
               <a
                 onClick={() => navigate("/vehicles")}

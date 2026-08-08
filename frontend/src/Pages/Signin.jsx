@@ -154,8 +154,6 @@ export default function SignIn() {
 
   const [login, {data, isLoading }] = useLoginMutation();
 
-  console.log("login : ", data);
-
   const emailValid = /\S+@\S+\.\S+/.test(email)
   const passwordError =
   password.length > 0 && password.length < 8
@@ -204,8 +202,6 @@ export default function SignIn() {
             transition: Bounce,
         });
         }
-
-        console.log(decoded);
 
     } catch(err) {
         console.error("Error during registration:", err);

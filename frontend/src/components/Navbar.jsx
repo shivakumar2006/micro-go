@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { clearAuth } from '../Redux/features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { Bounce, toast} from "react-toastify";
+import { CiUser } from "react-icons/ci";
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -82,8 +83,9 @@ export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }
   const { refreshToken } = useSelector((state) => state.authReducer);
 
   const links = [
-    { key: 'vehicles', label: 'Vehicles' },
-    { key: 'orders', label: 'Orders' },
+    { key: 'vehicles', label: 'Vehicles', href: '/vehicles'},
+    { key: 'orders', label: 'Orders', href: '/orders'},
+    { key: 'cart', label: "Cart", href: '/cart'},
   ]
 
   const handleLogout = async () => {
@@ -145,7 +147,8 @@ export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }
             {links.map((l) => (
               <a
                 key={l.key}
-                href={l.href}
+                // href={l.href}
+                onClick={() => navigate(l.href)}
                 className={
                   l.key === active
                     ? 'rounded-full bg-[#F3F5F8] px-4 py-2 FleetOps-body text-[13.5px] font-semibold text-[#0B0E14]'
@@ -173,8 +176,10 @@ export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }
               onClick={() => setProfileOpen((v) => !v)}
               className="flex items-center gap-2 rounded-full border border-slate-200 py-1 pl-1 pr-2.5 transition-colors hover:bg-[#F3F5F8]"
             >
-              <Avatar initials={getInitials(userName)} />
-              <span className="FleetOps-body text-[13px] font-medium text-[#0B0E14]">{userName}</span>
+              <div className='h-8 w-8 rounded-full bg-black text-white flex justify-center items-center'>
+                <CiUser />
+              </div>
+              <span className="FleetOps-body text-[13px] font-medium text-[#0B0E14]">{}</span>
               {NodeIcon('chevronDown', 'h-3.5 w-3.5 text-[#5B6472]')}
             </button>
 
@@ -183,7 +188,7 @@ export default function Navbar({ active = 'vehicles', userName = 'Shiva Kumar' }
                 <div className="fixed inset-0 z-10" onClick={() => setProfileOpen(false)} />
                 <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_24px_-8px_rgba(15,23,42,0.18)]">
                   <a
-                    href="#"
+                    onClick={() => navigate("/customer/profile")}
                     className="flex items-center gap-2.5 rounded-lg px-3 py-2 FleetOps-body text-[13.5px] text-[#0B0E14] hover:bg-[#F3F5F8]"
                   >
                     {NodeIcon('user', 'h-4 w-4 text-[#5B6472]')}

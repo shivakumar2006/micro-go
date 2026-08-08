@@ -77,7 +77,7 @@ function getInitials(name) {
     .toUpperCase()
 }
 
-export default function AdminNavbar({ userName = 'Shiva Kumar' }) {
+export default function AdminNavbar({ userName = 'Admin' }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -85,8 +85,13 @@ export default function AdminNavbar({ userName = 'Shiva Kumar' }) {
   const navigate = useNavigate();
   
   const [logout] = useLogoutMutation();
+  const { data, isLoading } = useMeQuery();
 
   const { refreshToken } = useSelector((state) => state.authReducer);
+  
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   const handleLogout = async () => {
     try {
@@ -127,6 +132,8 @@ export default function AdminNavbar({ userName = 'Shiva Kumar' }) {
         navigate("/login")
     }
   }
+
+  console.log(data);
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/85 backdrop-blur-md">
@@ -179,7 +186,7 @@ export default function AdminNavbar({ userName = 'Shiva Kumar' }) {
                 <div className="fixed inset-0 z-10" onClick={() => setProfileOpen(false)} />
                 <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_24px_-8px_rgba(15,23,42,0.18)]">
                   <a
-                    href="#"
+                    onClick={() => navigate("/admin/profile")}
                     className="flex items-center gap-2.5 rounded-lg px-3 py-2 FleetOps-body text-[13.5px] text-[#0B0E14] hover:bg-[#F3F5F8]"
                   >
                     {NodeIcon('user', 'h-4 w-4 text-[#5B6472]')}

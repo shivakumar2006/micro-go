@@ -9,28 +9,6 @@ import {
   useCountItemsQuery,
 } from '../Redux/features/cart/cartApi'
 
-/*
-  FleetOps — cart
-  ------------------------------------------------------------------
-  Wired to cartApi (RTK Query) — no local mock state. No navbar here
-  on purpose, per your call — drop this inside whatever layout you're
-  adding the navbar to.
-
-  Two shape assumptions, both handled defensively since the exact
-  response payloads weren't given — adjust the two spots marked below
-  if your backend differs:
-
-  1. Cart items — GET /cart is assumed to return either
-     { data: [...] } or a bare array, and each item is assumed to
-     either nest vehicle details under `item.vehicle` or have them
-     flattened directly on the item. getVehicleInfo() below tries
-     both so the UI degrades gracefully either way.
-  2. Total / count — GET /cart/total and /cart/count are assumed to
-     return { total } / { count } (or nested under `.data`). If
-     neither is present, the page falls back to computing them
-     client-side from the loaded cart items.
-*/
-
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
@@ -103,7 +81,7 @@ function getVehicleInfo(item) {
     brand: v.brand ?? '',
     model: v.model ?? '',
     price: Number(v.price) || 0,
-    image_url: v.image_url ?? null,
+    image: v.image ?? null,
     stock: v.stock ?? null,
   }
 }
@@ -173,7 +151,7 @@ function CartItemRow({ item, onIncrease, onDecrease, onRemove, isUpdating, isRem
 
   return (
     <div className="flex gap-4 border-b border-slate-100 py-5 last:border-0">
-      <Thumb src={v.image_url} alt={v.name} />
+      <Thumb src={v.image} alt={v.name} />
 
       <div className="flex flex-1 flex-col justify-between">
         <div className="flex items-start justify-between gap-3">
@@ -282,6 +260,8 @@ export default function Cart() {
       setConfirmClear(false)
     }
   }
+
+  console.log("user cart : ", cartData);
 
   return (
     <div className="min-h-screen bg-[#F3F5F8] FleetOps-body text-[#0B0E14]">

@@ -5,6 +5,8 @@ export const cartApi = createApi({
     reducer: "cartApi",
     baseQuery: BaseQueryWithReAuth,
 
+    tagTypes: ["cart"],
+
     endpoints: (builder) => ({
         addToCart: builder.mutation({
             query: ({ vehicleId, quantity}) => ({
@@ -15,23 +17,29 @@ export const cartApi = createApi({
                     quantity: quantity,
                 },
             }),
+
+            invalidatesTags: ["cart"],
         }),
 
         getUserCart: builder.query({
             query: () => ({
                 url: "/cart",
                 method: "GET",
-            })
+            }),
+
+            providesTags: ["cart"],
         }),
 
         updateCartItem: builder.mutation({
             query: ({itemId, quantity}) => ({
                 url: `/cart/${itemId}`,
-                method: "PATCH",
+                method: "PUT",
                 body: {
                     quantity: quantity,
                 },
             }),
+
+            invalidatesTags: ["cart"],
         }),
 
         deleteCartItem: builder.mutation({
@@ -39,6 +47,7 @@ export const cartApi = createApi({
                 url: `/cart/${itemId}`,
                 method: "DELETE",
             }),
+            invalidatesTags: ["cart"],
         }),
 
         clearCart: builder.mutation({
@@ -46,6 +55,7 @@ export const cartApi = createApi({
                 url: "/cart",
                 method: "DELETE",
             }),
+            invalidatesTags: ["cart"],
         }),
 
         getCartTotal: builder.query({
@@ -53,6 +63,7 @@ export const cartApi = createApi({
                 url: "/cart/total",
                 method: "GET",
             }),
+            providesTags: ["cart"],
         }),
 
         countItems: builder.query({
@@ -60,6 +71,7 @@ export const cartApi = createApi({
                 url: "/cart/count",
                 method: "GET",
             }),
+            providesTags: ["cart"],
         }),
     })
 })

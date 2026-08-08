@@ -15,6 +15,8 @@ import Navbar2 from "./components/Navbar2";
 import AdminNavbar from "./components/AdminNavbar";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import Cart from "./Pages/Cart";
+import AdminProfile from "./Pages/AdminProfile";
+import CustomerProfile from "./Pages/CustomerProfile";
 
 const App = () => {
   const location = useLocation();
@@ -33,6 +35,8 @@ const App = () => {
   const isVehicleDetails = location.pathname.startsWith("/vehicles/details");
   const isAdminPage = location.pathname.startsWith("/vehicles/admin");
   const isCart = location.pathname === "/cart";
+  const isAdminProfile = location.pathname.startsWith("/admin/profile");
+  const isCustomerProfile = location.pathname.startsWith("/customer/profile");
 
   return (
     <>
@@ -49,12 +53,12 @@ const App = () => {
       {/* Customer Navbar */}
       {isAuthenticated &&
         role === "customer" &&
-        (isVehicles || isVehicleDetails || isCart) && <Navbar />}
+        (isVehicles || isVehicleDetails || isCart || isCustomerProfile) && <Navbar />}
 
       {/* Admin Navbar */}
       {isAuthenticated &&
         role === "admin" &&
-        isAdminPage && <AdminNavbar />}
+        (isAdminPage || isAdminProfile) && <AdminNavbar />}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -64,9 +68,11 @@ const App = () => {
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/vehicles/details/:id" element={<VehicleDetail />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/customer/profile" element={<CustomerProfile />} />
 
         <Route element={<ProtectedRoutes allowRoles={["admin"]} />}>
           <Route path="/vehicles/admin" element={<AdminVehicles />} />
+          <Route path="/admin/profile" element={<AdminProfile />} />
         </Route>
       </Routes>
     </>
