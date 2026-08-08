@@ -1,0 +1,17 @@
+package models
+
+import "time"
+
+type Payment struct {
+	ID              int       `json:"id"`
+	OrderID         int       `json:"order_id"`
+	UserID          int       `json:"user_id"`
+	Amount          float64   `json:"amount"`
+	Currency        string    `json:"currency"`
+	Provider        string    `json:"provider"`
+	PaymentIntentID string    `json:"payment_intent_id"`
+	StripeSessionID string    `json:"stripe_session_id"`
+	Status          string    `json:"status"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
