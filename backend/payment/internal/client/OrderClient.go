@@ -20,7 +20,7 @@ type OrderClient struct {
 func NewOrderClient(baseURL string, retry *resilience.Retry, cb *resilience.CircuitBreaker) *OrderClient {
 	return &OrderClient{
 		BaseURL:        baseURL,
-		Client:         &http.Client{},
+		Client:         &http.Client{Timeout: 10 * time.Second},
 		Retry:          retry,
 		CircuitBreaker: cb,
 	}
@@ -37,13 +37,13 @@ func (o *OrderClient) GetOrder(orderId int) (*models.OrderResponse, error) {
 func (o *OrderClient) doRequest(orderId int) (*models.OrderResponse, error) {
 	url := fmt.Sprintf("%s/api/v1/orders/%d", o.BaseURL, orderId)
 
-	slog.Info("Calling vehicle service", slog.Int("order_id : ", orderId), slog.String("url : ", url))
+	slog.Info("Calling order service", slog.Int("order_id", orderId), slog.String("url ", url))
 
 	start := time.Now()
 
 	res, err := o.Client.Get(url)
 	if err != nil {
-		slog.Error("failed to call order service", slog.Int("order_id : ", orderId), slog.String("error", err.Error()))
+		slog.Error("failed to call order service", slog.Int("order_id", orderId), slog.String("error", err.Error()))
 		return nil, fmt.Errorf("failed to call order service : %w", err)
 	}
 
@@ -61,7 +61,7 @@ func (o *OrderClient) doRequest(orderId int) (*models.OrderResponse, error) {
 	var orderResponse models.OrderResponse
 
 	if err := json.NewDecoder(res.Body).Decode(&orderResponse); err != nil {
-		slog.Error("failed to decode order response", slog.Int("order_id : ", orderId), slog.String("error", err.Error()))
+		slog.Error("failed to decode order response", slog.Int("order_id", orderId), slog.String("error", err.Error()))
 		return nil, fmt.Errorf("failed to decode order response : %w", err)
 	}
 
