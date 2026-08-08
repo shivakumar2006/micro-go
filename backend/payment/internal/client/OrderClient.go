@@ -11,22 +11,26 @@ import (
 )
 
 type OrderClient struct {
-	BaseURL string `json:"base_url"`
-	Client  *http.Client
-	Retry   *resilience.Retry
+	BaseURL        string `json:"base_url"`
+	Client         *http.Client
+	Retry          *resilience.Retry
+	CircuitBreaker *resilience.CircuitBreaker
 }
 
-func NewOrderClient(baseURL string, retry *resilience.Retry) *OrderClient {
+func NewOrderClient(baseURL string, retry *resilience.Retry, cb *resilience.CircuitBreaker) *OrderClient {
 	return &OrderClient{
-		BaseURL: baseURL,
-		Client:  &http.Client{},
-		Retry:   retry,
+		BaseURL:        baseURL,
+		Client:         &http.Client{},
+		Retry:          retry,
+		CircuitBreaker: cb,
 	}
 }
 
 func (o *OrderClient) GetOrder(orderId int) (*models.OrderResponse, error) {
-	return resilience.DoRetry(o.Retry, func() (*models.OrderResponse, error) {
-		return o.doRequest(orderId)
+	return resilience.Execute(o.CircuitBreaker, func() (*models.OrderResponse, error) {
+		return resilience.DoRetry(o.Retry, func() (*models.OrderResponse, error) {
+			return o.doRequest(orderId)
+		})
 	})
 }
 

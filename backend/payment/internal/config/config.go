@@ -26,9 +26,14 @@ type JWTConfig struct {
 	RefreshTokenSecret string `yaml:"refresh_secret"`
 }
 
+type OrdersConfig struct {
+	URL string `yaml:"url"`
+}
+
 type Config struct {
 	Env    string       `yaml:"env"`
 	Server ServerConfig `yaml:"server"`
+	Orders OrdersConfig `yaml:"orders"`
 	DB     DBConfig     `yaml:"db"`
 	JWT    JWTConfig    `yaml:"jwt"`
 }
