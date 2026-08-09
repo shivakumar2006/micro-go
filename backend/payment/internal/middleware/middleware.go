@@ -95,12 +95,12 @@ func (a *AuthMiddleware) parseToken(tokenString, secret string) (*Claims, error)
 func (a *AuthMiddleware) RequireRole(role string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			role, ok := r.Context().Value(RoleKey).(string)
+			useRole, ok := r.Context().Value(RoleKey).(string)
 			if !ok {
 				response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("role is not valid")))
 				return
 			}
-			if role != role {
+			if useRole != role {
 				response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("role is not valid")))
 				return
 			}
