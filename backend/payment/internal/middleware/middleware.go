@@ -18,10 +18,6 @@ const (
 	RoleKey      contextKey = "Role"
 )
 
-const (
-	Bearer = "Bearer"
-)
-
 type Claims struct {
 	UserID    int    `json:"user_id"`
 	UserEmail string `json:"user_email"`
@@ -51,8 +47,8 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		parts := strings.SplitN(authHeader, "", 2)
-		if len(parts) != 2 || parts[0] != Bearer {
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || parts[0] != "Bearer" {
 			response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("auth header is not in a valid format")))
 			return
 		}
