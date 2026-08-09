@@ -54,7 +54,8 @@ func main() {
 	router.Group(func(r chi.Router) {
 		r.Post("/api/v1/payments/create-checkout-session", handler.CreatePayment)
 		r.Get("/api/v1/payments/{id}", handler.GetPaymentByID)
-
+		r.Get("/api/v1/payments/orders/{orderid}", handler.GetPaymentByOrderID)
+		r.Post("/api/v1/payments/webhook", handler.WebhookHandler)
 	})
 
 	// server

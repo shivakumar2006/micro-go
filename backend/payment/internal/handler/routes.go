@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"payment/internal/models"
 	"payment/internal/service"
@@ -90,4 +91,26 @@ func (h *PaymentHandler) WebhookHandler(w http.ResponseWriter, r *http.Request) 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid request body : %w", err)))
+		return
+	}
+	defer r.Body.Close()
+
+	// get stripe signature
+	signature := r.Header.Get("Stripe-Signature")
+	if signature == "" {
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("missing stripe signature : %w", err)))
+		return
+	}
+
+	if err := h.Service.HandleWebhook(ctx, payload, signature); err != nil {
+		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, map[string]any{
+		"message": "Webhook processed successfully",
+	})
 }
