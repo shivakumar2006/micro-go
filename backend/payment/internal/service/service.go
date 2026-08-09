@@ -7,16 +7,13 @@ import (
 	"payment/internal/models"
 )
 
-type StripeClient interface {
-}
-
 type PaymentService struct {
 	Repo   storage.Storage
-	Stripe StripeClient
-	Order  *client.OrderClient
+	Stripe client.StripeClient
+	Order  client.OrderClient
 }
 
-func NewPaymentService(repo storage.Storage, stripe StripeClient, order *client.OrderClient) *PaymentService {
+func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order client.OrderClient) *PaymentService {
 	return &PaymentService{
 		Repo:   repo,
 		Stripe: stripe,
