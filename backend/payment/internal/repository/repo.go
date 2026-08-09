@@ -77,12 +77,12 @@ func (p *PaymentRepository) GetPaymentByOrderID(ctx context.Context, orderID int
 	return &payment, nil
 }
 
-func (p *PaymentRepository) UpdatePaymentStatus(ctx context.Context, paymentID int, status string, paymentIntentID int) error {
+func (p *PaymentRepository) UpdatePaymentStatus(ctx context.Context, paymentID int, status string) error {
 	result, err := p.Db.ExecContext(ctx, `
 		UPDATE payments
-		SET status = $2, payment_intent_id = $3, updated_at = NOW()
+		SET status = $2, updated_at = NOW()
 		WHERE id = $1
-	`, paymentID, status, paymentIntentID)
+	`, paymentID, status)
 
 	if err != nil {
 		return fmt.Errorf("failed to update payment status : %v", err)

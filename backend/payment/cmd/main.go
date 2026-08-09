@@ -3,9 +3,14 @@ package main
 import (
 	"log"
 	"log/slog"
+	"payment/internal/client"
 	"payment/internal/config"
 	"payment/internal/db"
+	"payment/internal/handler"
 	"payment/internal/repository"
+	"payment/internal/resilience"
+	"payment/internal/service"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -29,11 +34,26 @@ func main() {
 
 	// layers
 	repo := repository.NewPaymentRepository(database.Db)
-	_ = repo
+
+	// retry pattern
+	retry := resilience.NewRetry(3, 500*time.Millisecond, 5*time.Second, resilience.IsRetryable) // max attempts, base delay, max delay, isretryable function
+	// cb pattern
+	cb := resilience.NewCircuitBreaker()
+
+	// clients
+	orderClient := client.NewOrderClient(cfg.Orders.URL, retry, cb)
+	stripeClient := client.NewStripeClient(cfg.Stripe.BaseURL, cfg.Stripe.SecretKey, cfg.Stripe.SuccessURL, cfg.Stripe.CancelURL, retry, cb)
+
+	service := service.NewPaymentService(repo, *stripeClient, *orderClient)
+
+	handler := handler.NewPaymentHandler(service)
 
 	// routes
 	router := chi.NewRouter()
-	_ = router
+
+	router.Group(func(r chi.Router) {
+		r.Post("/api/v1/payments/create-checkout-session", handler.CreatePayment)
+	})
 
 	// server
 }
