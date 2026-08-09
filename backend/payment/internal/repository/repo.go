@@ -99,3 +99,14 @@ func (p *PaymentRepository) UpdatePaymentStatus(ctx context.Context, paymentID i
 
 	return nil
 }
+
+func (p *PaymentRepository) ExistByOrderID(ctx context.Context, orderID int) (bool, error) {
+	var count int
+	err := p.Db.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM payments WHERE order_id = $1
+	`, orderID).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("failed to check exist by order id : %v", err)
+	}
+	return count > 0, nil
+}
