@@ -53,6 +53,8 @@ func main() {
 
 	router.Group(func(r chi.Router) {
 		r.Post("/api/v1/payments/create-checkout-session", handler.CreatePayment)
+		r.Get("/api/v1/payments/{id}", handler.GetPaymentByID)
+
 	})
 
 	// server
