@@ -18,7 +18,7 @@ func main() {
 	cfg := config.LoadConfig()
 
 	// service proxy
-	sp, err := proxy.NewServiceProxy(cfg.Services.Auth.URL, cfg.Services.Cart.URL, cfg.Services.Vehicle.URL, cfg.Services.Orders.URL)
+	sp, err := proxy.NewServiceProxy(cfg.Services.Auth.URL, cfg.Services.Cart.URL, cfg.Services.Vehicle.URL, cfg.Services.Orders.URL, cfg.Services.Payment.URL)
 	if err != nil {
 		log.Printf("Failed to setup proxies : %v", err)
 	}
@@ -47,6 +47,7 @@ func main() {
 		log.Printf("🚗 vehicle service : %s", cfg.Services.Vehicle.URL)
 		log.Printf("🛒 cart service : %s", cfg.Services.Cart.URL)
 		log.Printf("📦 order service : %s", cfg.Services.Orders.URL)
+		log.Printf("💳 payment service : %s", cfg.Services.Payment.URL)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("gateway error : %v", err)

@@ -110,6 +110,22 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 				r.Patch("/orders/{id}/pay", serviceProxy.Orders)
 			})
 		})
+
+		// payment
+		r.Group(func(r chi.Router) {
+			r.Use(authMiddleware.Authenticate)
+			r.With(circuitBreaker.Protect("payments")).Group(func(r chi.Router) {
+				r.Post("/payments/create-checkout-session", serviceProxy.Payment)
+				r.Get("/payments/{id}", serviceProxy.Payment)
+				r.Get("/payments/order/{orderId}", serviceProxy.Payment)
+			})
+
+			r.Group(func(r chi.Router) {
+				r.Use(authMiddleware.Authenticate)
+				r.With(circuitBreaker.Protect("payments"))
+				r.Post("/payments/webhook", serviceProxy.Payment)
+			})
+		})
 	})
 
 	return router
