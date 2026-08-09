@@ -26,3 +26,8 @@ type OrderResponse struct {
 type UpdateOrderStatusRequest struct {
 	Status string `json:"status"`
 }
+
+type StripeCheckoutResponse struct {
+	ID  string `json:"id"`
+	URL string `json:"url"`
+}
