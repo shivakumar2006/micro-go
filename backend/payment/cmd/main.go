@@ -12,6 +12,7 @@ import (
 	"payment/internal/config"
 	"payment/internal/db"
 	"payment/internal/handler"
+	"payment/internal/middleware"
 	"payment/internal/repository"
 	"payment/internal/resilience"
 	"payment/internal/service"
@@ -19,6 +20,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -57,10 +59,20 @@ func main() {
 	// routes
 	router := chi.NewRouter()
 
+	router.Use(chimiddleware.Logger)
+	router.Use(chimiddleware.Recoverer)
+	router.Use(chimiddleware.RequestID)
+	router.Use(chimiddleware.RealIP)
+	router.Use(chimiddleware.Timeout(10 * time.Second))
+
+	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.AccessTokenSecret, cfg.JWT.RefreshTokenSecret)
+
 	router.Group(func(r chi.Router) {
-		r.Post("/api/v1/payments/create-checkout-session", handler.CreatePayment)
-		r.Get("/api/v1/payments/{id}", handler.GetPaymentByID)
-		r.Get("/api/v1/payments/order/{orderid}", handler.GetPaymentByOrderID)
+		r.Use(authMiddleware.Authenticate)
+
+		r.With(authMiddleware.RequireRole("customer")).Post("/api/v1/payments/create-checkout-session", handler.CreatePayment)
+		r.With(authMiddleware.RequireRole("customer")).Get("/api/v1/payments/{id}", handler.GetPaymentByID)
+		r.With(authMiddleware.RequireRole("customer")).Get("/api/v1/payments/order/{orderid}", handler.GetPaymentByOrderID)
 		r.Post("/api/v1/payments/webhook", handler.WebhookHandler)
 	})
 
