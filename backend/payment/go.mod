@@ -9,6 +9,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/stripe/stripe-go/v78 v78.12.0
+	github.com/stripe/stripe-go/v82 v82.5.1
 )
 
 require (

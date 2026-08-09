@@ -2,10 +2,14 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"payment/internal/client"
 	"payment/internal/db/storage"
 	"payment/internal/models"
+
+	"github.com/stripe/stripe-go/v78/webhook"
+	"github.com/stripe/stripe-go/v82"
 )
 
 type PaymentService struct {
@@ -120,5 +124,40 @@ func (p *PaymentService) UpdatePaymentStatus(ctx context.Context, paymentID int,
 		return fmt.Errorf("failed to update order status : %w", err)
 	}
 
+	return nil
+}
+
+func (p *PaymentService) HandleWebhook(ctx context.Context, payload []byte, signature string) error {
+	// verify signature
+	if signature == "" {
+		return fmt.Errorf("invalid signature")
+	}
+
+	event, err := webhook.ConstructEvent(payload, signature, p.WebhookSecret)
+	if err != nil {
+		return fmt.Errorf("invalid event: %w", err)
+	}
+
+	switch event.Type {
+	case "checkout.session.completed":
+		var session stripe.CheckoutSession
+		err := json.Unmarshal(event.Data.Raw, &session)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal webhook : %w", err)
+		}
+
+		payment, err := p.Repo.GetPaymentByStripeSessionID(ctx, session.ID)
+		if err != nil {
+			return fmt.Errorf("failed to get payment : %w", err)
+		}
+
+		if err := p.Repo.UpdatePaymentStatus(ctx, payment.ID, models.StatusPaid); err != nil {
+			return fmt.Errorf("failed to update payment status : %w", err)
+		}
+
+		if err := p.Order.UpdateOrderStatus(payment.OrderID, models.StatusPaid); err != nil {
+			return fmt.Errorf("failed to update order status : %w", err)
+		}
+	}
 	return nil
 }
