@@ -22,42 +22,48 @@ func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order c
 	}
 }
 
-func (p *PaymentService) CreatePayment(ctx context.Context, payment *models.Payment) error {
-	order, err := p.Order.GetOrder(payment.OrderID)
+func (p *PaymentService) CreatePayment(ctx context.Context, req *models.CreatePaymentRequest) (*models.StripeCheckoutResponse, error) {
+	if req.OrderID <= 0 {
+		return nil, fmt.Errorf("invalid order id")
+	}
+
+	order, err := p.Order.GetOrder(req.OrderID)
 	if err != nil {
-		return fmt.Errorf("failed to call order client : %w", err)
+		return nil, fmt.Errorf("failed to get order : %w", err)
 	}
 
 	if order.Status != models.StatusPending {
-		return fmt.Errorf("order status is pending")
+		return nil, fmt.Errorf("order is not in pending state")
 	}
 
-	exists, err := p.Repo.ExistByOrderID(ctx, payment.OrderID)
+	exists, err := p.Repo.ExistByOrderID(ctx, req.OrderID)
 	if err != nil {
-		return fmt.Errorf("failed to check order exist : %w", err)
+		return nil, fmt.Errorf("failed to find existing order id : %w", err)
 	}
 
 	if exists {
-		return fmt.Errorf("payment already exists for order id : %d", payment.OrderID)
+		return nil, fmt.Errorf("payment is already created for this order")
 	}
 
-	checkout, err := p.Stripe.CreateCheckoutSession(order)
+	// stripe session checkout
+	checkoutSession, err := p.Stripe.CreateCheckoutSession(order)
 	if err != nil {
-		return fmt.Errorf("failed to create checkout session : %w", err)
+		return nil, fmt.Errorf("failed to create checkout session : %w", err)
 	}
 
-	payment = &models.Payment{
+	payment := &models.Payment{
 		OrderID:         order.ID,
 		UserID:          order.UserID,
 		Amount:          order.TotalAmount,
-		Currency:        "inr",
-		StripeSessionID: checkout.ID,
+		Currency:        "INR",
+		Provider:        "STRIPE",
+		StripeSessionID: checkoutSession.ID,
 		Status:          models.StatusPending,
 	}
 
 	if err := p.Repo.CreatePayment(ctx, payment); err != nil {
-		return fmt.Errorf("failed to create payment : %w", err)
+		return nil, fmt.Errorf("failed to create payment : %w", err)
 	}
 
-	return nil
+	return checkoutSession, nil
 }

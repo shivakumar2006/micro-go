@@ -38,3 +38,7 @@ type StripeCheckoutResponse struct {
 	ID  string `json:"id"`
 	URL string `json:"url"`
 }
+
+type CreatePaymentRequest struct {
+	OrderID int `json:"order_id"`
+}
