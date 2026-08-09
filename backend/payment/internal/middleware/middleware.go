@@ -101,7 +101,7 @@ func (a *AuthMiddleware) RequireRole(role string) func(http.Handler) http.Handle
 				return
 			}
 			if useRole != role {
-				response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("role is not valid")))
+				response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("user is not authorized")))
 				return
 			}
 			next.ServeHTTP(w, r)
