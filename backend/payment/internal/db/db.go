@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"payment/internal/config"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type Database struct {
@@ -11,7 +13,7 @@ type Database struct {
 }
 
 func NewDatabase(config *config.Config) (*Database, error) {
-	data, err := sql.Open("postgres", fmt.Sprintf("host=%s, port=%s, user=%s, password=%s, dbname=%s", config.DB.Host, config.DB.Port, config.DB.User, config.DB.Password, config.DB.DBName))
+	data, err := sql.Open("pgx", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.DB.Host, config.DB.Port, config.DB.User, config.DB.Password, config.DB.DBName))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to db : %w", err)
 	}
