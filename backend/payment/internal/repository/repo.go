@@ -110,3 +110,21 @@ func (p *PaymentRepository) ExistByOrderID(ctx context.Context, orderID int) (bo
 	}
 	return count > 0, nil
 }
+
+func (p *PaymentRepository) GetPaymentByStripeSessionID(ctx context.Context, sessionID string) (*models.Payment, error) {
+	var payment models.Payment
+
+	err := p.Db.QueryRowContext(ctx, `
+		SELECT id, order_id, user_id, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at
+		FROM payments
+		WHERE stripe_session_id = $1
+	`, sessionID).Scan(&payment.ID, &payment.OrderID, &payment.UserID, &payment.Amount, &payment.Currency, &payment.Provider, &payment.PaymentIntentID, &payment.StripeSessionID, &payment.Status, &payment.CreatedAt, &payment.UpdatedAt)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("payment not found")
+		}
+		return nil, fmt.Errorf("failed to get payment by stripe session id : %v", err)
+	}
+	return &payment, nil
+}

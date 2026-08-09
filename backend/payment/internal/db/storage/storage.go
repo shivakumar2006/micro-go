@@ -11,4 +11,5 @@ type Storage interface {
 	GetPaymentByOrderID(ctx context.Context, orderID int) (*models.Payment, error)
 	UpdatePaymentStatus(ctx context.Context, paymentID int, status string) error
 	ExistByOrderID(ctx context.Context, orderID int) (bool, error)
+	GetPaymentByStripeSessionID(ctx context.Context, sessionID string) (*models.Payment, error)
 }

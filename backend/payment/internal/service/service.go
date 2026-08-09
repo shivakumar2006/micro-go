@@ -67,3 +67,58 @@ func (p *PaymentService) CreatePayment(ctx context.Context, req *models.CreatePa
 
 	return checkoutSession, nil
 }
+
+func (p *PaymentService) GetPaymentByID(ctx context.Context, id int) (*models.Payment, error) {
+	if id <= 0 {
+		return nil, fmt.Errorf("invalid payment id")
+	}
+
+	payment, err := p.Repo.GetPaymentByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get payment by id : %w", err)
+	}
+
+	return payment, nil
+}
+
+func (p *PaymentService) GetPaymentByOrderID(ctx context.Context, orderId int) (*models.Payment, error) {
+	if orderId <= 0 {
+		return nil, fmt.Errorf("invalid order id")
+	}
+
+	payment, err := p.Repo.GetPaymentByOrderID(ctx, orderId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get payment by order id : %w", err)
+	}
+
+	return payment, nil
+}
+
+func (p *PaymentService) UpdatePaymentStatus(ctx context.Context, paymentID int, status string) error {
+	if paymentID <= 0 {
+		return fmt.Errorf("invalid payment id")
+	}
+
+	payment, err := p.GetPaymentByID(ctx, paymentID)
+	if err != nil {
+		return fmt.Errorf("failed to get payment by id : %w", err)
+	}
+
+	if status != models.StatusPaid {
+		return fmt.Errorf("status is not in paid state")
+	}
+
+	if payment.Status == status {
+		return nil
+	}
+
+	if err := p.Repo.UpdatePaymentStatus(ctx, paymentID, status); err != nil {
+		return fmt.Errorf("failed to update payment status : %w", err)
+	}
+
+	if err := p.Order.UpdateOrderStatus(payment.OrderID, models.StatusPaid); err != nil {
+		return fmt.Errorf("failed to update order status : %w", err)
+	}
+
+	return nil
+}
