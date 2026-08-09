@@ -31,10 +31,11 @@ type OrdersConfig struct {
 }
 
 type StripeConfig struct {
-	BaseURL    string `yaml:"base_url"`
-	SecretKey  string `env:"SECRET_KEY"`
-	SuccessURL string `yaml:"success_url"`
-	CancelURL  string `yaml:"cancel_url"`
+	BaseURL       string `yaml:"base_url"`
+	SecretKey     string `env:"SECRET_KEY"`
+	WebhookSecret string `env:"STRIPE_WEBHOOK_SECRET"`
+	SuccessURL    string `yaml:"success_url"`
+	CancelURL     string `yaml:"cancel_url"`
 }
 
 type Config struct {
@@ -75,6 +76,13 @@ func LoadConfig() *Config {
 
 	if err := cleanenv.ReadConfig(configPath, &config); err != nil {
 		log.Fatal("Error reading config: ", err)
+	}
+
+	config.Stripe.SecretKey = os.Getenv("SECRET_KEY")
+	config.Stripe.WebhookSecret = os.Getenv("STRIPE_WEBHOOK_SECRET")
+
+	if err := cleanenv.ReadEnv(&config); err != nil {
+		log.Fatalf("error reading environment variables : %v", err)
 	}
 
 	log.Println("config successfully added")

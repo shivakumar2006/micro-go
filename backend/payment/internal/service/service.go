@@ -13,16 +13,18 @@ import (
 )
 
 type PaymentService struct {
-	Repo   storage.Storage
-	Stripe client.StripeClient
-	Order  client.OrderClient
+	Repo          storage.Storage
+	Stripe        client.StripeClient
+	Order         client.OrderClient
+	WebhookSecret string
 }
 
-func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order client.OrderClient) *PaymentService {
+func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order client.OrderClient, wh string) *PaymentService {
 	return &PaymentService{
-		Repo:   repo,
-		Stripe: stripe,
-		Order:  order,
+		Repo:          repo,
+		Stripe:        stripe,
+		Order:         order,
+		WebhookSecret: wh,
 	}
 }
 
