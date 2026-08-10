@@ -1,8 +1,8 @@
 package service
 
 import (
+	"inventory/internal/client"
 	"inventory/internal/repository"
-	"payment/internal/client"
 )
 
 type InventoryService struct {
