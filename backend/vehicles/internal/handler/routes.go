@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 	"vehicles/internal/models"
 	"vehicles/internal/service"
 	"vehicles/internal/utils"
@@ -180,5 +182,41 @@ func (v *VehicleHandler) DeleteVehicle(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, utils.Response{
 		Status:  utils.StatusOK,
 		Message: "Vehicle deleted successfully",
+	})
+}
+
+// patch /vehicles/{id}/decrease-stock
+func (v *VehicleHandler) DecreaseStock(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var req models.DecreaseStockRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.GeneralError(err))
+		return
+	}
+
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.GeneralError(fmt.Errorf("invalid vehicle id")))
+		return
+	}
+
+	if err := validate.Struct(req); err != nil {
+		validateErr := err.(validator.ValidationErrors)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ValidateErrors(validateErr))
+		return
+	}
+
+	if err := v.VehicleService.DecreaseStock(ctx, id, int(req.Quantity)); err != nil {
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.GeneralError(err))
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, utils.Response{
+		Status:  utils.StatusOK,
+		Message: "Stock decreased successfully",
 	})
 }

@@ -39,3 +39,7 @@ type VehicleQuery struct {
 type VehicleBulkRequest struct {
 	VehicleIDs []int `json:"vehicle_ids" validate:"required,min=1,dive,gt=0"`
 }
+
+type DecreaseStockRequest struct {
+	Quantity int `json:"quantity" validate:"required,min=1"`
+}

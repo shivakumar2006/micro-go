@@ -321,3 +321,45 @@ func (v *VehicleRepository) GetBulkVehicles(ids []int) ([]models.Vehicle, error)
 
 	return vehicles, nil
 }
+
+func (v *VehicleRepository) ExistByID(id int64) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var exist bool
+
+	err := v.Db.QueryRowContext(ctx, `
+		SELECT EXISTS(SELECT 1 FROM vehicles WHERE id = $1)
+	`, id).Scan(&exist)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to check existence : %w", err)
+	}
+
+	return exist, nil
+}
+
+func (v *VehicleRepository) DecreaseStock(ctx context.Context, vehicleID int64, quantity int) error {
+	query := `UPDATE vehicles
+		SET stock = stock - $1,
+			updated_at = NOW()
+		WHERE id = $2
+		AND stock >= $1
+	`
+
+	result, err := v.Db.ExecContext(ctx, query, vehicleID, quantity)
+	if err != nil {
+		return fmt.Errorf("failed to decrease stock : %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return fmt.Errorf("vehicle stock is insufficient")
+	}
+
+	return nil
+}

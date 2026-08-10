@@ -42,8 +42,7 @@ func (v *VehicleClient) doRequest(vehicleID, quantity int) (struct{}, error) {
 	slog.Info("calling vehicle service", slog.Int("vehicle_id", vehicleID), slog.String("url", url))
 
 	reqBody := models.DecreaseStockRequest{
-		VehicleID: int64(vehicleID),
-		Quantity:  quantity,
+		Quantity: quantity,
 	}
 
 	body, err := json.Marshal(reqBody)
@@ -53,7 +52,7 @@ func (v *VehicleClient) doRequest(vehicleID, quantity int) (struct{}, error) {
 	}
 	slog.Info("request marshaled", slog.Int("vehicle_id", vehicleID))
 
-	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(body))
 	if err != nil {
 		slog.Error("failed to create request", slog.String("error", err.Error()))
 		return struct{}{}, fmt.Errorf("failed to create request: %v", err)

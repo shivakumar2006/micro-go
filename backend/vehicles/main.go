@@ -71,6 +71,7 @@ func main() {
 	})
 	router.Get("/api/v1/vehicles", handler.GetAllVehicles)
 	router.Get("/api/v1/vehicles/{id}", handler.GetVehicleById)
+	router.Patch("/api/v1/vehicles/{id}/stock-decrease", handler.DecreaseStock)
 
 	// start server
 	server := http.Server{

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -253,6 +254,27 @@ func (s *Service) CheckDuplicateForUpdate(vehicle *models.Vehicle) error {
 
 	if exist {
 		return errors.New("vehicle already exist")
+	}
+
+	return nil
+}
+
+func (s *Service) DecreaseStock(ctx context.Context, vehicleID int64, quantity int) error {
+	if quantity <= 0 {
+		return fmt.Errorf("invalid quantity")
+	}
+
+	exists, err := s.VehicleRepo.ExistByID(int64(vehicleID))
+	if err != nil {
+		return fmt.Errorf("failed to check existence : %w", err)
+	}
+
+	if !exists {
+		return fmt.Errorf("vehicle not found")
+	}
+
+	if err := s.VehicleRepo.DecreaseStock(ctx, int64(vehicleID), quantity); err != nil {
+		return fmt.Errorf("failed to decrease vehicle stock : %w", err)
 	}
 
 	return nil
