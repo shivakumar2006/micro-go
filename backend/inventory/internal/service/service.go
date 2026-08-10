@@ -50,3 +50,36 @@ func (s *InventoryService) CreateTransaction(ctx context.Context, tx *models.Inv
 	}
 	return nil
 }
+
+func (s *InventoryService) GetTransactionByID(ctx context.Context, id int64) (*models.Inventory, error) {
+	if id <= 0 {
+		return nil, fmt.Errorf("invalid id")
+	}
+
+	result, err := s.Repo.GetTransactionByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction by id :  %w", err)
+	}
+
+	return result, nil
+}
+
+func (s *InventoryService) GetTransactionByOrderID(ctx context.Context, orderId int64) ([]models.Inventory, error) {
+	if orderId <= 0 {
+		return nil, fmt.Errorf("invalid orderid")
+	}
+
+	result, err := s.Repo.GetTransactionByOrderID(ctx, orderId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction by order id : %w", err)
+	}
+
+	return result, nil
+}
+
+func (s *InventoryService) UpdateTransactionStatus(ctx context.Context, transactionID int64, status string) error {
+	if transactionID <= 0 {
+		return fmt.Errorf("invalid transactionID")
+	}
+
+}
