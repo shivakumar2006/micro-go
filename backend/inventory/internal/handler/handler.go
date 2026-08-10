@@ -7,7 +7,11 @@ import (
 	"inventory/internal/service"
 	"inventory/internal/utils/response"
 	"net/http"
+
+	"github.com/go-playground/validator/v10"
 )
+
+var validate = validator.New()
 
 type InventoryHandler struct {
 	Service *service.InventoryService
@@ -28,6 +32,11 @@ func (h *InventoryHandler) CreateTransaction(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	if err := validate.Struct(req); err != nil {
+		validationErrs := err.(validator.ValidationErrors)
+		response.WriteJSON(w, http.StatusBadRequest, response.ValidateErrors(validationErrs))
+		return
+	}
 }
 
 // GET    /api/v1/inventory/{id}
