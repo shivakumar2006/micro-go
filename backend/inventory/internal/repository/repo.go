@@ -19,13 +19,6 @@ func NewInventoryRepository(db *sql.DB) *InventoryRepository {
 }
 
 func (r *InventoryRepository) CreateTransaction(ctx context.Context, tx *models.Inventory) error {
-	if tx.Quantity <= 0 {
-		return fmt.Errorf("invalid quantity : %d", tx.Quantity)
-	}
-	if tx.Operation != models.OperationCredit && tx.Operation != models.OperationDebit {
-		return fmt.Errorf("invalid operation : %s", tx.Operation)
-	}
-
 	query := `INSERT INTO inventory(
 		order_id, vehicle_id, quantity, operation, status, created_at, updated_at
 	) VALUES($1, $2, $3, $4, $5, NOW(), NOW())`

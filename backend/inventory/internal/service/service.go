@@ -22,10 +22,8 @@ func NewInventoryService(repo repository.InventoryRepository, orderClient *clien
 	}
 }
 
-func (s *InventoryService) CreateTransaction(ctx context.Context, tx *models.Inventory) error {
-	orderId := int(tx.OrderID)
-
-	order, err := s.OrderClient.GetOrders(orderId)
+func (s *InventoryService) CreateTransaction(ctx context.Context, orderID int64) error {
+	order, err := s.OrderClient.GetOrders(int(orderID))
 	if err != nil {
 		return fmt.Errorf("failed to get order : %w", err)
 	}
@@ -82,4 +80,31 @@ func (s *InventoryService) UpdateTransactionStatus(ctx context.Context, transact
 		return fmt.Errorf("invalid transactionID")
 	}
 
+	exists, err := s.GetTransactionByID(ctx, transactionID)
+	if err != nil {
+		return fmt.Errorf("transaction is not exist : %w", err)
+	}
+
+	if exists.Status == models.StatusFailed {
+		return fmt.Errorf("transaction already failed")
+	}
+
+	if exists.Status == models.StatusCompleted {
+		return fmt.Errorf("trnasaction already completed")
+	}
+
+	if err := s.Repo.UpdateTransactionStatus(ctx, transactionID, status); err != nil {
+		return fmt.Errorf("failed to udpate transaction status : %w", err)
+	}
+
+	return nil
+}
+
+func (s *InventoryService) GetTransactions(ctx context.Context) ([]models.Inventory, error) {
+	transactions, err := s.Repo.GetTransactions(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transactions : %w", err)
+	}
+
+	return transactions, nil
 }

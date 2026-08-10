@@ -50,3 +50,7 @@ type DecreaseStockRequest struct {
 	VehicleID int64 `json:"vehicle_id"`
 	Quantity  int   `json:"quantity"`
 }
+
+type CreateInventoryRequest struct {
+	OrderID int64 `json:"order_id" validate:"required,gt=0"`
+}
