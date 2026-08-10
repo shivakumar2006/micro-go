@@ -54,3 +54,7 @@ type DecreaseStockRequest struct {
 type CreateInventoryRequest struct {
 	OrderID int64 `json:"order_id" validate:"required,gt=0"`
 }
+
+type UpdateTransactionStatusRequest struct {
+	Status string `json:"status" validate:"required,oneof=PENDING SUCCESS FAILED"`
+}
