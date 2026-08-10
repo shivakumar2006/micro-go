@@ -14,21 +14,25 @@ type OrderClient struct {
 	BaseURL string
 	Client  *http.Client
 	Retry   *resilience.Retry
+	CB      *resilience.CircuitBreaker
 }
 
-func NewOrderClient(baseUrl string, retry *resilience.Retry) *OrderClient {
+func NewOrderClient(baseUrl string, retry *resilience.Retry, cb *resilience.CircuitBreaker) *OrderClient {
 	return &OrderClient{
 		BaseURL: baseUrl,
 		Client: &http.Client{
 			Timeout: 5 * time.Second,
 		},
 		Retry: retry,
+		CB:    cb,
 	}
 }
 
 func (c *OrderClient) GetOrders(orderID int) (*models.OrderResponse, error) {
-	return resilience.DoWithRetry(c.Retry, func() (*models.OrderResponse, error) {
-		return c.doRequest(orderID)
+	return resilience.Execute(c.CB, func() (*models.OrderResponse, error) {
+		return resilience.DoWithRetry(c.Retry, func() (*models.OrderResponse, error) {
+			return c.doRequest(orderID)
+		})
 	})
 }
 
