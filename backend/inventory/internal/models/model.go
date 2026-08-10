@@ -28,3 +28,17 @@ type Inventory struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type OrderResponse struct {
+	ID          int     `json:"id"`
+	UserID      int     `json:"user_id"`
+	Status      string  `json:"status"`
+	TotalAmount float64 `json:"total_amount"`
+
+	Items []OrderItem `json:"items"`
+}
+
+type OrderItem struct {
+	VehicleID int `json:"vehicle_id"`
+	Quantity  int `json:"quantity"`
+}

@@ -26,11 +26,21 @@ type JWTConfig struct {
 	RefreshSecret string `yaml:"refresh_secret"`
 }
 
+type ServicesConfig struct {
+	Orders   ServiceConfig `yaml:"orders"`
+	Vehicles ServiceConfig `yaml:"vehicles"`
+}
+
+type ServiceConfig struct {
+	URL string `yaml:"url"`
+}
+
 type Config struct {
-	Env    string       `yaml:"env"`
-	Server ServerConfig `yaml:"server"`
-	DB     DBConfig     `yaml:"db"`
-	JWT    JWTConfig    `yaml:"jwt"`
+	Env      string         `yaml:"env"`
+	Server   ServerConfig   `yaml:"server"`
+	Services ServicesConfig `yaml:"services"`
+	DB       DBConfig       `yaml:"db"`
+	JWT      JWTConfig      `yaml:"jwt"`
 }
 
 func LoadConfig() *Config {
