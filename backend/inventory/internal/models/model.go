@@ -42,3 +42,8 @@ type OrderItem struct {
 	VehicleID int `json:"vehicle_id"`
 	Quantity  int `json:"quantity"`
 }
+
+type DecreaseStockRequest struct {
+	VehicleID int64 `json:"vehicle_id"`
+	Quantity  int   `json:"quantity"`
+}
