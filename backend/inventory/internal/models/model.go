@@ -16,6 +16,9 @@ const (
 const (
 	OperationCredit = "CREDIT"
 	OperationDebit  = "DEBIT"
+
+	StatusCompleted = "COMPLETED"
+	StatusFailed    = "FAILED"
 )
 
 type Inventory struct {
