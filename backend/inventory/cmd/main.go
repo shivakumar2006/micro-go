@@ -6,6 +6,7 @@ import (
 	"inventory/internal/config"
 	"inventory/internal/db"
 	"inventory/internal/handler"
+	"inventory/internal/kafka"
 	"inventory/internal/repository"
 	"inventory/internal/resilience"
 	"inventory/internal/service"
@@ -49,6 +50,10 @@ func main() {
 
 	service := service.NewInventoryService(*repo, orderClient, vehicleClient)
 
+	// kafka consumer
+	consumer := kafka.NewConsumer([]string{"localhost:9092"}, "payment.success", "inventory-group")
+	defer consumer.Close()
+
 	handler := handler.NewInventoryHandler(service)
 
 	// routes
@@ -77,6 +82,23 @@ func main() {
 
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
+	consumerContext, consumerCancel := context.WithCancel(context.Background())
+	defer consumerCancel()
+
+	go func() {
+		slog.Info("kafka consumer started")
+
+		err := consumer.Start(consumerContext, func(event kafka.PaymentSuccessEvent) error {
+			slog.Info("payment success event received", slog.Int("order_id", int(event.OrderID)))
+
+			return service.CreateTransaction(consumerContext, event.OrderID)
+		})
+
+		if err != nil {
+			slog.Error("kafka consuer stopped", slog.String("error", err.Error()))
+		}
+	}()
+
 	go func() {
 		slog.Info("HTTP server listening...")
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -86,13 +108,14 @@ func main() {
 	}()
 
 	<-quit
+	consumerCancel()
 
 	slog.Info("inventory service is shutting down gracefully")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(shutdownCtx); err != nil {
 		slog.Error("inventory service forced to shutdown", "error", err)
 		log.Fatal("inventory service forced to shutdown", "error", err)
 	}

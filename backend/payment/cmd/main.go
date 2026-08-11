@@ -12,6 +12,7 @@ import (
 	"payment/internal/config"
 	"payment/internal/db"
 	"payment/internal/handler"
+	"payment/internal/kafka"
 	"payment/internal/middleware"
 	"payment/internal/repository"
 	"payment/internal/resilience"
@@ -52,7 +53,11 @@ func main() {
 	orderClient := client.NewOrderClient(cfg.Orders.URL, retry, cb)
 	stripeClient := client.NewStripeClient(cfg.Stripe.BaseURL, cfg.Stripe.SecretKey, cfg.Stripe.SuccessURL, cfg.Stripe.CancelURL, retry, cb)
 
-	service := service.NewPaymentService(repo, *stripeClient, *orderClient, cfg.Stripe.WebhookSecret)
+	// kafka
+	producer := kafka.NewProducer([]string{"localhost:9092"}, "payment-success")
+	defer producer.Close()
+
+	service := service.NewPaymentService(repo, *stripeClient, *orderClient, cfg.Stripe.WebhookSecret, producer)
 
 	handler := handler.NewPaymentHandler(service)
 

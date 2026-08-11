@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"payment/internal/client"
 	"payment/internal/db/storage"
+	"payment/internal/kafka"
 	"payment/internal/models"
 
 	"github.com/stripe/stripe-go/v78/webhook"
@@ -17,14 +18,16 @@ type PaymentService struct {
 	Stripe        client.StripeClient
 	Order         client.OrderClient
 	WebhookSecret string
+	Producer      *kafka.Producer
 }
 
-func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order client.OrderClient, wh string) *PaymentService {
+func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order client.OrderClient, wh string, producer *kafka.Producer) *PaymentService {
 	return &PaymentService{
 		Repo:          repo,
 		Stripe:        stripe,
 		Order:         order,
 		WebhookSecret: wh,
+		Producer:      producer,
 	}
 }
 
@@ -124,6 +127,19 @@ func (p *PaymentService) UpdatePaymentStatus(ctx context.Context, paymentID int,
 
 	if err := p.Order.UpdateOrderStatus(payment.OrderID, models.StatusPaid); err != nil {
 		return fmt.Errorf("failed to update order status : %w", err)
+	}
+
+	// kafka event
+	event := kafka.PaymentSuccessEvent{
+		OrderID:   int64(payment.OrderID),
+		PaymentID: int64(paymentID),
+		UserID:    int64(payment.UserID),
+		Status:    payment.Status,
+		CreatedAt: payment.CreatedAt,
+	}
+
+	if err := p.Producer.Publish(ctx, event); err != nil {
+		return fmt.Errorf("failed to publish payment success event : %w", err)
 	}
 
 	return nil

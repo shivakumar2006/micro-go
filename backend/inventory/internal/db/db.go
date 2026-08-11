@@ -13,7 +13,7 @@ type Database struct {
 }
 
 func NewDatabase(cfg config.Config) (*Database, error) {
-	data, err := sql.Open("pgx", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.DBName, cfg.DB.SSLMode))
+	data, err := sql.Open("pgx", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.DBName))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database : %w", err)
 	}
@@ -27,12 +27,12 @@ func NewDatabase(cfg config.Config) (*Database, error) {
 			id BIGSERIAL PRIMARY KEY,
 			order_id BIGINT NOT NULL,
 			vehicle_id BIGINT NOT NULL,
-			quantity INT NOT NULL
+			quantity INT NOT NULL,
 			operation VARCHAR(20) NOT NULL,
 			status VARCHAR(20) NOT NULL,
 			created_at TIMESTAMP DEFAULT NOW(),
-			updated_at TIMESTAMP DEFAULT NOW(),
-		)
+			updated_at TIMESTAMP DEFAULT NOW()
+		);
 	`)
 
 	if err != nil {
