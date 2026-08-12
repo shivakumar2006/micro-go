@@ -17,6 +17,7 @@ import ProtectedRoutes from "./components/ProtectedRoutes";
 import Cart from "./Pages/Cart";
 import AdminProfile from "./Pages/AdminProfile";
 import CustomerProfile from "./Pages/CustomerProfile";
+import Orders from "./Pages/Orders";
 
 const App = () => {
   const location = useLocation();
@@ -37,6 +38,7 @@ const App = () => {
   const isCart = location.pathname === "/cart";
   const isAdminProfile = location.pathname.startsWith("/admin/profile");
   const isCustomerProfile = location.pathname.startsWith("/customer/profile");
+  const isOrder = location.pathname === "/orders";
 
   return (
     <>
@@ -53,7 +55,7 @@ const App = () => {
       {/* Customer Navbar */}
       {isAuthenticated &&
         role === "customer" &&
-        (isVehicles || isVehicleDetails || isCart || isCustomerProfile) && <Navbar />}
+        (isVehicles || isVehicleDetails || isCart || isCustomerProfile || isOrder) && <Navbar />}
 
       {/* Admin Navbar */}
       {isAuthenticated &&
@@ -69,6 +71,7 @@ const App = () => {
         <Route path="/vehicles/details/:id" element={<VehicleDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/customer/profile" element={<CustomerProfile />} />
+        <Route path="/orders" element={<Orders />} />
 
         <Route element={<ProtectedRoutes allowRoles={["admin"]} />}>
           <Route path="/vehicles/admin" element={<AdminVehicles />} />

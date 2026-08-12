@@ -9,6 +9,8 @@ import {
   useCountItemsQuery,
 } from '../Redux/features/cart/cartApi'
 
+import { useCreateOrderMutation } from '../Redux/features/order/order'
+
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
@@ -212,6 +214,7 @@ export default function Cart() {
   const [updateCartItem] = useUpdateCartItemMutation()
   const [deleteCartItem] = useDeleteCartItemMutation()
   const [clearCart, { isLoading: isClearing }] = useClearCartMutation()
+  const [createOrder] = useCreateOrderMutation();
 
   const [updatingId, setUpdatingId] = useState(null)
   const [removingId, setRemovingId] = useState(null)
