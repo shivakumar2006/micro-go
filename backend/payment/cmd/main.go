@@ -50,7 +50,7 @@ func main() {
 	cb := resilience.NewCircuitBreaker()
 
 	// clients
-	orderClient := client.NewOrderClient(cfg.Orders.URL, retry, cb)
+	orderClient := client.NewOrderClient(cfg.Orders.URL, retry, cb, cfg.InternalServiceKey)
 	stripeClient := client.NewStripeClient(cfg.Stripe.BaseURL, cfg.Stripe.SecretKey, cfg.Stripe.SuccessURL, cfg.Stripe.CancelURL, retry, cb)
 
 	// kafka
@@ -72,13 +72,14 @@ func main() {
 
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.AccessTokenSecret, cfg.JWT.RefreshTokenSecret)
 
+	router.Post("/api/v1/payments/webhook", handler.WebhookHandler)
+
 	router.Group(func(r chi.Router) {
 		r.Use(authMiddleware.Authenticate)
 
 		r.With(authMiddleware.RequireRole("customer")).Post("/api/v1/payments/create-checkout-session", handler.CreatePayment)
 		r.With(authMiddleware.RequireRole("customer")).Get("/api/v1/payments/{id}", handler.GetPaymentByID)
 		r.With(authMiddleware.RequireRole("customer")).Get("/api/v1/payments/order/{orderid}", handler.GetPaymentByOrderID)
-		r.Post("/api/v1/payments/webhook", handler.WebhookHandler)
 	})
 
 	// server

@@ -51,7 +51,7 @@ func main() {
 	service := service.NewInventoryService(*repo, orderClient, vehicleClient)
 
 	// kafka consumer
-	consumer := kafka.NewConsumer([]string{"localhost:9092"}, "payment.success", "inventory-group")
+	consumer := kafka.NewConsumer([]string{"localhost:9092"}, "payment-success", "inventory-group")
 	defer consumer.Close()
 
 	handler := handler.NewInventoryHandler(service)
@@ -89,13 +89,26 @@ func main() {
 		slog.Info("kafka consumer started")
 
 		err := consumer.Start(consumerContext, func(event kafka.PaymentSuccessEvent) error {
-			slog.Info("payment success event received", slog.Int("order_id", int(event.OrderID)))
+			slog.Info(
+				"payment success event received",
+				slog.Int64("order_id", event.OrderID),
+				slog.Int64("payment_id", event.PaymentID),
+			)
 
-			return service.CreateTransaction(consumerContext, event.OrderID)
+			err := service.CreateTransaction(consumerContext, event.OrderID)
+			if err != nil {
+				slog.Error(
+					"failed to create inventory transaction",
+					slog.Int64("order_id", event.OrderID),
+					slog.String("error", err.Error()),
+				)
+			}
+
+			return err
 		})
 
 		if err != nil {
-			slog.Error("kafka consuer stopped", slog.String("error", err.Error()))
+			slog.Error("kafka consumer stopped", slog.String("error", err.Error()))
 		}
 	}()
 

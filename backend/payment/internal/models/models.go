@@ -16,7 +16,7 @@ type Payment struct {
 	Amount          float64   `json:"amount"`
 	Currency        string    `json:"currency"`
 	Provider        string    `json:"provider"`
-	PaymentIntentID string    `json:"payment_intent_id"`
+	PaymentIntentID *string   `json:"payment_intent_id"`
 	StripeSessionID string    `json:"stripe_session_id"`
 	Status          string    `json:"status"`
 	CreatedAt       time.Time `json:"created_at"`
@@ -41,4 +41,7 @@ type StripeCheckoutResponse struct {
 
 type CreatePaymentRequest struct {
 	OrderID int `json:"order_id"`
+}
+
+type StripeSession struct {
 }

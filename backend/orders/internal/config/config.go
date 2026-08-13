@@ -30,11 +30,12 @@ type CartConfig struct {
 }
 
 type Config struct {
-	Env    string       `yaml:"env"`
-	Server ServerConfig `yaml:"server"`
-	Cart   CartConfig   `yaml:"cart"`
-	DB     DBConfig     `yaml:"db"`
-	JWT    JWTConfig    `yaml:"jwt"`
+	Env                string       `yaml:"env"`
+	Server             ServerConfig `yaml:"server"`
+	Cart               CartConfig   `yaml:"cart"`
+	DB                 DBConfig     `yaml:"db"`
+	JWT                JWTConfig    `yaml:"jwt"`
+	InternalServiceKey string       `yaml:"internal_service_key"`
 }
 
 func LoadConfig() *Config {

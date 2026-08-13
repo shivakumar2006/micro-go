@@ -12,25 +12,27 @@ import (
 )
 
 type OrderClient struct {
-	BaseURL        string `json:"base_url"`
-	Client         *http.Client
-	Retry          *resilience.Retry
-	CircuitBreaker *resilience.CircuitBreaker
+	BaseURL            string `json:"base_url"`
+	Client             *http.Client
+	Retry              *resilience.Retry
+	CircuitBreaker     *resilience.CircuitBreaker
+	InternalServiceKey string
 }
 
-func NewOrderClient(baseURL string, retry *resilience.Retry, cb *resilience.CircuitBreaker) *OrderClient {
+func NewOrderClient(baseURL string, retry *resilience.Retry, cb *resilience.CircuitBreaker, internalServiceKey string) *OrderClient {
 	return &OrderClient{
-		BaseURL:        baseURL,
-		Client:         &http.Client{Timeout: 10 * time.Second},
-		Retry:          retry,
-		CircuitBreaker: cb,
+		BaseURL:            baseURL,
+		Client:             &http.Client{Timeout: 10 * time.Second},
+		Retry:              retry,
+		CircuitBreaker:     cb,
+		InternalServiceKey: internalServiceKey,
 	}
 }
 
-func (o *OrderClient) GetOrder(orderId int) (*models.OrderResponse, error) {
+func (o *OrderClient) GetOrder(orderId int, authHeader string) (*models.OrderResponse, error) {
 	return resilience.Execute(o.CircuitBreaker, func() (*models.OrderResponse, error) {
 		return resilience.DoRetry(o.Retry, func() (*models.OrderResponse, error) {
-			return o.doRequest(orderId)
+			return o.doRequest(orderId, authHeader)
 		})
 	})
 }
@@ -70,6 +72,10 @@ func (o *OrderClient) doUpdateOrderStatus(orderId int, status string) error {
 	slog.Info("request created", slog.Int("order_id", orderId))
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(
+		"Authorization",
+		"Internal "+o.InternalServiceKey,
+	)
 
 	res, err := o.Client.Do(req)
 	if err != nil {
@@ -91,17 +97,28 @@ func (o *OrderClient) doUpdateOrderStatus(orderId int, status string) error {
 	return nil
 }
 
-func (o *OrderClient) doRequest(orderId int) (*models.OrderResponse, error) {
+func (o *OrderClient) doRequest(orderId int, authHeader string) (*models.OrderResponse, error) {
 	url := fmt.Sprintf("%s/api/v1/orders/%d", o.BaseURL, orderId)
 
 	slog.Info("Calling order service", slog.Int("order_id", orderId), slog.String("url ", url))
 
 	start := time.Now()
 
-	res, err := o.Client.Get(url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		slog.Error("failed to call order service", slog.Int("order_id", orderId), slog.String("error", err.Error()))
-		return nil, fmt.Errorf("failed to call order service : %w", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", authHeader)
+
+	res, err := o.Client.Do(req)
+	if err != nil {
+		slog.Error(
+			"failed to call order service",
+			slog.Int("order_id", orderId),
+			slog.String("error", err.Error()),
+		)
+		return nil, fmt.Errorf("failed to call order service: %w", err)
 	}
 
 	defer res.Body.Close()

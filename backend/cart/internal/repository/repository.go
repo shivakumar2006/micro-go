@@ -88,17 +88,18 @@ func (c *CartRepository) GetUserCart(userId int) ([]models.Cart, error) {
 	return cart, nil
 }
 
-func (c *CartRepository) UpdateCartQuantity(cartId int, quantity int) (int, error) {
+func (c *CartRepository) UpdateCartQuantity(userID, cartID, quantity int) (int, error) {
 	ctx, cancel := newContext()
 	defer cancel()
 
 	result, err := c.DB.ExecContext(ctx, `
-		UPDATE cart
-		SET quantity = $1, updated_at = NOW()
-		WHERE id = $2
-	`, quantity, cartId)
+        UPDATE cart
+        SET quantity = $1, updated_at = NOW()
+        WHERE id = $2
+        AND user_id = $3
+    `, quantity, cartID, userID)
+
 	if err != nil {
-		slog.Error("Failed to update cart quantity", slog.Int("cart_id", cartId), slog.String("error", err.Error()))
 		return 0, fmt.Errorf("failed to update cart quantity : %w", err)
 	}
 
@@ -108,7 +109,7 @@ func (c *CartRepository) UpdateCartQuantity(cartId int, quantity int) (int, erro
 	}
 
 	if rows == 0 {
-		return 0, fmt.Errorf("no item found in cart")
+		return 0, errors.New("cart item not found")
 	}
 
 	return int(rows), nil
@@ -140,26 +141,22 @@ func (c *CartRepository) DeleteCartItem(userID, cartID int) (int, error) {
 	return int(rows), nil
 }
 
-func (c *CartRepository) DeleteCart(id int) (int, error) {
+func (c *CartRepository) DeleteCart(userID int) (int, error) {
 	ctx, cancel := newContext()
 	defer cancel()
 
 	result, err := c.DB.ExecContext(ctx, `
-		DELETE FROM cart
-		WHERE id = $1 AND user_id = $2
-	`, id)
+        DELETE FROM cart
+        WHERE user_id = $1
+    `, userID)
+
 	if err != nil {
-		slog.Error("Failed to delete cart", slog.Int("cart_id", id), slog.String("error", err.Error()))
 		return 0, fmt.Errorf("failed to delete cart: %w", err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get rows affected: %w", err)
-	}
-
-	if rows == 0 {
-		return 0, fmt.Errorf("no items in the cart: %w", err)
 	}
 
 	return int(rows), nil

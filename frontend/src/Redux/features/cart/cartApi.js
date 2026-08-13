@@ -22,12 +22,13 @@ export const cartApi = createApi({
         }),
 
         getUserCart: builder.query({
-            query: () => ({
+            query: (userId) => ({
                 url: "/cart",
                 method: "GET",
             }),
-
-            providesTags: ["cart"],
+            providesTags: (result, error, userId) => [
+                { type: "cart", id: userId }
+            ],
         }),
 
         updateCartItem: builder.mutation({

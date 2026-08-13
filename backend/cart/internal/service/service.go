@@ -121,7 +121,7 @@ func (c *CartService) UpdateCartQuantity(userId, cartId int, quantity int) (int,
 		return 0, errors.New("quantity must be greater than 0")
 	}
 
-	updateCart, err := c.CartRepo.UpdateCartQuantity(cartId, quantity)
+	updateCart, err := c.CartRepo.UpdateCartQuantity(userId, cartId, quantity)
 	if err != nil {
 		return 0, err
 	}
@@ -176,16 +176,16 @@ func (c *CartService) GetCartItemByID(cartID int64) (*models.Cart, error) {
 	return c.CartRepo.GetCartItemByID(cartID)
 }
 
-func (c *CartService) DeleteCart(id int) (int, error) {
-	deleteCart, err := c.CartRepo.DeleteCart(id)
+func (c *CartService) DeleteCart(userID int) (int, error) {
+	deleteCart, err := c.CartRepo.DeleteCart(userID)
 	if err != nil {
 		return 0, err
 	}
-	slog.Info("Cart deleted", slog.Int("user_id", id))
+	slog.Info("Cart deleted", slog.Int("user_id", userID))
 
-	c.CartCache.Delete(fmt.Sprintf("cart:%d", id))
-	c.CartCache.Delete(fmt.Sprintf("cart:total:%d", id))
-	c.CartCache.Delete(fmt.Sprintf("cart:count:%d", id))
+	c.CartCache.Delete(fmt.Sprintf("cart:%d", userID))
+	c.CartCache.Delete(fmt.Sprintf("cart:total:%d", userID))
+	c.CartCache.Delete(fmt.Sprintf("cart:count:%d", userID))
 
 	return deleteCart, nil
 }

@@ -10,7 +10,7 @@ export const orderApi = createApi({
     endpoints: (builder) => ({
         getOrderById: builder.query({
             query: (id) => ({
-                url: `/api/v1/orders/${id}`,
+                url: `/orders/${id}`,
                 method: "GET",
             }),
             providesTags: ["orders"],
@@ -18,7 +18,7 @@ export const orderApi = createApi({
 
         getOrdersByUserId: builder.query({
             query: (userId) => ({
-                url: `/api/v1/orders/user/${userId}`,
+                url: `/orders/user/${userId}`,
                 method: "GET",
             }),
             providesTags: ["orders"],
@@ -27,7 +27,7 @@ export const orderApi = createApi({
 
         createOrder: builder.mutation({
             query: (order) => ({
-                url: "/api/v1/orders",
+                url: "/orders",
                 method: "POST",
                 body: order,
             }),
@@ -36,7 +36,7 @@ export const orderApi = createApi({
 
         updateOrderStatus: builder.mutation({
             query: ({ id, ...body }) => ({
-                url: `/api/v1/orders/${id}/status`,
+                url: `/orders/${id}/status`,
                 method: "PATCH",
                 body,
             }),
@@ -45,7 +45,7 @@ export const orderApi = createApi({
 
         cancelOrder: builder.mutation({
             query: (id) => ({
-                url: `/api/v1/orders/${id}/cancel`,
+                url: `/orders/${id}/cancel`,
                 method: "PATCH",
             }),
             invalidatesTags: ["orders"],
@@ -53,7 +53,7 @@ export const orderApi = createApi({
 
         markOrderPaid: builder.mutation({
             query: ({ id, ...body }) => ({
-                url: `/api/v1/orders/${id}/pay`,
+                url: `/orders/${id}/pay`,
                 method: "PATCH",
                 body,
             }),

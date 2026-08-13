@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"payment/internal/models"
 	"payment/internal/service"
@@ -28,17 +29,23 @@ func (h *PaymentHandler) CreatePayment(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	authHeader := r.Header.Get("Authorization")
+
 	var req models.CreatePaymentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid request body : %w", err)))
 		return
 	}
 
-	payment, err := h.Service.CreatePayment(ctx, &req)
+	payment, err := h.Service.CreatePayment(ctx, &req, authHeader)
 	if err != nil {
 		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
 		return
 	}
+	slog.Info(
+		"Creating payment",
+		slog.Int("order_id", req.OrderID),
+	)
 
 	response.WriteJSON(w, http.StatusOK, map[string]any{
 		"id":  payment.ID,
@@ -106,6 +113,7 @@ func (h *PaymentHandler) WebhookHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := h.Service.HandleWebhook(ctx, payload, signature); err != nil {
+		slog.Error("webhook processing failed", slog.String("error", err.Error()))
 		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
 		return
 	}

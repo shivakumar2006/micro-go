@@ -18,6 +18,7 @@ import Cart from "./Pages/Cart";
 import AdminProfile from "./Pages/AdminProfile";
 import CustomerProfile from "./Pages/CustomerProfile";
 import Orders from "./Pages/Orders";
+import PaymentSuccess from "./Pages/PaymentSuccess";
 
 const App = () => {
   const location = useLocation();
@@ -39,6 +40,7 @@ const App = () => {
   const isAdminProfile = location.pathname.startsWith("/admin/profile");
   const isCustomerProfile = location.pathname.startsWith("/customer/profile");
   const isOrder = location.pathname === "/orders";
+  const isPaymentSuccess = location.pathname.startsWith("/payment/success");
 
   return (
     <>
@@ -55,7 +57,7 @@ const App = () => {
       {/* Customer Navbar */}
       {isAuthenticated &&
         role === "customer" &&
-        (isVehicles || isVehicleDetails || isCart || isCustomerProfile || isOrder) && <Navbar />}
+        (isVehicles || isVehicleDetails || isCart || isCustomerProfile || isOrder || isPaymentSuccess) && <Navbar />}
 
       {/* Admin Navbar */}
       {isAuthenticated &&
@@ -72,6 +74,7 @@ const App = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/customer/profile" element={<CustomerProfile />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
 
         <Route element={<ProtectedRoutes allowRoles={["admin"]} />}>
           <Route path="/vehicles/admin" element={<AdminVehicles />} />

@@ -9,8 +9,8 @@ import (
 	"payment/internal/kafka"
 	"payment/internal/models"
 
-	"github.com/stripe/stripe-go/v78/webhook"
 	"github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/webhook"
 )
 
 type PaymentService struct {
@@ -31,12 +31,12 @@ func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order c
 	}
 }
 
-func (p *PaymentService) CreatePayment(ctx context.Context, req *models.CreatePaymentRequest) (*models.StripeCheckoutResponse, error) {
+func (p *PaymentService) CreatePayment(ctx context.Context, req *models.CreatePaymentRequest, authHeader string) (*models.StripeCheckoutResponse, error) {
 	if req.OrderID <= 0 {
 		return nil, fmt.Errorf("invalid order id")
 	}
 
-	order, err := p.Order.GetOrder(req.OrderID)
+	order, err := p.Order.GetOrder(req.OrderID, authHeader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get order : %w", err)
 	}
@@ -67,6 +67,7 @@ func (p *PaymentService) CreatePayment(ctx context.Context, req *models.CreatePa
 		Currency:        "INR",
 		Provider:        "STRIPE",
 		StripeSessionID: checkoutSession.ID,
+		PaymentIntentID: nil,
 		Status:          models.StatusPending,
 	}
 
@@ -134,7 +135,7 @@ func (p *PaymentService) UpdatePaymentStatus(ctx context.Context, paymentID int,
 		OrderID:   int64(payment.OrderID),
 		PaymentID: int64(paymentID),
 		UserID:    int64(payment.UserID),
-		Status:    payment.Status,
+		Status:    models.StatusPaid,
 		CreatedAt: payment.CreatedAt,
 	}
 
@@ -151,7 +152,15 @@ func (p *PaymentService) HandleWebhook(ctx context.Context, payload []byte, sign
 		return fmt.Errorf("invalid signature")
 	}
 
-	event, err := webhook.ConstructEvent(payload, signature, p.WebhookSecret)
+	event, err := webhook.ConstructEventWithOptions(
+		payload,
+		signature,
+		p.WebhookSecret,
+		webhook.ConstructEventOptions{
+			IgnoreAPIVersionMismatch: true,
+		},
+	)
+
 	if err != nil {
 		return fmt.Errorf("invalid event: %w", err)
 	}
@@ -173,9 +182,9 @@ func (p *PaymentService) HandleWebhook(ctx context.Context, payload []byte, sign
 			return fmt.Errorf("failed to update payment status : %w", err)
 		}
 
-		if err := p.Order.UpdateOrderStatus(payment.OrderID, models.StatusPaid); err != nil {
-			return fmt.Errorf("failed to update order status : %w", err)
-		}
+		// if err := p.Order.UpdateOrderStatus(payment.OrderID, models.StatusPaid); err != nil {
+		// 	return fmt.Errorf("failed to update order status : %w", err)
+		// }
 	}
 	return nil
 }

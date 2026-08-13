@@ -14,6 +14,8 @@ import (
 
 type contextKey string
 
+const InternalServiceKey contextKey = "internal_service"
+
 const (
 	UserIDKey    contextKey = "UserId"
 	UserEmailKey contextKey = "email"
@@ -29,26 +31,41 @@ type Claims struct {
 }
 
 type AuthMiddleware struct {
-	AccessSecret  string `json:"access-secret"`
-	RefreshSecret string `json:"refresh-secret"`
+	AccessSecret       string `json:"access-secret"`
+	RefreshSecret      string `json:"refresh-secret"`
+	InternalServiceKey string `json:"internal-service-key"`
 }
 
-func NewAuthMiddleware(as, rs string) *AuthMiddleware {
+func NewAuthMiddleware(as, rs, isk string) *AuthMiddleware {
 	return &AuthMiddleware{
-		AccessSecret:  as,
-		RefreshSecret: rs,
+		AccessSecret:       as,
+		RefreshSecret:      rs,
+		InternalServiceKey: isk,
 	}
 }
 
 func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
+
+		// Internal service request
+		if authHeader == "Internal "+a.InternalServiceKey {
+			ctx := context.WithValue(
+				r.Context(),
+				InternalServiceKey,
+				true,
+			)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
+			return
+		}
+
 		if authHeader == "" {
 			response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(errors.New("authorization header is missing")))
 			return
 		}
 
-		parts := strings.SplitN(authHeader, "", 2)
+		parts := strings.SplitN(authHeader, " ", 2)
 
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(errors.New("invalid auth header format")))
@@ -108,6 +125,11 @@ func (a *AuthMiddleware) parseToken(tokenString, secret string) (*Claims, error)
 func (a *AuthMiddleware) RequireRole(role string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if internal, ok := r.Context().Value(InternalServiceKey).(bool); ok && internal {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			userRole, ok := r.Context().Value(RoleKey).(string)
 			if !ok {
 				response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(errors.New("user role not found in context")))

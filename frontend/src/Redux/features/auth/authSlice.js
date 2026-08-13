@@ -34,64 +34,6 @@ const authSlice = createSlice({
             state.isAuthenticated = true;
         }       
     },
-
-    // extraReducers: (builder) => {
-    //     builder.addMatcher(
-    //         authApi.endpoints.register.matchFulfilled,
-    //         (state, action) => {
-    //             state.User = action.payload.User
-    //             state.accessToken = action.payload.access_token
-    //             state.refreshToken = action.payload.refresh_token
-    //             state.role = action.payload.User.role_name
-    //             state.isAuthenticated = true
-    //         }
-    //     )
-
-    //     builder.addMatcher(
-    //         authApi.endpoints.login.matchFulfilled,
-    //         (state, action) => {
-    //             state.User = action.payload.User
-    //             state.accessToken = action.payload.access_token
-    //             state.refreshToken = action.payload.refresh_token
-    //             state.role = action.payload.User.role_name
-    //             state.isAuthenticated = true
-    //         }
-    //     )
-
-    //     builder.addMatcher(
-    //         authApi.endpoints.refreshToken.matchFulfilled,
-    //         (state, action) => {
-    //             state.User = action.payload.User
-    //             state.accessToken = action.payload.access_token
-    //             state.refreshToken = action.payload.refresh_token
-    //             state.role = action.payload.User.role_name
-    //             state.isAuthenticated = true
-    //         }
-    //     )
-
-    //     builder.addMatcher(
-    //         authApi.endpoints.logout.matchFulfilled,
-    //         (state) => {
-    //             authSlice.caseReducers.clearAuth(state)
-    //         }
-    //     )
-
-    //     builder.addMatcher(
-    //         authApi.endpoints.logoutAll.matchFulfilled,
-    //         (state) => {
-    //             authSlice.caseReducers.clearAuth(state)
-    //         }
-    //     )
-
-    //     builder.addMatcher(
-    //         authApi.endpoints.me.matchFulfilled,
-    //         (state, action) => {
-    //             state.User = action.payload;
-    //             state.role = action.payload.role_name;
-    //             state.isAuthenticated = true;
-    //         }
-    //     )
-    // }
 })
 
 export default authSlice.reducer;

@@ -113,19 +113,26 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 
 		// payment
 		r.Group(func(r chi.Router) {
+			// Protected payment routes
 			r.Use(authMiddleware.Authenticate)
-			r.With(circuitBreaker.Protect("payments")).Group(func(r chi.Router) {
-				r.Post("/payments/create-checkout-session", serviceProxy.Payment)
-				r.Get("/payments/{id}", serviceProxy.Payment)
-				r.Get("/payments/order/{orderId}", serviceProxy.Payment)
-			})
-
-			r.Group(func(r chi.Router) {
-				r.Use(authMiddleware.Authenticate)
-				r.With(circuitBreaker.Protect("payments"))
-				r.Post("/payments/webhook", serviceProxy.Payment)
-			})
+			r.With(circuitBreaker.Protect("payments")).Post(
+				"/payments/create-checkout-session",
+				serviceProxy.Payment,
+			)
+			r.With(circuitBreaker.Protect("payments")).Get(
+				"/payments/{id}",
+				serviceProxy.Payment,
+			)
+			r.With(circuitBreaker.Protect("payments")).Get(
+				"/payments/order/{orderId}",
+				serviceProxy.Payment,
+			)
 		})
+		// Webhook — NO JWT authentication
+		r.With(circuitBreaker.Protect("payments")).Post(
+			"/payments/webhook",
+			serviceProxy.Payment,
+		)
 	})
 
 	return router

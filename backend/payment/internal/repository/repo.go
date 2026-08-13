@@ -31,7 +31,11 @@ func (p *PaymentRepository) CreatePayment(ctx context.Context, payment *models.P
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
-				return fmt.Errorf("order already exists")
+				return fmt.Errorf(
+					"unique constraint violation: constraint=%s detail=%s",
+					pgErr.ConstraintName,
+					pgErr.Detail,
+				)
 			}
 			return fmt.Errorf("database error : %v", pgErr.Message)
 		}

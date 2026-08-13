@@ -61,7 +61,7 @@ func main() {
 	router.Use(chimiddleware.Recoverer)
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.RequestID)
-	router.Use(chimiddleware.Timeout(10 & time.Second))
+	router.Use(chimiddleware.Timeout(10 * time.Second))
 
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -69,13 +69,13 @@ func main() {
 		w.Write([]byte(`{"status": "ok", "service": "order_service"}`))
 	})
 
-	auth := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
+	auth := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret, cfg.InternalServiceKey)
 
 	router.Group(func(r chi.Router) {
 		r.Use(auth.Authenticate)
 		r.With(auth.RequireRole("customer")).Post("/api/v1/orders", handler.CreateOrder)
 		r.With(auth.RequireRole("customer")).Get("/api/v1/orders/{id}", handler.GetOrderByID)
-		r.With(auth.RequireRole("customer")).Get("/api/v1/orders/{user_Id}", handler.GetOrdersByUserID)
+		r.With(auth.RequireRole("customer")).Get("/api/v1/orders/user/{user_Id}", handler.GetOrdersByUserID)
 		r.With(auth.RequireRole("customer")).Patch("/api/v1/orders/{id}/status", handler.UpdateOrderStatus)
 		r.With(auth.RequireRole("customer")).Patch("/api/v1/orders/{id}/cancel", handler.CancelOrder)
 		r.With(auth.RequireRole("customer")).Patch("/api/v1/orders/{id}/pay", handler.MarkOrderPaid)

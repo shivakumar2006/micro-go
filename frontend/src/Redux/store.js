@@ -6,13 +6,14 @@ import { persistReducer, persistStore } from "redux-persist"
 import storageImport from "redux-persist/lib/storage";
 import { cartApi } from "./features/cart/cartApi";
 import { orderApi } from "./features/order/order";
+import { paymentApi } from "./features/payment/payment";
 
 const storage = storageImport.default ?? storageImport;
 
 const persistConfig = {
     key: "auth",
     storage,
-    whitelist: ["user", "accessToken", "refreshToken", "role", "isAuthenticated"],
+    whitelist: ["User", "accessToken", "refreshToken", "role", "isAuthenticated"],
 };
 
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
@@ -24,6 +25,7 @@ export const store = configureStore({
         [vehicleApi.reducerPath]: vehicleApi.reducer,
         [cartApi.reducerPath]: cartApi.reducer,
         [orderApi.reducerPath]: orderApi.reducer,
+        [paymentApi.reducerPath]: paymentApi.reducer,
     },
 
     middleware: (getDefaultMiddleware) =>
@@ -38,7 +40,7 @@ export const store = configureStore({
                     "persist/REGISTER",
                 ]
             }
-        }).concat(authApi.middleware, vehicleApi.middleware, cartApi.middleware, orderApi.middleware)
+        }).concat(authApi.middleware, vehicleApi.middleware, cartApi.middleware, orderApi.middleware, paymentApi.middleware)
 })
 
 export const persistor = persistStore(store);

@@ -10,6 +10,9 @@ import {
 } from '../Redux/features/cart/cartApi'
 
 import { useCreateOrderMutation } from '../Redux/features/order/order'
+import { useCreatePaymentMutation } from '../Redux/features/payment/payment'
+
+import { useSelector } from 'react-redux'
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -207,7 +210,10 @@ function CartItemRow({ item, onIncrease, onDecrease, onRemove, isUpdating, isRem
 }
 
 export default function Cart() {
-  const { data: cartData, isLoading, error } = useGetUserCartQuery()
+  const user = useSelector((state) => state.authReducer.User)
+  const userId = user?.id
+
+  const { data: cartData, isLoading, error } = useGetUserCartQuery(userId, {skip: !userId});
   const { data: totalData } = useGetCartTotalQuery()
   const { data: countData } = useCountItemsQuery()
 
@@ -215,6 +221,7 @@ export default function Cart() {
   const [deleteCartItem] = useDeleteCartItemMutation()
   const [clearCart, { isLoading: isClearing }] = useClearCartMutation()
   const [createOrder] = useCreateOrderMutation();
+  const [createPayment] = useCreatePaymentMutation();
 
   const [updatingId, setUpdatingId] = useState(null)
   const [removingId, setRemovingId] = useState(null)
@@ -261,6 +268,38 @@ export default function Cart() {
       await clearCart().unwrap()
     } finally {
       setConfirmClear(false)
+    }
+  }
+
+  async function handleCheckout() {
+    try {
+        const orderPayload = {
+            user_id: userId,
+            items: items.map((item) => {
+                const vehicle = getVehicleInfo(item)
+
+                return {
+                    vehicle_id: item.vehicle_id,
+                    quantity: item.quantity,
+                    price: vehicle.price
+                }
+            })
+        }
+        console.log("Creating order:", orderPayload);
+
+        const order = await createOrder(orderPayload).unwrap();
+
+        console.log("Order created:", order);
+
+        const payment = await createPayment({
+            order_id: order.id,
+        }).unwrap();
+
+        console.log("Payment session:", payment);
+
+        window.location.href = payment.url;
+    } catch(err) {
+        console.error("Error creating order:", err);
     }
   }
 
@@ -332,6 +371,7 @@ export default function Cart() {
 
                 <button
                   type="button"
+                  onClick={handleCheckout}
                   className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#FF5A1F] px-6 py-3 FleetOps-body text-[14px] font-semibold text-white shadow-[0_12px_24px_-8px_rgba(255,90,31,0.55)] transition-all hover:-translate-y-0.5"
                 >
                   Proceed to checkout
