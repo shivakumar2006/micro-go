@@ -45,7 +45,7 @@ func main() {
 	cb := resilience.NewCircuitBreaker()
 
 	// clients
-	orderClient := client.NewOrderClient(cfg.Services.Orders.URL, retry, cb)
+	orderClient := client.NewOrderClient(cfg.Services.Orders.URL, retry, cb, cfg.InternalServiceKey)
 	vehicleClient := client.NewVehicleClient(cfg.Services.Vehicles.URL, retry, cb)
 
 	service := service.NewInventoryService(*repo, orderClient, vehicleClient)

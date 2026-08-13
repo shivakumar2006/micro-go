@@ -178,8 +178,8 @@ func (p *PaymentService) HandleWebhook(ctx context.Context, payload []byte, sign
 			return fmt.Errorf("failed to get payment : %w", err)
 		}
 
-		if err := p.Repo.UpdatePaymentStatus(ctx, payment.ID, models.StatusPaid); err != nil {
-			return fmt.Errorf("failed to update payment status : %w", err)
+		if err := p.UpdatePaymentStatus(ctx, payment.ID, models.StatusPaid); err != nil {
+			return fmt.Errorf("failed to update payment status: %w", err)
 		}
 
 		// if err := p.Order.UpdateOrderStatus(payment.OrderID, models.StatusPaid); err != nil {

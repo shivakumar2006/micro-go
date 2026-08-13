@@ -38,10 +38,10 @@ func (o *OrderClient) GetOrder(orderId int, authHeader string) (*models.OrderRes
 }
 
 func (o *OrderClient) UpdateOrderStatus(orderId int, status string) error {
-	_, err := resilience.Execute(o.CircuitBreaker, func() (any, error) {
-		return resilience.DoRetry(o.Retry, func() (any, error) {
+	_, err := resilience.Execute(o.CircuitBreaker, func() (struct{}, error) {
+		return resilience.DoRetry(o.Retry, func() (struct{}, error) {
 			err := o.doUpdateOrderStatus(orderId, status)
-			return nil, err
+			return struct{}{}, err
 		})
 	})
 

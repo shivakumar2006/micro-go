@@ -11,20 +11,22 @@ import (
 )
 
 type OrderClient struct {
-	BaseURL string
-	Client  *http.Client
-	Retry   *resilience.Retry
-	CB      *resilience.CircuitBreaker
+	BaseURL            string
+	Client             *http.Client
+	Retry              *resilience.Retry
+	CB                 *resilience.CircuitBreaker
+	InternalServiceKey string
 }
 
-func NewOrderClient(baseUrl string, retry *resilience.Retry, cb *resilience.CircuitBreaker) *OrderClient {
+func NewOrderClient(baseUrl string, retry *resilience.Retry, cb *resilience.CircuitBreaker, isk string) *OrderClient {
 	return &OrderClient{
 		BaseURL: baseUrl,
 		Client: &http.Client{
 			Timeout: 5 * time.Second,
 		},
-		Retry: retry,
-		CB:    cb,
+		Retry:              retry,
+		CB:                 cb,
+		InternalServiceKey: isk,
 	}
 }
 
@@ -45,10 +47,17 @@ func (c *OrderClient) doRequest(orderID int) (*models.OrderResponse, error) {
 
 	start := time.Now()
 
-	res, err := c.Client.Get(url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Internal "+c.InternalServiceKey)
+
+	res, err := c.Client.Do(req)
 	if err != nil {
 		slog.Error("failed to call order service", slog.String("error", err.Error()))
-		return nil, fmt.Errorf("failed to get orders from order service : %w", err)
+		return nil, fmt.Errorf("failed to get orders from order service: %w", err)
 	}
 
 	defer res.Body.Close()

@@ -36,11 +36,20 @@ func NewDatabase(cfg *config.Config) (*Database, error) {
 			type VARCHAR(50) NOT NULL,
 
 			category VARCHAR(50) NOT NULL,
+			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		)
 	`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create table: %w", err)
+	}
+
+	_, err = db.Exec(`
+    ALTER TABLE vehicles
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add updated_at column: %w", err)
 	}
 
 	return &Database{Db: db}, nil

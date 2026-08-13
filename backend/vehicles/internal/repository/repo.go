@@ -341,13 +341,18 @@ func (v *VehicleRepository) ExistByID(id int64) (bool, error) {
 
 func (v *VehicleRepository) DecreaseStock(ctx context.Context, vehicleID int64, quantity int) error {
 	query := `UPDATE vehicles
-		SET stock = stock - $1,
-			updated_at = NOW()
-		WHERE id = $2
-		AND stock >= $1
-	`
+        SET stock = stock - $1,
+            updated_at = NOW()
+        WHERE id = $2
+        AND stock >= $1
+    `
 
-	result, err := v.Db.ExecContext(ctx, query, vehicleID, quantity)
+	result, err := v.Db.ExecContext(
+		ctx,
+		query,
+		quantity,
+		vehicleID,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to decrease stock : %w", err)
 	}
