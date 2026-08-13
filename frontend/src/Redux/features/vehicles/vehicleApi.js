@@ -21,8 +21,12 @@ export const vehicleApi = createApi({
         getVehicleById: builder.query({
             query: (id) => ({
                 url: `/vehicles/${id}`,
-                method: "GET"
-            })
+                method: "GET",
+            }),
+
+            providesTags: (result, error, id) => [
+                { type: "Vehicle", id },
+            ],
         }),
 
         createVehicle: builder.mutation({
@@ -31,26 +35,41 @@ export const vehicleApi = createApi({
                 method: "POST",
                 body: data,
             }),
+
             invalidatesTags: ["Vehicle"],
         }),
 
         updateVehicle: builder.mutation({
-            query: ({id, data}) => ({
+            query: ({ id, data }) => ({
                 url: `/vehicles/${id}`,
                 method: "PUT",
                 body: data,
             }),
-            invalidatesTags: ["Vehicle"]
+
+            invalidatesTags: (result, error, { id }) => [
+                { type: "Vehicle", id },
+                "Vehicle",
+            ],
         }),
 
         deleteVehicle: builder.mutation({
             query: (id) => ({
                 url: `/vehicles/${id}`,
-                method: "DELETE"
+                method: "DELETE",
             }),
-            invalidatesTags: ["Vehicle"]
-        }),
-    })
-})
 
-export const { useGetAllVehiclesQuery, useGetVehicleByIdQuery, useCreateVehicleMutation, useUpdateVehicleMutation, useDeleteVehicleMutation } = vehicleApi;
+            invalidatesTags: (result, error, id) => [
+                { type: "Vehicle", id },
+                "Vehicle",
+            ],
+        }),
+    }),
+});
+
+export const {
+    useGetAllVehiclesQuery,
+    useGetVehicleByIdQuery,
+    useCreateVehicleMutation,
+    useUpdateVehicleMutation,
+    useDeleteVehicleMutation,
+} = vehicleApi;
