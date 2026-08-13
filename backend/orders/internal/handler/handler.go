@@ -78,7 +78,7 @@ func (o *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 func (o *OrderHandler) GetOrdersByUserID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	idStr := chi.URLParam(r, "user_id")
+	idStr := chi.URLParam(r, "user_Id")
 	if idStr == "" {
 		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("invalid id")))
 		return

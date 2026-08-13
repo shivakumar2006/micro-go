@@ -3,6 +3,7 @@ import {
     useGetOrdersByUserIdQuery,
     useCancelOrderMutation
 } from '../Redux/features/order/order';
+import { useSelector } from "react-redux";
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -252,7 +253,14 @@ function OrderCard({ order, onCancelClick }) {
   )
 }
 
-export default function Orders({ userId }) {
+export default function Orders() {
+  const { User } = useSelector((state) => state.authReducer);
+
+  console.log("USER FROM REDUX:", User);
+
+  const userId = User?.id;
+  console.log("USER ID FROM REDUX:", userId);
+
   const { data, isLoading, error } = useGetOrdersByUserIdQuery(userId, { skip: !userId })
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
   const [cancelTarget, setCancelTarget] = useState(null)

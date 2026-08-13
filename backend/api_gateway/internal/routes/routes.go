@@ -104,7 +104,7 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 			r.With(circuitBreaker.Protect("orders")).Group(func(r chi.Router) {
 				r.Post("/orders", serviceProxy.Orders)
 				r.Get("/orders/{id}", serviceProxy.Orders)
-				r.Get("/orders/{userId}", serviceProxy.Orders)
+				r.Get("/orders/user/{userId}", serviceProxy.Orders)
 				r.Patch("/orders/{id}/status", serviceProxy.Orders)
 				r.Patch("/orders/{id}/cancel", serviceProxy.Orders)
 				r.Patch("/orders/{id}/pay", serviceProxy.Orders)
@@ -115,10 +115,7 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 		r.Group(func(r chi.Router) {
 			// Protected payment routes
 			r.Use(authMiddleware.Authenticate)
-			r.With(circuitBreaker.Protect("payments")).Post(
-				"/payments/create-checkout-session",
-				serviceProxy.Payment,
-			)
+			r.With(circuitBreaker.Protect("payments")).Post("/payments/create-checkout-session", serviceProxy.Payment)
 			r.With(circuitBreaker.Protect("payments")).Get(
 				"/payments/{id}",
 				serviceProxy.Payment,
