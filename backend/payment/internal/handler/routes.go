@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"payment/internal/middleware"
 	"payment/internal/models"
 	"payment/internal/service"
 	"payment/internal/utils/response"
@@ -31,13 +32,19 @@ func (h *PaymentHandler) CreatePayment(w http.ResponseWriter, r *http.Request) {
 
 	authHeader := r.Header.Get("Authorization")
 
+	userEmail, ok := r.Context().Value(middleware.UserEmailKey).(string)
+	if !ok {
+		response.WriteJSON(w, http.StatusUnauthorized, response.GeneralError(fmt.Errorf("user email not found in context")))
+		return
+	}
+
 	var req models.CreatePaymentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid request body : %w", err)))
 		return
 	}
 
-	payment, err := h.Service.CreatePayment(ctx, &req, authHeader)
+	payment, err := h.Service.CreatePayment(ctx, &req, authHeader, userEmail)
 	if err != nil {
 		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
 		return

@@ -42,5 +42,13 @@ func NewDatabase(config *config.Config) (*Database, error) {
 		return nil, fmt.Errorf("failed to create db : %w", err)
 	}
 
+	_, err = data.Exec(`
+		ALTER TABLE payments
+		ADD COLUMN email VARCHAR(255);
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add email column: %w", err)
+	}
+
 	return &Database{Db: data}, nil
 }

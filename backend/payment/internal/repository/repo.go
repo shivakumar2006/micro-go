@@ -22,10 +22,10 @@ func NewPaymentRepository(db *sql.DB) *PaymentRepository {
 
 func (p *PaymentRepository) CreatePayment(ctx context.Context, payment *models.Payment) error {
 	err := p.Db.QueryRowContext(ctx, `
-		INSERT INTO payments(order_id, user_id, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at)
-		VALUES($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+		INSERT INTO payments(order_id, user_id, email, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at)
+		VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
 		RETURNING id
-	`, payment.OrderID, payment.UserID, payment.Amount, payment.Currency, payment.Provider, payment.PaymentIntentID, payment.StripeSessionID, payment.Status).Scan(&payment.ID)
+	`, payment.OrderID, payment.UserID, payment.Email, payment.Amount, payment.Currency, payment.Provider, payment.PaymentIntentID, payment.StripeSessionID, payment.Status).Scan(&payment.ID)
 
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -49,10 +49,10 @@ func (p *PaymentRepository) GetPaymentByID(ctx context.Context, id int) (*models
 	var payment models.Payment
 
 	err := p.Db.QueryRowContext(ctx, `
-		SELECT id, order_id, user_id, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at
+		SELECT id, order_id, user_id, email, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at
 		FROM payments
 		WHERE id = $1
-	`, id).Scan(&payment.ID, &payment.OrderID, &payment.UserID, &payment.Amount, &payment.Currency, &payment.Provider, &payment.PaymentIntentID, &payment.StripeSessionID, &payment.Status, &payment.CreatedAt, &payment.UpdatedAt)
+	`, id).Scan(&payment.ID, &payment.OrderID, &payment.UserID, &payment.Email, &payment.Amount, &payment.Currency, &payment.Provider, &payment.PaymentIntentID, &payment.StripeSessionID, &payment.Status, &payment.CreatedAt, &payment.UpdatedAt)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -67,10 +67,10 @@ func (p *PaymentRepository) GetPaymentByOrderID(ctx context.Context, orderID int
 	var payment models.Payment
 
 	err := p.Db.QueryRowContext(ctx, `
-		SELECT id, order_id, user_id, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at
+		SELECT id, order_id, user_id, email, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at
 		FROM payments
 		WHERE order_id = $1
-	`, orderID).Scan(&payment.ID, &payment.OrderID, &payment.UserID, &payment.Amount, &payment.Currency, &payment.Provider, &payment.PaymentIntentID, &payment.StripeSessionID, &payment.Status, &payment.CreatedAt, &payment.UpdatedAt)
+	`, orderID).Scan(&payment.ID, &payment.OrderID, &payment.UserID, &payment.Email, &payment.Amount, &payment.Currency, &payment.Provider, &payment.PaymentIntentID, &payment.StripeSessionID, &payment.Status, &payment.CreatedAt, &payment.UpdatedAt)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -119,10 +119,10 @@ func (p *PaymentRepository) GetPaymentByStripeSessionID(ctx context.Context, ses
 	var payment models.Payment
 
 	err := p.Db.QueryRowContext(ctx, `
-		SELECT id, order_id, user_id, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at
+		SELECT id, order_id, user_id, email, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at
 		FROM payments
 		WHERE stripe_session_id = $1
-	`, sessionID).Scan(&payment.ID, &payment.OrderID, &payment.UserID, &payment.Amount, &payment.Currency, &payment.Provider, &payment.PaymentIntentID, &payment.StripeSessionID, &payment.Status, &payment.CreatedAt, &payment.UpdatedAt)
+	`, sessionID).Scan(&payment.ID, &payment.OrderID, &payment.UserID, &payment.Email, &payment.Amount, &payment.Currency, &payment.Provider, &payment.PaymentIntentID, &payment.StripeSessionID, &payment.Status, &payment.CreatedAt, &payment.UpdatedAt)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

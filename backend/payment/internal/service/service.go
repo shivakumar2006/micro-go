@@ -31,7 +31,7 @@ func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order c
 	}
 }
 
-func (p *PaymentService) CreatePayment(ctx context.Context, req *models.CreatePaymentRequest, authHeader string) (*models.StripeCheckoutResponse, error) {
+func (p *PaymentService) CreatePayment(ctx context.Context, req *models.CreatePaymentRequest, authHeader string, userEmail string) (*models.StripeCheckoutResponse, error) {
 	if req.OrderID <= 0 {
 		return nil, fmt.Errorf("invalid order id")
 	}
@@ -63,6 +63,7 @@ func (p *PaymentService) CreatePayment(ctx context.Context, req *models.CreatePa
 	payment := &models.Payment{
 		OrderID:         order.ID,
 		UserID:          order.UserID,
+		Email:           userEmail,
 		Amount:          order.TotalAmount,
 		Currency:        "INR",
 		Provider:        "STRIPE",
@@ -135,6 +136,7 @@ func (p *PaymentService) UpdatePaymentStatus(ctx context.Context, paymentID int,
 		OrderID:   int64(payment.OrderID),
 		PaymentID: int64(paymentID),
 		UserID:    int64(payment.UserID),
+		Email:     payment.Email,
 		Status:    models.StatusPaid,
 		CreatedAt: payment.CreatedAt,
 	}
@@ -181,10 +183,6 @@ func (p *PaymentService) HandleWebhook(ctx context.Context, payload []byte, sign
 		if err := p.UpdatePaymentStatus(ctx, payment.ID, models.StatusPaid); err != nil {
 			return fmt.Errorf("failed to update payment status: %w", err)
 		}
-
-		// if err := p.Order.UpdateOrderStatus(payment.OrderID, models.StatusPaid); err != nil {
-		// 	return fmt.Errorf("failed to update order status : %w", err)
-		// }
 	}
 	return nil
 }
