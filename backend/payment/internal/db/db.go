@@ -44,7 +44,7 @@ func NewDatabase(config *config.Config) (*Database, error) {
 
 	_, err = data.Exec(`
 		ALTER TABLE payments
-		ADD COLUMN email VARCHAR(255);
+		ADD COLUMN IF NOT EXISTS email VARCHAR(255);
 	`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add email column: %w", err)

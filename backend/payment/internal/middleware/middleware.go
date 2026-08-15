@@ -20,7 +20,7 @@ const (
 
 type Claims struct {
 	UserID    int    `json:"user_id"`
-	UserEmail string `json:"user_email"`
+	UserEmail string `json:"email"`
 	Role      string `json:"role"`
 	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims

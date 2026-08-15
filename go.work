@@ -8,4 +8,5 @@ use (
 	./backend/orders
 	./backend/payment
 	./backend/inventory
+	./backend/notification
 )
