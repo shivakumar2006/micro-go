@@ -6,27 +6,39 @@ import (
 	"os"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
 type ServerConfig struct {
 	Addr string `yaml:"address"`
 }
 
-type DBConfig struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	DBName   string `yaml:"dbname"`
+type KafkaConfig struct {
+	Addr    string `yaml:"address"`
+	Topic   string `yaml:"topic"`
+	GroupID string `yaml:"group_id"`
+}
+type BrevoConfig struct {
+	SMTPHost     string `yaml:"smtp_host"`
+	SMTPPort     int    `yaml:"smtp_port"`
+	SMTPUser     string `yaml:"smtp_user"`
+	SMTPPassword string `yaml:"smtp_password"`
+	SenderEmail  string `yaml:"sender_email"`
+	SenderName   string `yaml:"sender_name"`
 }
 
 type Config struct {
-	Env    string       `yaml:"env"`
 	Server ServerConfig `yaml:"server"`
-	DB     DBConfig     `yaml:"db"`
+	Kafka  KafkaConfig  `yaml:"kafka"`
+	Brevo  BrevoConfig  `yaml:"brevo"`
 }
 
 func LoadConfig() *Config {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("failed to load env : %v", err)
+	}
+
 	var configPath string
 
 	configPath = os.Getenv("CONFIG_PATH")
@@ -49,6 +61,10 @@ func LoadConfig() *Config {
 
 	if err := cleanenv.ReadConfig(configPath, &config); err != nil {
 		log.Fatalf("failed to read config: %v", err)
+	}
+
+	if err := cleanenv.ReadEnv(&config); err != nil {
+		log.Fatalf("failed to read env: %v", err)
 	}
 
 	log.Println("config file loaded successfully")
