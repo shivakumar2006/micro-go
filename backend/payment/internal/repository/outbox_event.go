@@ -18,10 +18,10 @@ func NewOutboxEventRepository(db *sql.DB) *OutboxEventRepository {
 }
 
 func (r *OutboxEventRepository) SaveEvent(ctx context.Context, event *models.OutboxEvent) error {
-	query := `INSERT INTO outbox_events (aggregate_type, aggregate_id, event_type, payload, created_at) 
-		VALUES ($1, $2, $3, $4, $5)
+	query := `INSERT INTO outbox_events (aggregate_type, aggregate_id, event_type, payload, status, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-	_, err := r.Db.ExecContext(ctx, query, event.AggregateType, event.AggregateID, event.EventType, event.Payload, event.CreatedAt)
+	_, err := r.Db.ExecContext(ctx, query, event.AggregateType, event.AggregateID, event.EventType, event.Payload, event.Status, event.CreatedAt, event.UpdatedAt)
 
 	if err != nil {
 		return fmt.Errorf("failed to save outbox event: %w", err)
