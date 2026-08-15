@@ -26,7 +26,7 @@ func NewEmailClient(host string, port int, username, password, senderEmail, send
 	}
 }
 
-func (c *EmailClient) SendEmail(ctx context.Context, to string, orderID int) error {
+func (c *EmailClient) SendEmail(ctx context.Context, to string, orderID int64) error {
 	subject := fmt.Sprintf("Payment Successful - Order #%d", orderID)
 
 	body := fmt.Sprintf("Your payment for Order #%d was successful.\n\nThank you for shopping with Fleet Ops.", orderID)
