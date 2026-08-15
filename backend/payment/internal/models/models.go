@@ -7,6 +7,9 @@ const (
 	StatusPaid      = "PAID"
 	StatusCancelled = "CANCELLED"
 	StatusDelivered = "DELIVERED"
+
+	OutboxStatusPending   = "PENDING"
+	OutboxStatusPublished = "PUBLISHED"
 )
 
 type Payment struct {
@@ -22,6 +25,17 @@ type Payment struct {
 	Status          string    `json:"status"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
+}
+
+type OutboxEvent struct {
+	ID            int       `json:"id"`
+	AggregateType string    `json:"aggregate_type"`
+	AggregateID   int64     `json:"aggregate_id"`
+	EventType     string    `json:"event_type"`
+	Payload       []byte    `json:"payload"`
+	Status        string    `json:"status"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 type OrderResponse struct {

@@ -43,6 +43,23 @@ func NewDatabase(config *config.Config) (*Database, error) {
 	}
 
 	_, err = data.Exec(`
+		CREATE TABLE IF NOT EXISTS outbox_events(
+			id BIGSERIAL PRIMARY KEY,
+			aggregate_type VARCHAR(100) NOT NULL,
+			aggregate_id BIGINT NOT NULL,
+			event_type VARCHAR(100) NOT NULL,
+			payload JSONB NOT NULL,
+			status VARCHAR(100) NOT NULL DEFAULT 'PENDING',
+			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+		);
+	`)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create outbox_events table : %w", err)
+	}
+
+	_, err = data.Exec(`
 		ALTER TABLE payments
 		ADD COLUMN IF NOT EXISTS email VARCHAR(255);
 	`)
