@@ -81,8 +81,8 @@ func (p *PaymentRepository) GetPaymentByOrderID(ctx context.Context, orderID int
 	return &payment, nil
 }
 
-func (p *PaymentRepository) UpdatePaymentStatus(ctx context.Context, paymentID int, status string) error {
-	result, err := p.Db.ExecContext(ctx, `
+func (p *PaymentRepository) UpdatePaymentStatusTx(ctx context.Context, tx *sql.Tx, paymentID int, status string) error {
+	result, err := tx.ExecContext(ctx, `
 		UPDATE payments
 		SET status = $2, updated_at = NOW()
 		WHERE id = $1
