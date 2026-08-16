@@ -31,7 +31,7 @@ func (w *OutboxWorker) ProcessPendingEvents(ctx context.Context) error {
 	for _, event := range pendingEvents {
 		key := strconv.FormatInt(event.AggregateID, 10)
 
-		if err := w.kafka.Publish(ctx, key, event.Payload); err != nil {
+		if err := w.kafka.PublishPayload(ctx, key, event.Payload); err != nil {
 			slog.Error("failed to publish outbox event", slog.Int("event_id", event.ID), slog.String("error", err.Error()))
 			continue
 		}

@@ -41,6 +41,18 @@ func (p *Producer) Publish(ctx context.Context, event PaymentSuccessEvent) error
 	return nil
 }
 
+func (p *Producer) PublishPayload(ctx context.Context, key string, payload []byte) error {
+	err := p.writer.WriteMessages(ctx, kafka.Message{
+		Key:   []byte(key),
+		Value: payload,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to write the message : %w", err)
+	}
+
+	return nil
+}
+
 func (p *Producer) Close() error {
 	return p.writer.Close()
 }
