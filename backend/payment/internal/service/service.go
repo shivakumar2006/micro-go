@@ -16,19 +16,18 @@ import (
 
 type PaymentService struct {
 	Repo          storage.Storage
+	Outbox        storage.OutboxStorage
 	Stripe        client.StripeClient
 	Order         client.OrderClient
 	WebhookSecret string
-	Producer      *kafka.Producer
 }
 
-func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order client.OrderClient, wh string, producer *kafka.Producer) *PaymentService {
+func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order client.OrderClient, wh string) *PaymentService {
 	return &PaymentService{
 		Repo:          repo,
 		Stripe:        stripe,
 		Order:         order,
 		WebhookSecret: wh,
-		Producer:      producer,
 	}
 }
 
@@ -163,7 +162,7 @@ func (p *PaymentService) UpdatePaymentStatus(ctx context.Context, paymentID int,
 	}
 
 	// save event transaction in outbox_event table
-	if err := p.Repo.SaveEventTx(ctx, tx, outboxEvent); err != nil {
+	if err := p.Outbox.SaveEventTx(ctx, tx, outboxEvent); err != nil {
 		return fmt.Errorf("failed to save event in outbox : %w", err)
 	}
 
@@ -174,10 +173,6 @@ func (p *PaymentService) UpdatePaymentStatus(ctx context.Context, paymentID int,
 
 	if err := p.Order.UpdateOrderStatus(payment.OrderID, models.StatusPaid); err != nil {
 		return fmt.Errorf("failed to update order status : %w", err)
-	}
-
-	if err := p.Producer.Publish(ctx, event); err != nil {
-		return fmt.Errorf("failed to publish payment success event : %w", err)
 	}
 
 	return nil

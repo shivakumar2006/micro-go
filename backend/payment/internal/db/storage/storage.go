@@ -14,8 +14,9 @@ type Storage interface {
 	UpdatePaymentStatusTx(ctx context.Context, tx *sql.Tx, paymentID int, status string) error
 	ExistByOrderID(ctx context.Context, orderID int) (bool, error)
 	GetPaymentByStripeSessionID(ctx context.Context, sessionID string) (*models.Payment, error)
+}
 
-	// outbox
+type OutboxStorage interface {
 	SaveEventTx(ctx context.Context, tx *sql.Tx, event *models.OutboxEvent) error
 	GetPendingEvents(ctx context.Context, status string) ([]models.OutboxEvent, error)
 	MarkAsPublished(ctx context.Context, eventID int) error
