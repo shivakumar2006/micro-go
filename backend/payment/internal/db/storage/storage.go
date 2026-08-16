@@ -7,6 +7,7 @@ import (
 )
 
 type Storage interface {
+	BeginTx(ctx context.Context) (*sql.Tx, error)
 	CreatePayment(ctx context.Context, payment *models.Payment) error
 	GetPaymentByID(ctx context.Context, id int) (*models.Payment, error)
 	GetPaymentByOrderID(ctx context.Context, orderID int) (*models.Payment, error)

@@ -20,6 +20,10 @@ func NewPaymentRepository(db *sql.DB) *PaymentRepository {
 	}
 }
 
+func (p *PaymentRepository) BeginTx(ctx context.Context) (*sql.Tx, error) {
+	return p.Db.BeginTx(ctx, nil)
+}
+
 func (p *PaymentRepository) CreatePayment(ctx context.Context, payment *models.Payment) error {
 	err := p.Db.QueryRowContext(ctx, `
 		INSERT INTO payments(order_id, user_id, email, amount, currency, provider, payment_intent_id, stripe_session_id, status, created_at, updated_at)
