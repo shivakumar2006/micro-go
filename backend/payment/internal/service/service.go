@@ -22,9 +22,10 @@ type PaymentService struct {
 	WebhookSecret string
 }
 
-func NewPaymentService(repo storage.Storage, stripe client.StripeClient, order client.OrderClient, wh string) *PaymentService {
+func NewPaymentService(repo storage.Storage, outbox storage.OutboxStorage, stripe client.StripeClient, order client.OrderClient, wh string) *PaymentService {
 	return &PaymentService{
 		Repo:          repo,
+		Outbox:        outbox,
 		Stripe:        stripe,
 		Order:         order,
 		WebhookSecret: wh,

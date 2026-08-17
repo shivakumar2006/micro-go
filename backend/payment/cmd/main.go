@@ -17,6 +17,7 @@ import (
 	"payment/internal/repository"
 	"payment/internal/resilience"
 	"payment/internal/service"
+	"payment/internal/worker"
 	"syscall"
 	"time"
 
@@ -43,6 +44,7 @@ func main() {
 
 	// layers
 	repo := repository.NewPaymentRepository(database.Db)
+	outboxRepo := repository.NewOutboxEventRepository(database.Db)
 
 	// retry pattern
 	retry := resilience.NewRetry(3, 500*time.Millisecond, 5*time.Second, resilience.IsRetryable) // max attempts, base delay, max delay, isretryable function
@@ -57,7 +59,9 @@ func main() {
 	producer := kafka.NewProducer([]string{"localhost:9092"}, "payment-success")
 	defer producer.Close()
 
-	service := service.NewPaymentService(repo, *stripeClient, *orderClient, cfg.Stripe.WebhookSecret, producer)
+	outboxWorker := worker.NewOutboxWorker(outboxRepo, producer)
+
+	service := service.NewPaymentService(repo, outboxRepo, *stripeClient, *orderClient, cfg.Stripe.WebhookSecret)
 
 	handler := handler.NewPaymentHandler(service)
 
@@ -97,6 +101,36 @@ func main() {
 
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
+	workerCtx, workerCancel := context.WithCancel(context.Background())
+	defer workerCancel()
+
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+
+		slog.Info("outbox worker started")
+
+		for {
+			select {
+			case <-ticker.C:
+				slog.Info("outbox worker tick")
+
+				if err := outboxWorker.ProcessPendingEvents(workerCtx); err != nil {
+					slog.Error(
+						"failed to process pending event",
+						slog.String("error", err.Error()),
+					)
+				}
+
+				slog.Info("outbox worker cycle completed")
+
+			case <-workerCtx.Done():
+				slog.Info("outbox worker stopped")
+				return
+			}
+		}
+	}()
+
 	go func() {
 		slog.Info("HTTP server is starting...")
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -106,6 +140,7 @@ func main() {
 	}()
 
 	<-quit
+	workerCancel()
 
 	slog.Info("payment service is shutting down...")
 
