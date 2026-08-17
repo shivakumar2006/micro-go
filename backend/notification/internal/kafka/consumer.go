@@ -40,6 +40,15 @@ func (c *Consumer) ReadMessage(ctx context.Context) (*PaymentSuccessEvent, error
 	return &event, nil
 }
 
+func (c *Consumer) FetchMessage(ctx context.Context) (kafka.Message, error) {
+	msg, err := c.reader.FetchMessage(ctx)
+	if err != nil {
+		return kafka.Message{}, err
+	}
+
+	return msg, nil
+}
+
 func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) error) error {
 	for {
 		event, err := c.ReadMessage(ctx)
