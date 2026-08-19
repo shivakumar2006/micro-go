@@ -56,6 +56,11 @@ func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) 
 			return err
 		}
 
+		fetch, err := c.FetchMessage(ctx)
+		if err != nil {
+			return err
+		}
+
 		if err := handler(*event); err != nil {
 			continue
 		}
