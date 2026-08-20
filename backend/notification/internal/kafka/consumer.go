@@ -64,5 +64,10 @@ func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) 
 		if err := handler(*event); err != nil {
 			continue
 		}
+
+		err = c.reader.CommitMessages(ctx, fetch)
+		if err != nil {
+			return err
+		}
 	}
 }
