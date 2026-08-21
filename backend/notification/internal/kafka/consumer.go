@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -50,18 +51,30 @@ func (c *Consumer) FetchMessage(ctx context.Context) (kafka.Message, error) {
 }
 
 func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) error) error {
-	for {
-		event, err := c.ReadMessage(ctx)
-		if err != nil {
-			return err
-		}
+	backoff := 1 * time.Second
+	maxBackoff := 10 * time.Second
 
+	for {
 		fetch, err := c.FetchMessage(ctx)
 		if err != nil {
+			time.Sleep(backoff)
+
+			backoff *= 2
+
+			if backoff > maxBackoff {
+				backoff = maxBackoff
+			}
+
+			continue
+		}
+
+		var event PaymentSuccessEvent
+
+		if err := json.Unmarshal(fetch.Value, &event); err != nil {
 			return err
 		}
 
-		if err := handler(*event); err != nil {
+		if err := handler(event); err != nil {
 			continue
 		}
 
@@ -69,5 +82,7 @@ func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) 
 		if err != nil {
 			return err
 		}
+
+		backoff = 1 * time.Second
 	}
 }

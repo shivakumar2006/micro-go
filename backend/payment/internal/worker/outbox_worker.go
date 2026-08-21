@@ -27,6 +27,10 @@ func (w *OutboxWorker) ProcessPendingEvents(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get pending events : %w", err)
 	}
+	slog.Info(
+		"pending outbox events fetched",
+		slog.Int("count", len(pendingEvents)),
+	)
 
 	for _, event := range pendingEvents {
 		key := strconv.FormatInt(event.AggregateID, 10)
