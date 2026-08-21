@@ -137,34 +137,3 @@ func (j *JWTManager) ValidateToken(tokenString string, secret string, tokenType 
 
 	return claims, nil
 }
-
-// func (j *JWTManager) ValidateToken(tokenString string, secret string, tokenType TokenType) (*Claims, error) {
-// 	token, err := jwt.ParseWithClaims(tokenString, &Claims{},
-// 		func(token *jwt.Token) (interface{}, error) {
-// 			fmt.Println("Using Secret:", secret)
-// 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-// 				return nil, errors.New("unexpected signing method")
-// 			}
-// 			return ([]byte(secret)), nil
-// 		},
-// 	)
-
-// 	if err != nil {
-// 		return nil, fmt.Errorf("cannot parse the token : %w", err)
-// 	}
-
-// 	// extract claims from token
-// 	claims, ok := token.Claims.(*Claims)
-// 	if !ok || !token.Valid {
-// 		return nil, errors.New("invalid token")
-// 	}
-// 	if claims.TokenType != string(tokenType) {
-// 		return nil, errors.New("invalid token type")
-// 	}
-
-// 	if claims.ExpiresAt.Time.Before(time.Now()) {
-// 		return nil, errors.New("token is expired")
-// 	}
-
-// 	return claims, nil
-// }
