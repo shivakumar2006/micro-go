@@ -39,11 +39,13 @@ func (w *OutboxWorker) ProcessPendingEvents(ctx context.Context) error {
 			slog.Error("failed to publish outbox event", slog.Int("event_id", event.ID), slog.String("error", err.Error()))
 			continue
 		}
+		slog.Info("outbox event published", slog.Int("event_id", event.ID))
 
 		if err := w.outbox.MarkAsPublished(ctx, event.ID); err != nil {
 			slog.Error("failed to mark outbox event as published", slog.Int("event_id", event.ID), slog.String("error", err.Error()))
 			continue
 		}
+		slog.Info("outbox event marked as published", slog.Int("event_id", event.ID))
 	}
 
 	return nil
