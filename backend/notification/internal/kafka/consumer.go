@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -57,6 +58,7 @@ func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) 
 	for {
 		fetch, err := c.FetchMessage(ctx)
 		if err != nil {
+			slog.Error("kafka fetch failed", slog.Any("error", err))
 			time.Sleep(backoff)
 
 			backoff *= 2
@@ -67,6 +69,7 @@ func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) 
 
 			continue
 		}
+		slog.Info("kafka message fetched")
 
 		var event PaymentSuccessEvent
 
