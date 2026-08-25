@@ -3,8 +3,8 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -52,40 +52,29 @@ func (c *Consumer) FetchMessage(ctx context.Context) (kafka.Message, error) {
 }
 
 func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) error) error {
-	backoff := 1 * time.Second
-	maxBackoff := 10 * time.Second
-
 	for {
 		fetch, err := c.FetchMessage(ctx)
 		if err != nil {
-			slog.Error("kafka fetch failed", slog.Any("error", err))
-			time.Sleep(backoff)
-
-			backoff *= 2
-
-			if backoff > maxBackoff {
-				backoff = maxBackoff
+			if ctx.Err() != nil {
+				return ctx.Err()
 			}
-
+			slog.Error("kafka fetch failed", slog.String("error", err.Error()))
 			continue
 		}
-		slog.Info("kafka message fetched")
 
 		var event PaymentSuccessEvent
 
 		if err := json.Unmarshal(fetch.Value, &event); err != nil {
-			return err
+			return fmt.Errorf("failed to unmarshal event : %w", err)
 		}
 
 		if err := handler(event); err != nil {
 			continue
 		}
 
-		err = c.reader.CommitMessages(ctx, fetch)
-		if err != nil {
-			return err
+		if err := c.reader.CommitMessages(ctx, fetch); err != nil {
+			return fmt.Errorf("failed to commit message: %w", err)
 		}
-
-		backoff = 1 * time.Second
+		slog.Info("messages committed successfully")
 	}
 }

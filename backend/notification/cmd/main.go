@@ -28,11 +28,6 @@ func main() {
 
 	notifyservice := service.NewNotificationService(emailClient)
 
-	// kafka
-	consumer := kafka.NewConsumer([]string{cfg.Kafka.Addr}, cfg.Kafka.Topic, cfg.Kafka.GroupID)
-
-	defer consumer.Close()
-
 	// server
 	server := &http.Server{
 		Addr:         cfg.Server.Addr,
@@ -49,16 +44,45 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		slog.Info("notification consumer started", slog.String("topic", cfg.Kafka.Topic), slog.String("groupId", cfg.Kafka.GroupID))
+		backoff := 1 * time.Second
+		maxBackoff := 10 * time.Second
 
-		err := consumer.Start(kafkaCtx, func(event kafka.PaymentSuccessEvent) error {
-			slog.Info("payment success event received", slog.Any("event", event))
+		for {
+			if kafkaCtx.Err() != nil {
+				return
+			}
 
-			return notifyservice.HandlePaymentSuccess(kafkaCtx, event)
-		})
+			consumer := kafka.NewConsumer([]string{cfg.Kafka.Addr}, cfg.Kafka.Topic, cfg.Kafka.GroupID)
 
-		if err != nil {
-			slog.Error("failed to start consumer", slog.Any("error", err))
+			slog.Info("notification consumer started", slog.String("topic", cfg.Kafka.Topic), slog.String("groupId", cfg.Kafka.GroupID))
+
+			err := consumer.Start(kafkaCtx, func(event kafka.PaymentSuccessEvent) error {
+				slog.Info("payment success event received", slog.Any("event", event))
+
+				return notifyservice.HandlePaymentSuccess(kafkaCtx, event)
+			})
+
+			consumer.Close()
+
+			if kafkaCtx.Err() != nil {
+				return
+			}
+
+			slog.Error("kafka consumer stopped", slog.String("error", err.Error()))
+
+			timer := time.NewTimer(backoff)
+
+			select {
+			case <-timer.C:
+			case <-kafkaCtx.Done():
+				timer.Stop()
+				return
+			}
+
+			backoff *= 2
+			if backoff > maxBackoff {
+				backoff = maxBackoff
+			}
 		}
 	}()
 
