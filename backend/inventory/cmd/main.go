@@ -50,10 +50,6 @@ func main() {
 
 	service := service.NewInventoryService(*repo, orderClient, vehicleClient)
 
-	// kafka consumer
-	consumer := kafka.NewConsumer([]string{"localhost:9092"}, "payment-success", "inventory-group")
-	defer consumer.Close()
-
 	handler := handler.NewInventoryHandler(service)
 
 	// routes
@@ -88,27 +84,55 @@ func main() {
 	go func() {
 		slog.Info("kafka consumer started")
 
-		err := consumer.Start(consumerContext, func(event kafka.PaymentSuccessEvent) error {
-			slog.Info(
-				"payment success event received",
-				slog.Int64("order_id", event.OrderID),
-				slog.Int64("payment_id", event.PaymentID),
-			)
+		backoff := 1 * time.Second
+		maxBackoff := 10 * time.Second
 
-			err := service.CreateTransaction(consumerContext, event.OrderID)
-			if err != nil {
-				slog.Error(
-					"failed to create inventory transaction",
-					slog.Int64("order_id", event.OrderID),
-					slog.String("error", err.Error()),
-				)
+		for {
+			if consumerContext.Err() != nil {
+				return
 			}
 
-			return err
-		})
+			consumer := kafka.NewConsumer([]string{"localhost:9092"}, "payment-success", "inventory-group")
 
-		if err != nil {
+			err := consumer.Start(consumerContext, func(event kafka.PaymentSuccessEvent) error {
+				slog.Info(
+					"payment success event received",
+					slog.Int64("order_id", event.OrderID),
+					slog.Int64("payment_id", event.PaymentID),
+				)
+
+				err := service.CreateTransaction(consumerContext, event.OrderID)
+				if err != nil {
+					slog.Error(
+						"failed to create inventory transaction",
+						slog.Int64("order_id", event.OrderID),
+						slog.String("error", err.Error()),
+					)
+				}
+
+				return err
+			})
+
+			consumer.Close()
+
+			if consumerContext.Err() != nil {
+				return
+			}
+
 			slog.Error("kafka consumer stopped", slog.String("error", err.Error()))
+
+			timer := time.NewTimer(backoff)
+			select {
+			case <-timer.C:
+			case <-consumerContext.Done():
+				timer.Stop()
+				return
+			}
+
+			backoff *= 2
+			if backoff > maxBackoff {
+				backoff = maxBackoff
+			}
 		}
 	}()
 

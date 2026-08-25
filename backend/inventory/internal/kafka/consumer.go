@@ -3,6 +3,8 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log/slog"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -40,15 +42,40 @@ func (c *Consumer) ReadMessage(ctx context.Context) (*PaymentSuccessEvent, error
 	return &event, nil
 }
 
+func (c *Consumer) FetchMessage(ctx context.Context) (kafka.Message, error) {
+	msg, err := c.reader.FetchMessage(ctx)
+	if err != nil {
+		return kafka.Message{}, nil
+	}
+
+	return msg, nil
+}
+
 func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) error) error {
 	for {
-		event, err := c.ReadMessage(ctx)
+		fetch, err := c.FetchMessage(ctx)
 		if err != nil {
-			return err
-		}
-
-		if err := handler(*event); err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			slog.Error("kafka fetch failed", slog.String("error", err.Error()))
 			continue
 		}
+
+		var event PaymentSuccessEvent
+
+		if err := json.Unmarshal(fetch.Value, &event); err != nil {
+			return fmt.Errorf("failed to unmarshal event : %w", err)
+		}
+
+		if err := handler(event); err != nil {
+			continue
+		}
+
+		if err := c.reader.CommitMessages(ctx, fetch); err != nil {
+			return fmt.Errorf("failed to commit message : %w", err)
+		}
+
+		slog.Info("event processed successfully")
 	}
 }
