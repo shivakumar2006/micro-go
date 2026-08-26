@@ -3,8 +3,10 @@ package handler
 import (
 	"analytics/internal/kafka"
 	"analytics/internal/service"
+	"analytics/internal/utils/response"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -34,8 +36,22 @@ func (h *Handler) ProcessPaymentSuccess(w http.ResponseWriter, r *http.Request) 
 	var req kafka.PaymentSuccessEvent
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid request body")))
+		return
 	}
 
-	if err := validate.Struct()
+	if err := validate.Struct(req); err != nil {
+		validateErr := err.(validator.ValidationErrors)
+		response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid request: %v", validateErr.Error())))
+		return
+	}
+
+	if err := h.Service.ProcessPaymentSuccess(ctx, req); err != nil {
+		response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "payment success event processed successfully",
+	})
 }

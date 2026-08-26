@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -27,9 +28,8 @@ func WriteJSON(w http.ResponseWriter, status int, data any) error {
 
 func GeneralError(err error) *Response {
 	return &Response{
-		Status:  StatusError,
-		Message: "something went wrong",
-		Error:   err.Error(),
+		Status: StatusError,
+		Error:  err.Error(),
 	}
 }
 
@@ -42,12 +42,18 @@ func ValidateErrors(errs validator.ValidationErrors) Response {
 			errMsg = append(errMsg, fmt.Sprintf("%s is required", err.Field()))
 		case "gt":
 			errMsg = append(errMsg, fmt.Sprintf("%s must be greater than %s", err.Field(), err.Param()))
+		case "email":
+			errMsg = append(errMsg, fmt.Sprintf("%s must be a valid email", err.Field()))
+		case "eq":
+			errMsg = append(errMsg, fmt.Sprintf("%s must be equal to %s", err.Field(), err.Param()))
+		default:
+			errMsg = append(errMsg, fmt.Sprintf("%s is invalid", err.Field()))
 		}
 	}
 
 	return Response{
 		Status:  StatusError,
 		Message: "validation error",
-		Error:   strings.join(errMsg, ","),
+		Error:   strings.Join(errMsg, ", "),
 	}
 }
