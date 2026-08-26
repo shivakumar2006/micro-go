@@ -10,5 +10,5 @@ type Analytics struct {
 	Email     string    `json:"email"`
 	Status    string    `json:"status"`
 	PaidAt    time.Time `json:"paid_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
 }

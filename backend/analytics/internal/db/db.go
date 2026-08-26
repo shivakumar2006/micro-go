@@ -29,7 +29,7 @@ func NewDatabase(config config.Config) (*Database, error) {
 			email VARCHAR(200) NOT NULL,
 			status VARCHAR(50) NOT NULL,
 			paid_at TIMESTAMP NOT NULL,
-			updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+			created_at TIMESTAMP NOT NULL DEFAULT NOW()
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_payment_analytics_user_id
