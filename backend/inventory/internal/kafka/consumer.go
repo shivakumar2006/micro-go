@@ -59,7 +59,7 @@ func (c *Consumer) Start(ctx context.Context, handler func(PaymentSuccessEvent) 
 				return ctx.Err()
 			}
 			slog.Error("kafka fetch failed", slog.String("error", err.Error()))
-			continue
+			return fmt.Errorf("kafka failed to fetch messages : %w", err)
 		}
 
 		var event PaymentSuccessEvent
