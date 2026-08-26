@@ -9,4 +9,5 @@ use (
 	./backend/payment
 	./backend/inventory
 	./backend/notification
+	./backend/analytics
 )
