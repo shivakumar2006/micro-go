@@ -56,3 +56,16 @@ func (a *AnalyticRepository) GetPaymentAnalytic(ctx context.Context) ([]models.A
 
 	return payments, nil
 }
+
+func (a *AnalyticRepository) GetPaymentByPaymentID(ctx context.Context, id int64) (*models.Analytics, error) {
+	query := `SELECT id, payment_id, order_id, user_id, email, status, paid_at, created_at
+			FROM payment_analytics WHERE payment_id = $1
+	`
+	var payment models.Analytics
+	err := a.Db.QueryRowContext(ctx, query, id).Scan(&payment.ID, &payment.PaymentID, &payment.OrderID, &payment.UserID, &payment.Email, &payment.Status, &payment.PaidAt, &payment.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get payment analytic : %w", err)
+	}
+
+	return &payment, nil
+}
