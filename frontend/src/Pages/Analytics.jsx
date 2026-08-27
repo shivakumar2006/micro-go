@@ -116,6 +116,18 @@ export default function Analytics({ events = sampleEvents }) {
 
   console.log("analytics data : ", data);
 
+  if (isLoading) {
+    return <div>
+        <p>Loading...</p>
+    </div>
+  }
+
+  if (error) {
+    return <div>
+        <p>error...</p>
+    </div>
+  }
+
   const rows = events.map((e) => ({
     orderId: field(e, 'OrderID', 'order_id'),
     paymentId: field(e, 'PaymentID', 'payment_id'),
