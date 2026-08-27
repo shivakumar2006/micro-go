@@ -185,11 +185,11 @@ export default function Analytics({ events = sampleEvents }) {
             options={statusOptions}
           />
           <p className="FleetOps-mono text-[11px] text-[#5B6472]">
-            {filtered.length} event{filtered.length === 1 ? '' : 's'}
+            {data.length} event{data.length === 1 ? '' : 's'}
           </p>
         </div>
 
-        {filtered.length > 0 ? (
+        {data.length > 0 ? (
           <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -204,13 +204,13 @@ export default function Analytics({ events = sampleEvents }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((r, i) => {
+                  {data.map((r, i) => {
                     const s = statusMeta[r.status] || { label: r.status, bg: '#F1F5F9', text: '#475569', dot: '#475569' }
                     return (
                       <tr key={`${r.orderId}-${r.paymentId}-${i}`} className="border-b border-slate-100 transition-colors last:border-0 hover:bg-[#F9FAFB]">
-                        <td className="whitespace-nowrap px-5 py-3.5 FleetOps-mono text-[13px] font-medium text-[#0B0E14]">#{r.orderId}</td>
-                        <td className="whitespace-nowrap px-5 py-3.5 FleetOps-mono text-[13px] text-[#5B6472]">#{r.paymentId}</td>
-                        <td className="whitespace-nowrap px-5 py-3.5 FleetOps-mono text-[13px] text-[#5B6472]">#{r.userId}</td>
+                        <td className="whitespace-nowrap px-5 py-3.5 FleetOps-mono text-[13px] font-medium text-[#0B0E14]">#{r.order_id}</td>
+                        <td className="whitespace-nowrap px-5 py-3.5 FleetOps-mono text-[13px] text-[#5B6472]">#{r.payment_id}</td>
+                        <td className="whitespace-nowrap px-5 py-3.5 FleetOps-mono text-[13px] text-[#5B6472]">#{r.user_id}</td>
                         <td className="whitespace-nowrap px-5 py-3.5 FleetOps-body text-[13px] text-[#0B0E14]">{r.email}</td>
                         <td className="whitespace-nowrap px-5 py-3.5">
                           <span
@@ -222,7 +222,7 @@ export default function Analytics({ events = sampleEvents }) {
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-5 py-3.5 FleetOps-mono text-[11.5px] text-[#5B6472]">
-                          {formatTimestamp(r.createdAt)}
+                          {formatTimestamp(r.created_at)}
                         </td>
                       </tr>
                     )
