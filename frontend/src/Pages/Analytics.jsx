@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react';
+import { useGetPaymentAnalyticQuery } from '../Redux/features/analytics/analytics';
 
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
@@ -110,6 +111,10 @@ function SelectField({ icon, value, onChange, options, label }) {
 
 export default function Analytics({ events = sampleEvents }) {
   const [statusFilter, setStatusFilter] = useState('all')
+
+  const { data, isLoading, error } = useGetPaymentAnalyticQuery();
+
+  console.log("analytics data : ", data);
 
   const rows = events.map((e) => ({
     orderId: field(e, 'OrderID', 'order_id'),
