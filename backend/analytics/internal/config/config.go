@@ -21,9 +21,9 @@ type DBConfig struct {
 }
 
 type KafkaConfig struct {
-	Addr    string `yaml:"address"`
-	Topic   string `yaml:"topic"`
-	GroupID string `yaml:"group_id"`
+	Addr    []string `yaml:"address"`
+	Topic   string   `yaml:"topic"`
+	GroupID string   `yaml:"group_id"`
 }
 
 type Config struct {

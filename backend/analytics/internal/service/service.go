@@ -53,15 +53,15 @@ func (s *Service) GetPaymentByPaymentID(ctx context.Context, paymentID int64) (*
 }
 
 func (s *Service) GetPaymentByOrderID(ctx context.Context, orderID int64) (*models.Analytics, error) {
-	data, err := s.storage.GetPaymentAnalyticsByOrderID(ctx, orderID)
+	data, err := s.storage.GetPaymentByOrderID(ctx, orderID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get payment by order id : %w", err)
 	}
 	return data, nil
 }
 
-func (s *Service) GetPaymentByUserID(ctx context.Context, userID int64) (*models.Analytics, error) {
-	data, err := s.storage.GetPaymentAnalyticsByUserID(ctx, userID)
+func (s *Service) GetPaymentByUserID(ctx context.Context, userID int64) ([]models.Analytics, error) {
+	data, err := s.storage.GetPaymentByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get payment by user id : %w", err)
 	}

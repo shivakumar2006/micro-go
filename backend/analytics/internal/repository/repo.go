@@ -28,7 +28,7 @@ func (a *AnalyticRepository) CreatePaymentAnalytic(ctx context.Context, event *m
 	return nil
 }
 
-func (a *AnalyticRepository) GetPaymentAnalytic(ctx context.Context) ([]models.Analytics, error) {
+func (a *AnalyticRepository) GetPaymentAnalytics(ctx context.Context) ([]models.Analytics, error) {
 	var payments []models.Analytics
 
 	query := `SELECT id, payment_id, order_id, user_id, email, status, paid_at, created_at
