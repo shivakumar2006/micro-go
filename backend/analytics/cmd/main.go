@@ -81,7 +81,7 @@ func main() {
 			}
 
 			consumer := kafka.NewConsumer(
-				cfg.Kafka.Addr,
+				[]string{cfg.Kafka.Addr},
 				cfg.Kafka.Topic,
 				cfg.Kafka.GroupID,
 			)
