@@ -80,13 +80,62 @@ func main() {
 				return
 			}
 
-			consumer := kafka.NewConsumer(cfg.Kafka.Addr, cfg.Kafka.Topic, cfg.Kafka.GroupID)
+			consumer := kafka.NewConsumer(
+				cfg.Kafka.Addr,
+				cfg.Kafka.Topic,
+				cfg.Kafka.GroupID,
+			)
 
 			err := consumer.Start(consumerCtx, func(event kafka.PaymentSuccessEvent) error {
 				slog.Info("payment success event received", slog.Any("event", event))
 
-				return handler.HandlePaymentSuccess(consumerCtx, &event)
+				return srv.ProcessPaymentSuccess(consumerCtx, event)
 			})
+
+			consumer.Close()
+
+			if consumerCtx.Err() != nil {
+				return
+			}
+
+			slog.Error("kafka consumer stopped", slog.String("error", err.Error()))
+
+			timer := time.NewTimer(backoff)
+
+			select {
+			case <-timer.C:
+			case <-consumerCtx.Done():
+				timer.Stop()
+				return
+			}
+
+			backoff *= 2
+			if backoff > maxBackoff {
+				backoff = maxBackoff
+			}
 		}
 	}()
+
+	go func() {
+		slog.Info("analytics http server listening", slog.String("address", cfg.Server.Addr))
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("failed to start analytics service")
+			log.Fatal("failed to start analytics service", "error", err)
+		}
+	}()
+
+	<-quit
+	consumerCancel()
+
+	slog.Info("inventory service is shutting down gracefully")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error("server forced to shutdown", "error", err)
+		log.Fatal("server forced to shutdown", "error", err)
+	}
+
+	slog.Info("analytics service stopped gracefully")
 }
