@@ -6,11 +6,17 @@ export const analyticsApi = createApi({
         baseUrl: "http://localhost:8087/api/v1", 
     }),
 
+    tagTypes: ["Analytics"],
+
     endpoints: (builder) => ({
         getPaymentAnalytic: builder.query({
             query: () => ({
-                url: "/analytics/payment"
-            })
+                url: "/analytics",
+                method: "GET"
+            }),
+            providesTags: ["Analytics"],
         }),
     })
 })
+
+export const { useGetPaymentAnalyticQuery } = analyticsApi;

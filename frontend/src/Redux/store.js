@@ -7,6 +7,7 @@ import storageImport from "redux-persist/lib/storage";
 import { cartApi } from "./features/cart/cartApi";
 import { orderApi } from "./features/order/order";
 import { paymentApi } from "./features/payment/payment";
+import { analyticsApi } from "./features/analytics/analytics";
 
 const storage = storageImport.default ?? storageImport;
 
@@ -26,6 +27,7 @@ export const store = configureStore({
         [cartApi.reducerPath]: cartApi.reducer,
         [orderApi.reducerPath]: orderApi.reducer,
         [paymentApi.reducerPath]: paymentApi.reducer,
+        [analyticsApi.reducerPath]: analyticsApi.reducer,
     },
 
     middleware: (getDefaultMiddleware) =>
@@ -40,7 +42,7 @@ export const store = configureStore({
                     "persist/REGISTER",
                 ]
             }
-        }).concat(authApi.middleware, vehicleApi.middleware, cartApi.middleware, orderApi.middleware, paymentApi.middleware)
+        }).concat(authApi.middleware, vehicleApi.middleware, cartApi.middleware, orderApi.middleware, paymentApi.middleware, analyticsApi.middleware)
 })
 
 export const persistor = persistStore(store);
