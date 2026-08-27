@@ -155,8 +155,8 @@ export default function AdminNavbar({ userName = 'Admin' }) {
 
         <div className="hidden items-center gap-5 md:flex">
           <a
-            href="#"
-            className="flex items-center gap-1.5 FleetOps-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14]"
+            onClick={() => navigate("/vehicles/admin")}
+            className="flex items-center gap-1.5 FleetOps-body text-[13.5px] font-medium text-[#5B6472] transition-colors hover:text-[#0B0E14] cursor-pointer"
           >
             {NodeIcon('arrowLeft', 'h-4 w-4')}
             Back to dashboard
@@ -187,17 +187,17 @@ export default function AdminNavbar({ userName = 'Admin' }) {
                 <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_24px_-8px_rgba(15,23,42,0.18)]">
                   <a
                     onClick={() => navigate("/admin/profile")}
-                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 FleetOps-body text-[13.5px] text-[#0B0E14] hover:bg-[#F3F5F8]"
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 FleetOps-body text-[13.5px] text-[#0B0E14] hover:bg-[#F3F5F8] cursor-pointer"
                   >
                     {NodeIcon('user', 'h-4 w-4 text-[#5B6472]')}
                     Profile
                   </a>
                   <a
-                    href="#"
-                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 FleetOps-body text-[13.5px] text-[#0B0E14] hover:bg-[#F3F5F8]"
+                    onClick={() => navigate("/admin/analytics")}
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 FleetOps-body text-[13.5px] text-[#0B0E14] hover:bg-[#F3F5F8] cursor-pointer"
                   >
                     {NodeIcon('settings', 'h-4 w-4 text-[#5B6472]')}
-                    Settings
+                    Analytics
                   </a>
                   <div className="my-1.5 h-px bg-slate-100" />
                   <a
