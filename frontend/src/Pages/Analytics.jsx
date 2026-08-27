@@ -114,8 +114,6 @@ export default function Analytics({ events = sampleEvents }) {
 
   const { data, isLoading, error } = useGetPaymentAnalyticQuery();
 
-  console.log("analytics data : ", data);
-
   if (isLoading) {
     return <div>
         <p>Loading...</p>
