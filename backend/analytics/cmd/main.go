@@ -17,6 +17,8 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 func main() {
@@ -43,6 +45,20 @@ func main() {
 
 	// routes
 	router := chi.NewRouter()
+
+	router.Use(chimiddleware.Logger)
+	router.Use(chimiddleware.Recoverer)
+	router.Use(chimiddleware.RealIP)
+	router.Use(chimiddleware.RequestID)
+
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "Refresh-Token", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Authorization", "Content-Type", "Refresh-Token", "X-CSRF-Token"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 
 	router.Group(func(r chi.Router) {
 		r.Get("/api/v1/analytics", handler.GetPaymentAnalytic)
