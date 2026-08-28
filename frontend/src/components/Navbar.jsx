@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bounce, toast} from "react-toastify";
 import { CiUser } from "react-icons/ci";
 
+//icon
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
