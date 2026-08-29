@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGetPaymentAnalyticQuery } from '../Redux/features/analytics/analytics';
 
+{/*icon */}
 const Icon = ({ path, className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
