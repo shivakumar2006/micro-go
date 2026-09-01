@@ -37,6 +37,7 @@ const icons = {
   ),
 }
 
+{/*nodeicon*/}
 const NodeIcon = (name, className) => <Icon path={icons[name]} className={className} />
 
 const statusMeta = {
