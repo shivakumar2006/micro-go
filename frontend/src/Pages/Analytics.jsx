@@ -65,6 +65,7 @@ function field(event, pascalKey, snakeKey) {
   return event[pascalKey] ?? event[snakeKey]
 }
 
+{/*format */}
 function formatTimestamp(value) {
   if (!value) return '—'
   // "2026-08-26 13:05:18.541738 +0000 UTC" -> parseable ISO-ish string
