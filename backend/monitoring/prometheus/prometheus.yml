@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    project: 'fleetops'
+
+scrape_configs:
+  - job_name: "payment-service"
+    static_configs: 
+      - targets: ["host.docker.internal:8084"]
+    metrics_path: '/metrics'
+    scrape_interval: 10s
