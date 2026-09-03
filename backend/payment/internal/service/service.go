@@ -7,6 +7,7 @@ import (
 	"payment/internal/client"
 	"payment/internal/db/storage"
 	"payment/internal/kafka"
+	"payment/internal/metrics"
 	"payment/internal/models"
 	"time"
 
@@ -171,6 +172,8 @@ func (p *PaymentService) UpdatePaymentStatus(ctx context.Context, paymentID int,
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("failed to commit transaction : %w", err)
 	}
+
+	metrics.PaymentSuccessTotal.Inc()
 
 	if err := p.Order.UpdateOrderStatus(payment.OrderID, models.StatusPaid); err != nil {
 		return fmt.Errorf("failed to update order status : %w", err)

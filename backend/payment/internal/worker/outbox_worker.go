@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"payment/internal/db/storage"
 	"payment/internal/kafka"
+	"payment/internal/metrics"
 	"payment/internal/models"
 	"strconv"
 )
@@ -37,8 +38,13 @@ func (w *OutboxWorker) ProcessPendingEvents(ctx context.Context) error {
 
 		if err := w.kafka.PublishPayload(ctx, key, event.Payload); err != nil {
 			slog.Error("failed to publish outbox event", slog.Int("event_id", event.ID), slog.String("error", err.Error()))
+
+			metrics.OutboxPublishFailure.Inc()
 			continue
 		}
+
+		metrics.OutboxPublishSuccess.Inc()
+
 		slog.Info("outbox event published", slog.Int("event_id", event.ID))
 
 		if err := w.outbox.MarkAsPublished(ctx, event.ID); err != nil {

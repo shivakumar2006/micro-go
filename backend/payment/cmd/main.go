@@ -13,6 +13,7 @@ import (
 	"payment/internal/db"
 	"payment/internal/handler"
 	"payment/internal/kafka"
+	"payment/internal/metrics"
 	"payment/internal/middleware"
 	"payment/internal/repository"
 	"payment/internal/resilience"
@@ -76,7 +77,7 @@ func main() {
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
-	router.Use(metricsMiddleware)
+	router.Use(metrics.MetricsMiddleware)
 
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.AccessTokenSecret, cfg.JWT.RefreshTokenSecret)
 
