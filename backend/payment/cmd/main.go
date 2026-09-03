@@ -23,6 +23,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -75,6 +77,11 @@ func main() {
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.AccessTokenSecret, cfg.JWT.RefreshTokenSecret)
+
+	// prometheus
+	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	})
 
 	router.Post("/api/v1/payments/webhook", handler.WebhookHandler)
 
