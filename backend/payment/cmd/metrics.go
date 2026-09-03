@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -35,6 +36,7 @@ func (s *statusResponseWriter) Write(b []byte) (int, error) {
 
 func init() {
 	prometheus.MustRegister(paymentRequests)
+	fmt.Println("paymentRequests registered")
 }
 
 func metricsMiddleware(next http.Handler) http.Handler {
