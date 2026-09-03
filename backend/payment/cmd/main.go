@@ -76,6 +76,8 @@ func main() {
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
+	router.Use(metricsMiddleware)
+
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.AccessTokenSecret, cfg.JWT.RefreshTokenSecret)
 
 	// prometheus

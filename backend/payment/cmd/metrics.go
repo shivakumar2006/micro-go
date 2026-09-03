@@ -15,17 +15,17 @@ var paymentRequests = prometheus.NewCounterVec(
 	[]string{"method", "path", "status"},
 )
 
-type StatusResponseWriter struct {
+type statusResponseWriter struct {
 	http.ResponseWriter
 	statusCode int
 }
 
-func (s *StatusResponseWriter) WriteHeader(code int) {
+func (s *statusResponseWriter) WriteHeader(code int) {
 	s.statusCode = code
 	s.ResponseWriter.WriteHeader(code)
 }
 
-func (s *StatusResponseWriter) Write(b []byte) (int, error) {
+func (s *statusResponseWriter) Write(b []byte) (int, error) {
 	if s.statusCode == 0 {
 		s.statusCode = http.StatusOK
 	}
@@ -39,7 +39,12 @@ func init() {
 
 func metricsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sw := &StatusResponseWriter{
+		if r.URL.Path == "/metrics" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		sw := &statusResponseWriter{
 			ResponseWriter: w,
 		}
 
