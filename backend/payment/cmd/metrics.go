@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -12,6 +12,14 @@ var paymentRequests = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "payment_requests_total",
 		Help: "total number of payment requests",
+	},
+	[]string{"method", "path", "status"},
+)
+
+var paymentRequestDuration = prometheus.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Name: "payment_request_duration_seconds",
+		Help: "duration of HTTP payment requests in seconds",
 	},
 	[]string{"method", "path", "status"},
 )
@@ -36,7 +44,7 @@ func (s *statusResponseWriter) Write(b []byte) (int, error) {
 
 func init() {
 	prometheus.MustRegister(paymentRequests)
-	fmt.Println("paymentRequests registered")
+	prometheus.MustRegister(paymentRequestDuration)
 }
 
 func metricsMiddleware(next http.Handler) http.Handler {
@@ -46,12 +54,19 @@ func metricsMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		start := time.Now()
+
 		sw := &statusResponseWriter{
 			ResponseWriter: w,
 		}
 
 		next.ServeHTTP(sw, r)
 
-		paymentRequests.WithLabelValues(r.Method, r.URL.Path, strconv.Itoa(sw.statusCode)).Inc()
+		status := strconv.Itoa(sw.statusCode)
+
+		paymentRequests.WithLabelValues(r.Method, r.URL.Path, status).Inc()
+
+		duration := time.Since(start).Seconds()
+		paymentRequestDuration.WithLabelValues(r.Method, r.URL.Path, status).Observe(duration)
 	})
 }
