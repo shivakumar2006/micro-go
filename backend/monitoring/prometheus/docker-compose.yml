@@ -16,3 +16,8 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  grafana_data:
