@@ -43,36 +43,32 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
-	AuthLoginSuccessTotal = prometheus.NewCounterVec(
+	AuthLoginSuccessTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "auth_login_success_total",
 			Help: "total number of login success",
 		},
-		[]string{"method", "path", "status"},
 	)
 
-	AuthLoginFailureTotal = prometheus.NewCounterVec(
+	AuthLoginFailureTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "auth_login_failure_total",
 			Help: "total number of login failure",
 		},
-		[]string{"method", "path", "status"},
 	)
 
-	AuthRefreshSuccessTotal = prometheus.NewCounterVec(
+	AuthRefreshSuccessTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "auth_refresh_success_total",
 			Help: "total number of refresh success",
 		},
-		[]string{"method", "path", "status"},
 	)
 
-	AuthRefreshFailureTotal = prometheus.NewCounterVec(
+	AuthRefreshFailureTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "auth_refresh_failure_total",
 			Help: "total number of refresh failure",
 		},
-		[]string{"method", "path", "status"},
 	)
 )
 
@@ -105,11 +101,5 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 
 		AuthRequest.WithLabelValues(r.Method, r.URL.Path, status).Inc()
 		AuthRequestDuration.WithLabelValues(r.Method, r.URL.Path, status).Observe(duration.Seconds())
-
-		if sw.statusCode == http.StatusOK {
-			AuthLoginSuccessTotal.WithLabelValues(r.Method, r.URL.Path).Inc()
-		} else {
-			AuthLoginFailureTotal.WithLabelValues(r.Method, r.URL.Path).Inc()
-		}
 	})
 }

@@ -2,6 +2,7 @@ package services
 
 import (
 	"auth/internal/db/storage"
+	"auth/internal/metrics"
 	"auth/internal/models"
 	"auth/internal/pkg"
 	"context"
@@ -82,11 +83,6 @@ func (s *AuthService) Register(ctx context.Context, req *models.RegisterRequest)
 		return nil, fmt.Errorf("failed to generate token pair : %w", err)
 	}
 
-	// hashedRefreshToken, err := bcrypt.GenerateFromPassword([]byte(tokenPair.RefreshToken), bcrypt.DefaultCost)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to process refresh token : %w", err)
-	// }
-
 	session := &models.UserSessions{
 		UserID:           user.ID,
 		RefreshTokenHash: HashRefreshToken(tokenPair.RefreshToken),
@@ -108,10 +104,12 @@ func HashRefreshToken(token string) string {
 func (a *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*models.AuthResponse, error) {
 	user, err := a.AuthRepo.FindUserByEmail(req.Email)
 	if err != nil {
+		metrics.AuthLoginFailureTotal.Inc()
 		return nil, fmt.Errorf("failed to find user by email : %w", err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		metrics.AuthLoginFailureTotal.Inc()
 		return nil, fmt.Errorf("invalid password")
 	}
 
@@ -129,6 +127,8 @@ func (a *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*mod
 	if err := a.AuthRepo.SaveRefreshToken(session); err != nil {
 		return nil, err
 	}
+
+	metrics.AuthLoginSuccessTotal.Inc()
 
 	return buildAuthResponse(tokenPair, user)
 }
@@ -174,6 +174,8 @@ func (a *AuthService) Refresh(ctx context.Context, req models.RefreshRequest) (*
 	if err := a.AuthRepo.SaveRefreshToken(session); err != nil {
 		return nil, err
 	}
+
+	metrics.AuthRefreshSuccessTotal.Inc()
 
 	return buildAuthResponse(tokenPair, user)
 }
