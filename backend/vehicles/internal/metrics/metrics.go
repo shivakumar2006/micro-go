@@ -27,7 +27,7 @@ func (s *statusResponseWriter) Write(b []byte) (int, error) {
 }
 
 var (
-	vehicleRequest = prometheus.NewCounterVec(
+	VehicleRequest = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "vehicle_request_total",
 			Help: "Total number of vehicle request",
@@ -35,7 +35,7 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
-	vehicleRequestDuration = prometheus.NewHistogramVec(
+	VehicleRequestDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name: "vehicle_request_duration_seconds",
 			Help: "Duration of vehicle request in seconds",
@@ -43,49 +43,49 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
-	vehicleCreateSuccessTotal = prometheus.NewCounter(
+	VehicleCreateSuccessTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "vehicle_create_success_total",
 			Help: "total number of vehicle create successfully",
 		},
 	)
 
-	vehicleCreateFailureTotal = prometheus.NewCounter(
+	VehicleCreateFailureTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "vehicle_create_failure_total",
 			Help: "total number of vehicle create failure",
 		},
 	)
 
-	vehicleUpdateSuccessTotal = prometheus.NewCounter(
+	VehicleUpdateSuccessTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "vehicle_update_success_total",
 			Help: "total number of vehicle update successfully",
 		},
 	)
 
-	vehicleUpdateFailureTotal = prometheus.NewCounter(
+	VehicleUpdateFailureTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "vehicle_update_failure_total",
 			Help: "total number of vehicle update failure",
 		},
 	)
 
-	vehicleDeleteSuccessTotal = prometheus.NewCounter(
+	VehicleDeleteSuccessTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "vehicle_delete_success_total",
 			Help: "total number of vehicle delete successfully",
 		},
 	)
 
-	vehicleDeleteFailureTotal = prometheus.NewCounter(
+	VehicleDeleteFailureTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "vehicle_delete_failure_total",
 			Help: "total number of vehicle delete failure",
 		},
 	)
 
-	vehicleByStatus = prometheus.NewGaugeVec(
+	VehicleByStatus = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "vehicle_by_status",
 			Help: "total number of vehicle by status",
@@ -95,15 +95,15 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(vehicleRequest)
-	prometheus.MustRegister(vehicleRequestDuration)
-	prometheus.MustRegister(vehicleCreateSuccessTotal)
-	prometheus.MustRegister(vehicleCreateFailureTotal)
-	prometheus.MustRegister(vehicleUpdateSuccessTotal)
-	prometheus.MustRegister(vehicleUpdateFailureTotal)
-	prometheus.MustRegister(vehicleDeleteSuccessTotal)
-	prometheus.MustRegister(vehicleDeleteFailureTotal)
-	prometheus.MustRegister(vehicleByStatus)
+	prometheus.MustRegister(VehicleRequest)
+	prometheus.MustRegister(VehicleRequestDuration)
+	prometheus.MustRegister(VehicleCreateSuccessTotal)
+	prometheus.MustRegister(VehicleCreateFailureTotal)
+	prometheus.MustRegister(VehicleUpdateSuccessTotal)
+	prometheus.MustRegister(VehicleUpdateFailureTotal)
+	prometheus.MustRegister(VehicleDeleteSuccessTotal)
+	prometheus.MustRegister(VehicleDeleteFailureTotal)
+	prometheus.MustRegister(VehicleByStatus)
 }
 
 func MetricsMiddleware(next http.Handler) http.Handler {
@@ -122,9 +122,9 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(sw, r)
 
 		status := strconv.Itoa(sw.StatusCode)
-		vehicleRequest.WithLabelValues(r.Method, r.URL.Path, status).Inc()
+		VehicleRequest.WithLabelValues(r.Method, r.URL.Path, status).Inc()
 
 		duration := time.Since(start).Seconds()
-		vehicleRequestDuration.WithLabelValues(r.Method, r.URL.Path, status).Observe(duration)
+		VehicleRequestDuration.WithLabelValues(r.Method, r.URL.Path, status).Observe(duration)
 	})
 }

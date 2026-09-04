@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"vehicles/internal/db/storage"
+	"vehicles/internal/metrics"
 	"vehicles/internal/models"
 	storageCache "vehicles/internal/redis/storagecache"
 )
@@ -54,8 +55,11 @@ func (s *Service) CreateVehicle(vehicles *models.Vehicle) error {
 
 	err := s.VehicleRepo.CreateVehicle(vehicles)
 	if err != nil {
+		metrics.VehicleCreateFailureTotal.Inc()
 		return fmt.Errorf("failed to create vehicle : %w", err)
 	}
+
+	metrics.VehicleCreateSuccessTotal.Inc()
 
 	// redis invalidate cache
 	if err := s.VehicleCache.DeletePatterns("vehicles:*"); err != nil {
@@ -76,8 +80,10 @@ func (s *Service) UpdateVehicle(vehicle *models.Vehicle) error {
 
 	err := s.VehicleRepo.UpdateVehicle(vehicle)
 	if err != nil {
+		metrics.VehicleUpdateFailureTotal.Inc()
 		return fmt.Errorf("failed to update vehicle: %w", err)
 	}
+	metrics.VehicleUpdateSuccessTotal.Inc()
 
 	key := fmt.Sprintf("vehicle:%d", vehicle.Id)
 
@@ -95,8 +101,11 @@ func (s *Service) UpdateVehicle(vehicle *models.Vehicle) error {
 
 func (s *Service) DeleteVehicle(id int64) error {
 	if err := s.VehicleRepo.DeleteVehicle(id); err != nil {
+		metrics.VehicleDeleteFailureTotal.Inc()
 		return fmt.Errorf("failed to delete vehicle : %w", err)
 	}
+
+	metrics.VehicleDeleteSuccessTotal.Inc()
 
 	key := fmt.Sprintf("vehicle:%d", id)
 
