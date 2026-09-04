@@ -4,6 +4,7 @@ import (
 	"auth/internal/config"
 	"auth/internal/db"
 	"auth/internal/handler"
+	"auth/internal/metrics"
 	"auth/internal/middleware"
 	"auth/internal/pkg"
 	"auth/internal/repository"
@@ -48,6 +49,8 @@ func main() {
 	router.Use(chimiddleware.RequestID)
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.Timeout(10 * time.Second))
+
+	router.Use(metrics.MetricsMiddleware)
 
 	accessExpiry, err := time.ParseDuration(cfg.JWT.AccessExpiry)
 	if err != nil {
