@@ -138,15 +138,15 @@ export default function Analytics({ events = sampleEvents }) {
     createdAt: field(e, 'CreatedAt', 'created_at'),
   }))
 
-  const stats = useMemo(
-    () => ({
-      total: rows.length,
-      paid: rows.filter((r) => r.status === 'PAID').length,
-      failed: rows.filter((r) => r.status === 'FAILED').length,
-      uniqueUsers: new Set(rows.map((r) => r.userId)).size,
-    }),
-    [rows]
-  )
+//   const stats = useMemo(
+//     () => ({
+//       total: rows.length,
+//       paid: rows.filter((r) => r.status === 'PAID').length,
+//       failed: rows.filter((r) => r.status === 'FAILED').length,
+//       uniqueUsers: new Set(rows.map((r) => r.userId)).size,
+//     }),
+//     [rows]
+//   )
 
   const statusOptions = useMemo(() => {
     const seen = new Set(rows.map((r) => r.status))
@@ -168,12 +168,12 @@ export default function Analytics({ events = sampleEvents }) {
           Payment events
         </h1>
 
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {/* <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatCard label="Total events" value={stats.total} />
           <StatCard label="Paid" value={stats.paid} accent="#15803D" />
           <StatCard label="Failed" value={stats.failed} accent="#DC2626" />
           <StatCard label="Unique users" value={stats.uniqueUsers} />
-        </div>
+        </div> */}
 
         <div className="mt-8 flex items-center justify-between">
           <SelectField
