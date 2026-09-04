@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -93,5 +94,22 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 
 		start := time.Now()
 
+		sw := &statusResponseWriter{
+			ResponseWriter: w,
+		}
+
+		next.ServeHTTP(sw, r)
+
+		status := strconv.Itoa(sw.statusCode)
+		duration := time.Since(start)
+
+		AuthRequest.WithLabelValues(r.Method, r.URL.Path, status).Inc()
+		AuthRequestDuration.WithLabelValues(r.Method, r.URL.Path, status).Observe(duration.Seconds())
+
+		if sw.statusCode == http.StatusOK {
+			AuthLoginSuccessTotal.WithLabelValues(r.Method, r.URL.Path).Inc()
+		} else {
+			AuthLoginFailureTotal.WithLabelValues(r.Method, r.URL.Path).Inc()
+		}
 	})
 }
