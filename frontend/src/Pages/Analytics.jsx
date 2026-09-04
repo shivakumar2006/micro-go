@@ -138,8 +138,6 @@ export default function Analytics({ events = sampleEvents }) {
     createdAt: field(e, 'CreatedAt', 'created_at'),
   }))
 
-  const filtered = statusFilter === 'all' ? rows : rows.filter((r) => r.status === statusFilter)
-
   const stats = useMemo(
     () => ({
       total: rows.length,
