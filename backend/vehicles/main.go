@@ -1,7 +1,6 @@
 package main
 
 import (
-	"auth/internal/metrics"
 	"context"
 	"log"
 	"log/slog"
@@ -13,6 +12,7 @@ import (
 	"vehicles/internal/config"
 	"vehicles/internal/db"
 	"vehicles/internal/handler"
+	"vehicles/internal/metrics"
 	"vehicles/internal/middleware"
 	"vehicles/internal/redis"
 	"vehicles/internal/repository"
