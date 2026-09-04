@@ -1,6 +1,7 @@
 package main
 
 import (
+	"auth/internal/metrics"
 	"context"
 	"log"
 	"log/slog"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -61,7 +63,13 @@ func main() {
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
+	router.Use(metrics.MetricsMiddleware)
+
 	auth := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
+
+	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	})
 
 	router.Group(func(r chi.Router) {
 		r.Use(auth.Authenticate)
