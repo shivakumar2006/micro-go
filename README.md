@@ -800,18 +800,18 @@ The goal is not simply to create multiple services, but to understand the **engi
 - [x] Vehicle stock update workflow
 - [x] React Frontend
 - [x] Retry / Circuit Breaker / Rate Limiting
+- [x] Outbox Pattern
+- [x] Frontend Integration
+- [x] Observability → Prometheus → Grafana
 
 ### In Progress
 
-- [ ] Outbox Pattern
 - [ ] Idempotency
 - [ ] Saga
 - [ ] DLQ
-- [ ] Observability
 - [ ] Kubernetes
 - [ ] CI/CD
 - [ ] Cloud Deployment
-- [ ] Final frontend integration
 
 ---
 
