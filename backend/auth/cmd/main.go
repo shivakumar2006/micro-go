@@ -19,6 +19,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -77,6 +79,10 @@ func main() {
 	handler := handler.NewAuthHandler(service)
 
 	authMiddleware := middleware.NewAuthMiddleware(jwtManager)
+
+	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	})
 
 	router.Group(func(r chi.Router) {
 		r.Use(authMiddleware.Authenticate)
