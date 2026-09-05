@@ -9,6 +9,7 @@ import (
 	"orders/internal/config"
 	"orders/internal/db"
 	"orders/internal/handler"
+	"orders/internal/metrics"
 	"orders/internal/middleware"
 	"orders/internal/repository"
 	"orders/internal/resilience"
@@ -63,6 +64,8 @@ func main() {
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.RequestID)
 	router.Use(chimiddleware.Timeout(10 * time.Second))
+
+	router.Use(metrics.MetricsMiddleware)
 
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
