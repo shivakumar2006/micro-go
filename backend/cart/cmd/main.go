@@ -73,7 +73,7 @@ func main() {
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
-	router.Use(metrics.MerticsMiddleware)
+	router.Use(metrics.MetricsMiddleware)
 
 	auth := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
 
