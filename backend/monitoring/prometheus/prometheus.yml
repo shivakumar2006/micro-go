@@ -34,3 +34,9 @@ scrape_configs:
       - targets: ["host.docker.internal:8084"]
     metrics_path: '/metrics'
     scrape_interval: 10s
+
+  - job_name: "inventory-service"
+    static_configs: 
+      - targets: ["host.docker.internal:8085"]
+    metrics_path: '/metrics'
+    scrape_interval: 10s
