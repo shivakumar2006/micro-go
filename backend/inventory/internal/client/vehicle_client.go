@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"inventory/internal/metrics"
 	"inventory/internal/models"
 	"inventory/internal/resilience"
 	"log/slog"
@@ -38,6 +39,14 @@ func (v *VehicleClient) DecreaseStock(vehicleID int, quantity int) error {
 
 func (v *VehicleClient) doRequest(vehicleID, quantity int) (struct{}, error) {
 	url := fmt.Sprintf("%s/api/v1/vehicles/%d/stock-decrease", v.BaseURL, vehicleID)
+
+	start := time.Now()
+
+	metrics.InventoryVehicleServiceCallTotal.Inc()
+	defer func() {
+		duration := time.Since(start)
+		metrics.InventoryVehicleServiceCallDuration.Observe(duration.Seconds())
+	}()
 
 	slog.Info("calling vehicle service", slog.Int("vehicle_id", vehicleID), slog.String("url", url))
 

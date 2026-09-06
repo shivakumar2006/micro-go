@@ -43,12 +43,11 @@ var (
 	)
 
 	// internal vehicle service calls
-	InventoryVehicleServiceCallTotal = prometheus.NewCounterVec(
+	InventoryVehicleServiceCallTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "inventory_vehicle_service_call_total",
 			Help: "inventory vehicle service call total",
 		},
-		[]string{"method", "path", "status"},
 	)
 
 	InventoryVehicleServiceCallSuccess = prometheus.NewCounter(
@@ -65,12 +64,11 @@ var (
 		},
 	)
 
-	InventoryVehicleServiceCallDuration = prometheus.NewHistogramVec(
+	InventoryVehicleServiceCallDuration = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
 			Name: "inventory_vehicle_service_call_duration_seconds",
 			Help: "inventory vehicle service call duration per second",
 		},
-		[]string{"method", "path", "status"},
 	)
 
 	// internal order service calls
@@ -95,12 +93,11 @@ var (
 		},
 	)
 
-	InventoryOrderServiceCallDuration = prometheus.NewHistogramVec(
+	InventoryOrderServiceCallDuration = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
 			Name: "inventory_order_service_call_duration_seconds",
 			Help: "inventory order service call duration per second",
 		},
-		[]string{"method", "path", "status"},
 	)
 
 	// payment service events
@@ -124,9 +121,13 @@ func init() {
 	prometheus.MustRegister(InventoryRequestDuration)
 
 	prometheus.MustRegister(InventoryVehicleServiceCallTotal)
+	prometheus.MustRegister(InventoryVehicleServiceCallSuccess)
+	prometheus.MustRegister(InventoryVehicleServiceCallFailure)
 	prometheus.MustRegister(InventoryVehicleServiceCallDuration)
 
 	prometheus.MustRegister(InventoryOrderServiceCallTotal)
+	prometheus.MustRegister(InventoryOrderServiceCallSuccess)
+	prometheus.MustRegister(InventoryOrderServiceCallFailure)
 	prometheus.MustRegister(InventoryOrderServiceCallDuration)
 
 	prometheus.MustRegister(InventoryPaymentEventsProcessedTotal)
@@ -153,7 +154,6 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 		status := strconv.Itoa(sw.StatusCode)
 
 		InventoryRequestTotal.WithLabelValues(r.Method, r.URL.Path, status).Inc()
-		InventoryVehicleServiceCallTotal.WithLabelValues(r.Method, r.URL.Path, status).Inc()
 		InventoryRequestDuration.WithLabelValues(r.Method, r.URL.Path, status).Observe(duration)
 	})
 }
