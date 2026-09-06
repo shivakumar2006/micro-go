@@ -67,7 +67,7 @@ var (
 	InventoryVehicleServiceCallDuration = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
 			Name: "inventory_vehicle_service_call_duration_seconds",
-			Help: "inventory vehicle service call duration per second",
+			Help: "Duration of calls to the vehicle service in seconds",
 		},
 	)
 
