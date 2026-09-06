@@ -7,6 +7,7 @@ import (
 	"inventory/internal/db"
 	"inventory/internal/handler"
 	"inventory/internal/kafka"
+	"inventory/internal/metrics"
 	"inventory/internal/repository"
 	"inventory/internal/resilience"
 	"inventory/internal/service"
@@ -55,6 +56,8 @@ func main() {
 
 	// routes
 	router := chi.NewRouter()
+
+	router.Use(metrics.MetricsMiddleware)
 
 	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		promhttp.Handler().ServeHTTP(w, r)
