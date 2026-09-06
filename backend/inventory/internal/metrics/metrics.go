@@ -79,6 +79,13 @@ var (
 		},
 	)
 
+	InventoryOrderServiceCallSuccess = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "inventory_order_service_call_success",
+			Help: "inventory order service call success",
+		},
+	)
+
 	InventoryOrderServiceCallFailure = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "inventory_order_service_call_failure",
@@ -94,20 +101,18 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
-	InventoryPaymentEventsProcessedTotal = prometheus.NewCounterVec(
+	InventoryPaymentEventsProcessedTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "inventory_payment_events_processed_total",
-			Help: "inventory payment events processed total",
+			Help: "Total number of payment events successfully processed",
 		},
-		[]string{"method", "path", "status"},
 	)
 
-	InventoryPaymentEventsFailedTotal = prometheus.NewCounterVec(
+	InventoryPaymentEventsFailedTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "inventory_payment_events_failed_total",
-			Help: "inventory payment events failed total",
+			Help: "Total number of payment events that failed to process",
 		},
-		[]string{"method", "path", "status"},
 	)
 )
 
