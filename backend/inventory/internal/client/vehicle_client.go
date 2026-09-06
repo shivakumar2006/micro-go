@@ -72,6 +72,8 @@ func (v *VehicleClient) doRequest(vehicleID, quantity int) (struct{}, error) {
 
 	res, err := v.Client.Do(req)
 	if err != nil {
+		metrics.InventoryVehicleServiceCallFailure.Inc()
+
 		slog.Error("failed to perform request", slog.String("error", err.Error()))
 		return struct{}{}, fmt.Errorf("failed to perform request: %v", err)
 	}
@@ -79,10 +81,14 @@ func (v *VehicleClient) doRequest(vehicleID, quantity int) (struct{}, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
+		metrics.InventoryVehicleServiceCallFailure.Inc()
 		return struct{}{}, &resilience.HTTPStatusError{
 			StatusCode: res.StatusCode,
 		}
 	}
+
+	metrics.InventoryVehicleServiceCallSuccess.Inc()
+
 	slog.Info("request performed successfully", slog.Int("vehicle_id", vehicleID))
 
 	return struct{}{}, nil
