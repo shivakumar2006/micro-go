@@ -42,6 +42,7 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
+	// internal vehicle service calls
 	InventoryVehicleServiceCallTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "inventory_vehicle_service_call_total",
@@ -72,6 +73,7 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
+	// internal order service calls
 	InventoryOrderServiceCallTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "inventory_order_service_call_total",
@@ -101,6 +103,7 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
+	// payment service events
 	InventoryPaymentEventsProcessedTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "inventory_payment_events_processed_total",
