@@ -153,6 +153,7 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 		status := strconv.Itoa(sw.StatusCode)
 
 		InventoryRequestTotal.WithLabelValues(r.Method, r.URL.Path, status).Inc()
+		InventoryVehicleServiceCallTotal.WithLabelValues(r.Method, r.URL.Path, status).Inc()
 		InventoryRequestDuration.WithLabelValues(r.Method, r.URL.Path, status).Observe(duration)
 	})
 }
