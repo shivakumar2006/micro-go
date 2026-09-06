@@ -50,6 +50,20 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
+	InventoryVehicleServiceCallSuccess = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "inventory_vehicle_service_call_success",
+			Help: "inventory vehicle service call success",
+		},
+	)
+
+	InventoryVehicleServiceCallFailure = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "inventory_vehicle_service_call_failure",
+			Help: "inventory vehicle service call failure",
+		},
+	)
+
 	InventoryVehicleServiceCallDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name: "inventory_vehicle_service_call_duration_seconds",
@@ -58,12 +72,18 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
-	InventoryOrderServiceCallTotal = prometheus.NewCounterVec(
+	InventoryOrderServiceCallTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "inventory_order_service_call_total",
 			Help: "inventory order service call total",
 		},
-		[]string{"method", "path", "status"},
+	)
+
+	InventoryOrderServiceCallFailure = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "inventory_order_service_call_failure",
+			Help: "inventory order service call failure",
+		},
 	)
 
 	InventoryOrderServiceCallDuration = prometheus.NewHistogramVec(
