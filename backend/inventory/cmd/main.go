@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -54,6 +55,10 @@ func main() {
 
 	// routes
 	router := chi.NewRouter()
+
+	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	})
 
 	router.Group(func(r chi.Router) {
 		r.Post("/api/v1/inventory", handler.CreateTransaction)
