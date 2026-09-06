@@ -122,10 +122,13 @@ var (
 func init() {
 	prometheus.MustRegister(InventoryRequestTotal)
 	prometheus.MustRegister(InventoryRequestDuration)
+
 	prometheus.MustRegister(InventoryVehicleServiceCallTotal)
 	prometheus.MustRegister(InventoryVehicleServiceCallDuration)
+
 	prometheus.MustRegister(InventoryOrderServiceCallTotal)
 	prometheus.MustRegister(InventoryOrderServiceCallDuration)
+
 	prometheus.MustRegister(InventoryPaymentEventsProcessedTotal)
 	prometheus.MustRegister(InventoryPaymentEventsFailedTotal)
 }
