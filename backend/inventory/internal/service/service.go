@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"inventory/internal/client"
+	"inventory/internal/metrics"
 	"inventory/internal/models"
 	"inventory/internal/repository"
 )
@@ -25,14 +26,20 @@ func NewInventoryService(repo repository.InventoryRepository, orderClient *clien
 func (s *InventoryService) CreateTransaction(ctx context.Context, orderID int64) error {
 	order, err := s.OrderClient.GetOrders(int(orderID))
 	if err != nil {
+		metrics.InventoryOrderServiceCallFailure.Inc()
 		return fmt.Errorf("failed to get order : %w", err)
 	}
+
+	metrics.InventoryOrderServiceCallSuccess.Inc()
 
 	for _, item := range order.Items {
 		err := s.VehicleClient.DecreaseStock(int(item.VehicleID), item.Quantity)
 		if err != nil {
+			metrics.InventoryVehicleServiceCallFailure.Inc()
 			return fmt.Errorf("failed to decrease stock for vehicle %d : %w", item.VehicleID, err)
 		}
+
+		metrics.InventoryVehicleServiceCallSuccess.Inc()
 
 		tx := models.Inventory{
 			OrderID:   order.ID,
@@ -46,6 +53,7 @@ func (s *InventoryService) CreateTransaction(ctx context.Context, orderID int64)
 			return fmt.Errorf("failed to create inventory transaction : %w", err)
 		}
 	}
+
 	return nil
 }
 
