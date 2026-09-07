@@ -43,6 +43,7 @@ func main() {
 	// server
 	server := &http.Server{
 		Addr:         cfg.Server.Addr,
+		Handler:      router,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -109,14 +110,14 @@ func main() {
 	<-quit
 	kafkaCancel()
 
-	slog.Info("inventory service is shutting down gracefully")
+	slog.Info("Notification service is shutting down gracefully")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		slog.Error("inventory service forced to shutdown", "error", err)
-		log.Fatal("inventory service forced to shutdown", "error", err)
+		slog.Error("Notification service forced to shutdown", "error", err)
+		log.Fatal("Notification service forced to shutdown", "error", err)
 	}
 
 	slog.Info("notification service stopped")
