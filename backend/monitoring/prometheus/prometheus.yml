@@ -40,3 +40,9 @@ scrape_configs:
       - targets: ["host.docker.internal:8085"]
     metrics_path: '/metrics'
     scrape_interval: 10s
+
+  - job_name: "notification-service"
+    static_configs:
+      - targets: ["host.docker.internal:8086"]
+    metrics_path: '/metrics'
+    scrape_interval: 10s
