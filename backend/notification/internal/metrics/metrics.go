@@ -2,8 +2,6 @@ package metrics
 
 import (
 	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -27,22 +25,6 @@ func (s *StatusResponseWriter) Write(b []byte) (int, error) {
 }
 
 var (
-	NotificationRequestTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "notification_request_total",
-			Help: "total number of notification request",
-		},
-		[]string{"method", "path", "status"},
-	)
-
-	NotificationRequestDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name: "notification_request_duration_seconds",
-			Help: "duration of notification request in seconds",
-		},
-		[]string{"method", "path", "status"},
-	)
-
 	NotificationSuccess = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "notification_success_total",
@@ -56,11 +38,23 @@ var (
 			Help: "total number of notification failures",
 		},
 	)
+
+	NotificationKafkaEventReceivedSuccess = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "notification_kafka_event_received_success_total",
+			Help: "total number of notification kafka event received success",
+		},
+	)
+
+	NotificationKafkaEventReceivedFailure = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "notification_kafka_event_received_failure_total",
+			Help: "total number of notification kafka event received failure",
+		},
+	)
 )
 
 func init() {
-	prometheus.MustRegister(NotificationRequestTotal)
-	prometheus.MustRegister(NotificationRequestDuration)
 	prometheus.MustRegister(NotificationSuccess)
 	prometheus.MustRegister(NotificationFailure)
 }
@@ -72,18 +66,10 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		start := time.Now()
-
 		sw := &StatusResponseWriter{
 			ResponseWriter: w,
 		}
 
 		next.ServeHTTP(sw, r)
-
-		status := strconv.Itoa(sw.StatusCode)
-		duration := time.Since(start).Seconds()
-
-		NotificationRequestTotal.WithLabelValues(r.Method, r.URL.Path, status).Inc()
-		NotificationRequestDuration.WithLabelValues(r.Method, r.URL.Path, status).Observe(duration)
 	})
 }
