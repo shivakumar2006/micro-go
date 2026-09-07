@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"inventory/internal/metrics"
 	"inventory/internal/models"
 	"inventory/internal/resilience"
 	"log/slog"
@@ -43,9 +44,16 @@ func (c *OrderClient) doRequest(orderID int) (*models.OrderResponse, error) {
 	if url == "" {
 		return nil, fmt.Errorf("order service url not set")
 	}
+
 	slog.Info("requesting order items from order service", slog.String("url", url))
 
 	start := time.Now()
+
+	metrics.InventoryOrderServiceCallTotal.Inc()
+	defer func() {
+		duration := time.Since(start).Seconds()
+		metrics.InventoryOrderServiceCallDuration.Observe(duration)
+	}()
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -56,6 +64,8 @@ func (c *OrderClient) doRequest(orderID int) (*models.OrderResponse, error) {
 
 	res, err := c.Client.Do(req)
 	if err != nil {
+		metrics.InventoryOrderServiceCallFailure.Inc()
+
 		slog.Error("failed to call order service", slog.String("error", err.Error()))
 		return nil, fmt.Errorf("failed to get orders from order service: %w", err)
 	}
@@ -65,6 +75,8 @@ func (c *OrderClient) doRequest(orderID int) (*models.OrderResponse, error) {
 	slog.Info("order service response", slog.Int("status", res.StatusCode), slog.Duration("duration", time.Since(start)))
 
 	if res.StatusCode != http.StatusOK {
+		metrics.InventoryOrderServiceCallFailure.Inc()
+
 		slog.Warn("non 200 status code from order service", slog.String("status", res.Status))
 		return nil, &resilience.HTTPStatusError{
 			StatusCode: res.StatusCode,
@@ -78,5 +90,7 @@ func (c *OrderClient) doRequest(orderID int) (*models.OrderResponse, error) {
 	}
 
 	slog.Info("order service response unmarshalled", slog.Any("order", OrderResponse))
+
+	metrics.InventoryOrderServiceCallSuccess.Inc()
 	return &OrderResponse, nil
 }
