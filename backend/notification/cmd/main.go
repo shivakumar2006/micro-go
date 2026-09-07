@@ -8,11 +8,15 @@ import (
 	"notification/internal/client"
 	"notification/internal/config"
 	"notification/internal/kafka"
+	"notification/internal/metrics"
 	"notification/internal/service"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -27,6 +31,14 @@ func main() {
 	emailClient := client.NewEmailClient(cfg.Brevo.SMTPHost, cfg.Brevo.SMTPPort, cfg.Brevo.SMTPUser, cfg.Brevo.SMTPPassword, cfg.Brevo.SenderEmail, cfg.Brevo.SenderName)
 
 	notifyservice := service.NewNotificationService(emailClient)
+
+	router := chi.NewRouter()
+
+	router.Use(metrics.MetricsMiddleware)
+
+	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	})
 
 	// server
 	server := &http.Server{
