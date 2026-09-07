@@ -57,6 +57,8 @@ var (
 func init() {
 	prometheus.MustRegister(NotificationSuccess)
 	prometheus.MustRegister(NotificationFailure)
+	prometheus.MustRegister(NotificationKafkaEventReceivedSuccess)
+	prometheus.MustRegister(NotificationKafkaEventReceivedFailure)
 }
 
 func MetricsMiddleware(next http.Handler) http.Handler {
