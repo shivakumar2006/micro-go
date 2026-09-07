@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/smtp"
+	"notification/internal/metrics"
 )
 
 type EmailClient struct {
@@ -49,9 +50,13 @@ func (c *EmailClient) SendEmail(ctx context.Context, to string, orderID int64) e
 
 	err := smtp.SendMail(addr, auth, c.SenderEmail, []string{to}, message)
 	if err != nil {
+		metrics.NotificationFailure.Inc()
+
 		slog.Error("failed to send email to %s: %w", to, err)
 		return fmt.Errorf("failed to send email to %s: %w", to, err)
 	}
+
+	metrics.NotificationSuccess.Inc()
 
 	slog.Info("payment success email sent successfully", slog.String("to", to), slog.Int64("order_id", orderID))
 
