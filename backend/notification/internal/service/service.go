@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"notification/internal/client"
 	"notification/internal/kafka"
+	"notification/internal/metrics"
 )
 
 type NotificationService struct {
@@ -30,8 +31,11 @@ func (s *NotificationService) HandlePaymentSuccess(ctx context.Context, event ka
 	}
 
 	if err := s.emailClient.SendEmail(ctx, event.Email, event.OrderID); err != nil {
+		metrics.NotificationFailure.Inc()
 		return fmt.Errorf("failed to send payment success notification: %w", err)
 	}
+
+	metrics.NotificationSuccess.Inc()
 
 	return nil
 }
