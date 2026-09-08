@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 type StatusResponseWriter struct {
@@ -27,7 +26,7 @@ func (s *StatusResponseWriter) Write(b []byte) (int, error) {
 }
 
 var (
-	GatewayRequestTotal = promauto.NewCounterVec(
+	GatewayRequestTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "gateway_request_total",
 			Help: "Total number of requests to the API Gateway",
@@ -35,7 +34,7 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
-	GatewayRequestDuration = promauto.NewHistogramVec(
+	GatewayRequestDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "gateway_request_duration_seconds",
 			Help:    "Duration of HTTP requests handled by the API Gateway",

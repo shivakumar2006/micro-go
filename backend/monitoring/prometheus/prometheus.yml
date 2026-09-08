@@ -46,3 +46,10 @@ scrape_configs:
       - targets: ["host.docker.internal:8086"]
     metrics_path: '/metrics'
     scrape_interval: 10s
+
+  - job_name: "api_gateway"
+    static_configs:
+      - targets: ["host.docker.internal:8000"]
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    
