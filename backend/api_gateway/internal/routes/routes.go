@@ -2,6 +2,7 @@ package routes
 
 import (
 	"api_gateway/internal/config"
+	"api_gateway/internal/metrics"
 	"api_gateway/internal/middleware"
 	"api_gateway/internal/proxy"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
@@ -19,6 +21,8 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 	router.Use(chimiddleware.Recoverer)
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.RequestID)
+
+	router.Use(metrics.MetricsMiddleware)
 
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
@@ -40,6 +44,10 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 	})
 
 	router.Use(rateLimiter.Middleware)
+
+	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	})
 
 	// health check
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
