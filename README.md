@@ -94,16 +94,18 @@ Inventory Service communicates directly with:
 
 FleetOps currently consists of **6 backend services**, an API Gateway, and a React frontend.
 
-| Component             | Responsibility                                                         |
-| --------------------- | ---------------------------------------------------------------------- |
-| **Auth Service**      | Authentication, JWT, user identity, and role-based access              |
-| **Vehicle Service**   | Vehicle management, pricing, details, availability, and stock          |
-| **Cart Service**      | User cart management, Redis caching, and Vehicle Service communication |
-| **Order Service**     | Order and order-item management                                        |
-| **Payment Service**   | Payment processing through Stripe                                      |
-| **Inventory Service** | Event-driven inventory processing using Kafka                          |
-| **API Gateway**       | Central entry point, routing, rate limiting, and resilience            |
-| **React Frontend**    | Customer and admin-facing application                                  |
+| Component                | Responsibility                                                         |
+| ------------------------ | ---------------------------------------------------------------------- |
+| **Auth Service**         | Authentication, JWT, user identity, and role-based access              |
+| **Vehicle Service**      | Vehicle management, pricing, details, availability, and stock          |
+| **Cart Service**         | User cart management, Redis caching, and Vehicle Service communication |
+| **Order Service**        | Order and order-item management                                        |
+| **Payment Service**      | Payment processing through Stripe                                      |
+| **Inventory Service**    | Event-driven inventory processing using Kafka                          |
+| **Notification Service** | Event-driven notification processing using Kafka                       |
+| **Analytics Service**    | Event-driven analytics processing using Kafka                          |
+| **API Gateway**          | Central entry point, routing, rate limiting, and resilience            |
+| **React Frontend**       | Customer and admin-facing application                                  |
 
 ---
 
