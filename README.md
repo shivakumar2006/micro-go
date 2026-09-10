@@ -160,7 +160,6 @@ API Gateway
     ├── Cart Service
     ├── Order Service
     ├── Payment Service
-    └── Inventory Service
 ```
 
 ### Responsibilities
@@ -805,11 +804,11 @@ The goal is not simply to create multiple services, but to understand the **engi
 - [x] Outbox Pattern
 - [x] Frontend Integration
 - [x] Observability → Prometheus → Grafana
+- [x] Idempotency
+- [x] Saga (Not Needed in current architecture)
 
 ### In Progress
 
-- [ ] Idempotency
-- [ ] Saga
 - [ ] DLQ
 - [ ] Kubernetes
 - [ ] CI/CD
