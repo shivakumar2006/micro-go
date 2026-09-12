@@ -1,0 +1,23 @@
+FROM golang:1.26.1-alpine AS builder 
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download 
+
+COPY . .
+
+RUN go build -o orders cmd/main.go
+
+# runtime 
+
+FROM alpine:3.22
+
+WORKDIR /app
+
+COPY --from=builder /app/orders .
+
+EXPOSE 8083
+
+CMD ["/app/orders"]
