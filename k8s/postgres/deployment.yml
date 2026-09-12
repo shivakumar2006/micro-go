@@ -1,0 +1,45 @@
+apiVersion: v1 
+kind: Deployment
+metadata: 
+  name: postgres
+
+spec: 
+  replicas: 1
+
+  selector: 
+    matchLabels: 
+      app: postgres
+
+    template: 
+      metadata: 
+        lanels:
+          app: postgres
+
+      spec: 
+        containers: 
+          - name: postgres
+            image: postgres:16-alpine
+
+            ports: 
+              - containerPort: 5432
+              
+            env: 
+              - name: POSTGRES_USER
+                valueFrom: 
+                  secretKeyRef:
+                    name: postgres-secret
+                    key: POSTGRES_USER
+
+              - name: POSTGRES_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-secret
+                    key: POSTGRES_PASSWORD
+
+              - name: POSTGRES_DB
+                value: vehicle_management
+            
+            volumeMounts: 
+              - name: postgres-storage
+                persistentVolumeClaims:
+                  claimName: postgres-pvc
