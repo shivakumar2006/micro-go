@@ -1,0 +1,22 @@
+FROM golang:1.26.1-apline AS builder 
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download 
+
+COPY . .
+
+RUN go build -o cart cmd/main.go
+
+#runtime 
+FROM alpine:3.22
+
+WORKDIR /app 
+
+COPY --from=builder /app/cart .
+
+EXPOSE 8082
+
+CMD ["/app/cart"]
