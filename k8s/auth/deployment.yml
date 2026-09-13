@@ -39,3 +39,22 @@ spec:
           env:
             - name: CONFIG_PATH
               value: /app/config/config.yaml
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secret
+                  key: DB_PASSWORD
+
+            - name: JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secret
+                  key: JWT_ACCESS_SECRET
+
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secret
+                  key: JWT_REFRESH_SECRET
+                  
