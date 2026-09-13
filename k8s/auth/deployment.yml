@@ -21,7 +21,7 @@ spec:
             name: auth-config
       containers:
         - name: auth-container
-          image: shivakumar2006/fletops-auth:latest
+          image: shivakumar2006/fletops-auth:v2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
