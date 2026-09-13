@@ -11,7 +11,7 @@ data:
       address: ":8080"
 
     db:
-      host: host.docker.internal
+      host: postgres-service
       port: 5432
       user: postgres
       dbname: vehicle_management
