@@ -59,9 +59,7 @@ spec:
                 secretKeyRef: 
                   name: vehicle-secret 
                   key: REDIS_PASSWORD
-
-
-volumes:
-  - name: vehicle-config
-    configMap:
-      name: vehicle-config
+      volumes:
+        - name: vehicle-config
+          configMap:
+            name: vehicle-config
