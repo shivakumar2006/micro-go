@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: vehicle-deployment
+  namespace: default
+  labels: 
+    app: vehicle 
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vehicle
+  template:
+    metadata:
+      labels:
+        app: vehicle 
+    spec:
+      containers:
+        - name: vehicle-container
+          image: shivakumar2006/feltops-vehicle:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+              name: http 
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts: 
+            - name: vehicle-config
+              mountPath: /app/config
+          env:
+            - name: CONFIG_PATH
+              value: /app/config/config.yaml
+
+
+volumes:
+  - name: vehicle-config
+    configMap:
+      name: vehicle-config
