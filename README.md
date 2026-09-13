@@ -806,11 +806,12 @@ The goal is not simply to create multiple services, but to understand the **engi
 - [x] Observability → Prometheus → Grafana
 - [x] Idempotency
 - [x] Saga (Not Needed in current architecture)
+- [x] DLQ (Not Needed in current architecture)
+- [x] Docker
+- [x] Kubernetes
 
 ### In Progress
 
-- [ ] DLQ
-- [ ] Kubernetes
 - [ ] CI/CD
 - [ ] Cloud Deployment
 
