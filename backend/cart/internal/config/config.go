@@ -70,6 +70,22 @@ func LoadConfig() (*Config, error) {
 		panic("failed to load config")
 	}
 
+	if value := os.Getenv("DB_PASSWORD"); value != "" {
+		cfg.DB.Password = value
+	}
+
+	if value := os.Getenv("JWT_ACCESS_SECRET"); value != "" {
+		cfg.JWT.AccessSecret = value
+	}
+
+	if value := os.Getenv("JWT_REFRESH_SECRET"); value != "" {
+		cfg.JWT.RefreshSecret = value
+	}
+
+	if value := os.Getenv("REDIS_PASSWORD"); value != "" {
+		cfg.Redis.Password = value
+	}
+
 	log.Println("config successfully added")
 
 	return &cfg, nil
