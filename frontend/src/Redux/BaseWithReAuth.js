@@ -2,7 +2,7 @@ import { fetchBaseQuery } from "@reduxjs/toolkit/query";
 import { clearAuth, setTokens } from "./features/auth/authSlice";
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: "http://localhost:8000/api/v1",
+    baseUrl: "http://192.168.105.4:30953/api/v1",
 
     prepareHeaders: (headers, { getState }) => {
         const { accessToken } = getState().authReducer;

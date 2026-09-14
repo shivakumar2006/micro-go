@@ -1,0 +1,53 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: gateway-deployment
+  namespace: default 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels:
+      app: gateway 
+  template: 
+    metadata: 
+      labels:
+        app: gateway 
+    spec: 
+      containers: 
+        - name: gateway-container 
+          image: shivakumar2006/fletops-gateway:v2
+          imagePullPolicy: IfNotPresent
+          ports: 
+            - containerPort: 8000
+              name: http 
+          resources:  
+            requests:   
+              memory: "256Mi"
+              cpu: "500m"
+            limits:  
+              memory: "512Mi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: gateway-config
+              mountPath: /app/config
+          
+          env:
+            - name: CONFIG_PATH
+              value: /app/config/config.yaml
+          
+            - name: JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secret
+                  key: JWT_ACCESS_SECRET
+          
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secret
+                  key: JWT_REFRESH_SECRET
+          
+      volumes:
+        - name: gateway-config
+          configMap:
+            name: gateway-config

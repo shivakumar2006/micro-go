@@ -1,0 +1,28 @@
+apiVersion: v1 
+kind: ConfigMap 
+metadata: 
+  name: gateway-config 
+data: 
+  config.yaml: |
+    env: local
+
+    server:
+      address: ":8000"
+
+    services:
+      auth:
+        url: "http://auth-service:8080"
+
+      vehicle:
+        url: "http://vehicle-service:8081"
+
+      cart:
+        url: "http://cart-service:8082"
+
+      orders: 
+        url: "http://orders-service:8083"
+
+      payment:
+        url: "http://payment-service:8084"
+
+    jwt:

@@ -61,6 +61,15 @@ func LoadConfig() *Config {
 		log.Fatalf("config file not found : %v", err)
 	}
 
+	if value := os.Getenv("JWT_ACCESS_SECRET"); value != "" {
+		cfg.JWT.AccessSecret = value
+
+	}
+
+	if value := os.Getenv("JWT_REFRESH_SECRET"); value != "" {
+		cfg.JWT.RefreshSecret = value
+	}
+
 	log.Println("config loaded successfully")
 
 	return &cfg

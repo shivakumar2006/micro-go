@@ -4,3 +4,4 @@ vehicle/secret.yml
 cart/secret.yml
 orders/secret.yml
 payment/secret.yml
+gateway/secret.yml
