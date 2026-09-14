@@ -25,3 +25,7 @@ data:
       dbname: payment_db
 
     jwt:
+
+    kafka: 
+      address: "kafka-service:9092"
+      topic: "payment-success"
