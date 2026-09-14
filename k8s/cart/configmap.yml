@@ -10,8 +10,8 @@ data:
     server:
       address: ":8082"
 
-    vehicle:
-      url: http://localhost:8081
+    vehicle: 
+      url: http://vehicle-service:8081
 
     db:
       host: postgres-service
@@ -19,7 +19,7 @@ data:
       user: postgres
       dbname: vehicle_management
 
-    redis: 
+    redis:
       host: redis-service
       port: 6379
       db: 0
