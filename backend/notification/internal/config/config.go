@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
 )
 
 type ServerConfig struct {
@@ -34,11 +33,6 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("failed to load env : %v", err)
-	}
-
 	var configPath string
 
 	configPath = os.Getenv("CONFIG_PATH")
@@ -61,10 +55,6 @@ func LoadConfig() *Config {
 
 	if err := cleanenv.ReadConfig(configPath, &config); err != nil {
 		log.Fatalf("failed to read config: %v", err)
-	}
-
-	if err := cleanenv.ReadEnv(&config); err != nil {
-		log.Fatalf("failed to read env: %v", err)
 	}
 
 	if value := os.Getenv("BREVO_PASSWORD"); value != "" {

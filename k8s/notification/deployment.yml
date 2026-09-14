@@ -3,7 +3,7 @@ kind: Deployment
 metadata: 
   name: notification-deployment 
   namespace: default 
-  matchLabels: 
+  labels: 
     app: deployment
 spec: 
   replicas: 1
@@ -17,7 +17,7 @@ spec:
     spec: 
       containers: 
         - name: notification-container 
-          image: shivakumar2006/fletops-notification:v2 
+          image: shivakumar2006/fletops-notification:v3
           imagePullPolicy: IfNotPresent
           ports: 
             - containerPort: 8086 
