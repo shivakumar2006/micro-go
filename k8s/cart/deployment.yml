@@ -1,0 +1,66 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: vehicle-deployment
+  namespace: default 
+  labels: 
+    app: cart 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels:
+      app: cart 
+  template: 
+    metadata: 
+      lanels: 
+        app: cart 
+    spec: 
+      containers: 
+        - name: cart-container 
+          image: shivakumar2006/fletops-cart:latest 
+          imagePullPolicy: IfNotPresent
+          ports: 
+            - containerPort: 8081 
+              name: http
+          resources: 
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits: 
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts: 
+            - name: cart-config
+              mountPath: /app/config
+          env: 
+            - name: CONFIG_PATH 
+              value: /app/config/config.yaml 
+
+            - name: JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cart-secret 
+                  key: JWT_ACCESS_SECRET
+
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef: 
+                  name: cart-secret 
+                  key: JWT_REFRESH_SECRET
+
+            - name: DB_PASSWORD
+              valueFrom: 
+                secretKeyRef: 
+                  name: cart-secret 
+                  key: DB_PASSWORD
+                  
+            - name: REDIS_PASSWORD
+              valueFrom: 
+                secretKeyRef: 
+                  name: cart-secret 
+                  key: REDIS_PASSWORD 
+
+      volumes: 
+        - name: cart-config 
+          configMap: 
+            name: cart-config
