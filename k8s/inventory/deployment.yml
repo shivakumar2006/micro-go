@@ -1,0 +1,62 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: inventory-deployment
+  namespace: default
+  labels: 
+    app: inventory 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory 
+  template:
+    metadata: 
+      labels: 
+        app: inventory
+    spec: 
+      containers: 
+        - name: inventory-container 
+          image: shivakumar2006/fletops-inventory:v2
+          imagePullPolicy: IfNotPresent
+          ports: 
+            - containerPort: 8085 
+              name: http
+          resources: 
+            requests: 
+              cpu: "100m"
+              memory: "128Mi"
+            limits: 
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts: 
+            - name: inventory-config 
+              mountPath: /app/config
+          env: 
+            - name: CONFIG_PATH 
+              value: "/app/config/config.yaml"
+            - name: DB_PASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: inventory-secret 
+                  key: DB_PASSWORD
+            - name: JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef: 
+                  name: inventory-secret 
+                  key: JWT_ACCESS_SECRET
+            - name: JWT_REFRESH_SECRET
+              valueFrom: 
+                secretKeyRef: 
+                  name: inventory-secret 
+                  key: JWT_REFRESH_SECRET
+            - name: INTERNAL_SERVICE_KEY 
+              valueFrom: 
+                secretKeyRef: 
+                  name: inventory-secret
+                  key: INTERNAL_SERVICE_KEY
+          
+      volumes:  
+        - name: inventory-config 
+          configMap: 
+            name: inventory-config 

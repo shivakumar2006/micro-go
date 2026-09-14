@@ -5,3 +5,4 @@ cart/secret.yml
 orders/secret.yml
 payment/secret.yml
 gateway/secret.yml
+inventory/secret.yml

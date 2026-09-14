@@ -1,0 +1,30 @@
+apiVersion: v1 
+kind: ConfigMap 
+metadata: 
+  name: inventory-config
+data: 
+  config.yaml: |
+    env: local
+
+    server:
+      address: ":8085"
+
+    services:
+      orders:
+        url: "http://orders-service:8083"
+
+      vehicles:
+        url: "http://vehicle-service:8081"
+
+    db: 
+      host: postgres-service
+      port: 5432
+      user: postgres 
+      dbname: inventory_db
+
+    jwt: 
+
+    kafka:
+      address: "kafka-service:9092"
+      topic: "payment-success"
+      group_id: "inventory-group"
