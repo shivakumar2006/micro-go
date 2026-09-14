@@ -100,7 +100,7 @@ func main() {
 				return
 			}
 
-			consumer := kafka.NewConsumer([]string{"kafka-service:9092"}, "payment-success", "inventory-group")
+			consumer := kafka.NewConsumer([]string{cfg.Kafka.Addr}, cfg.Kafka.Topic, cfg.Kafka.GroupID)
 
 			err := consumer.Start(consumerContext, func(event kafka.PaymentSuccessEvent) error {
 				slog.Info(
