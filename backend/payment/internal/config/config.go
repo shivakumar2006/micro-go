@@ -38,6 +38,11 @@ type StripeConfig struct {
 	CancelURL     string `yaml:"cancel_url"`
 }
 
+type KafkaConfig struct {
+	Addr  string `yaml:"address"`
+	Topic string `yaml:"topic"`
+}
+
 type Config struct {
 	Env                string       `yaml:"env"`
 	Server             ServerConfig `yaml:"server"`
@@ -46,6 +51,7 @@ type Config struct {
 	DB                 DBConfig     `yaml:"db"`
 	JWT                JWTConfig    `yaml:"jwt"`
 	InternalServiceKey string       `yaml:"internal_service_key"`
+	Kafka              KafkaConfig  `yaml:"kafka"`
 }
 
 func LoadConfig() *Config {

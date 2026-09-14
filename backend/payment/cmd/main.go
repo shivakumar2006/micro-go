@@ -59,7 +59,7 @@ func main() {
 	stripeClient := client.NewStripeClient(cfg.Stripe.BaseURL, cfg.Stripe.SecretKey, cfg.Stripe.SuccessURL, cfg.Stripe.CancelURL, retry, cb)
 
 	// kafka
-	producer := kafka.NewProducer([]string{"kafka-service:9092"}, "payment-success")
+	producer := kafka.NewProducer([]string{cfg.Kafka.Addr}, cfg.Kafka.Topic)
 	defer producer.Close()
 
 	outboxWorker := worker.NewOutboxWorker(outboxRepo, producer)
