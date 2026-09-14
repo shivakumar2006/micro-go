@@ -67,6 +67,18 @@ func LoadConfig() *Config {
 		log.Fatalf("failed to read env: %v", err)
 	}
 
+	if value := os.Getenv("BREVO_PASSWORD"); value != "" {
+		config.Brevo.SMTPPassword = value
+	}
+
+	if value := os.Getenv("SMTP_USER"); value != "" {
+		config.Brevo.SMTPUser = value
+	}
+
+	if value := os.Getenv("SENDER_EMAIL"); value != "" {
+		config.Brevo.SenderEmail = value
+	}
+
 	log.Println("config file loaded successfully")
 
 	return &config

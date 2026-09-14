@@ -1,0 +1,61 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: notification-deployment 
+  namespace: default 
+  matchLabels: 
+    app: deployment
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: deployment
+  template: 
+    metadata: 
+      labels: 
+        app: deployment
+    spec: 
+      containers: 
+        - name: notification-container 
+          image: shivakumar2006/fletops-notification:v2 
+          imagePullPolicy: IfNotPresent
+          ports: 
+            - containerPort: 8086 
+              name: http 
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits: 
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts: 
+            - name: notification-config
+              mountPath: /app/config
+          env: 
+            - name: CONFIG_PATH 
+              value: /app/config/config.yaml
+
+            - name: BREVO_PASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: notification-secret
+                  key: BREVO_PASSWORD
+
+            - name: SMTP_USER
+              valueFrom: 
+                secretKeyRef:
+                  name: notification-secret
+                  key: SMTP_USER 
+            
+            - name: SENDER_EMAIL
+              valueFrom: 
+                secretKeyRef:
+                  name: notification-secret
+                  key: SENDER_EMAIL
+                
+      volumes: 
+        - name: notification-config
+          configMap: 
+            name: notification-config
+          

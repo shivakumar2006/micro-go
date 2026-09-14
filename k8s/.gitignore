@@ -6,3 +6,4 @@ orders/secret.yml
 payment/secret.yml
 gateway/secret.yml
 inventory/secret.yml
+notification/secret.yml
