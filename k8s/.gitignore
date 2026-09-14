@@ -2,3 +2,4 @@ auth/secret.yml
 postgres/secret.yml
 vehicle/secret.yml
 cart/secret.yml
+orders/secret.yml

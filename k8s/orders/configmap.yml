@@ -1,0 +1,22 @@
+apiVersion: v1 
+kind: ConfigMap 
+metadata: 
+  name: orders-config 
+
+data: 
+  config.yaml: | 
+    env: local
+
+    server: 
+      address: ":8083"
+
+    cart: 
+      url: http://cart-service:8082
+
+    db: 
+      host: postgres-service
+      port: 5432
+      user: postgres
+      dbname: vehicle_management
+
+    jwt:

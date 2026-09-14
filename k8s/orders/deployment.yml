@@ -1,0 +1,66 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: orders-deployment 
+  namespace: default 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels:
+      app: orders 
+  template: 
+    metadata: 
+      labels: 
+        app: orders 
+    spec: 
+      containers: 
+        - name: orders 
+          image: shivakumar2006/fletops-orders:v2 
+          imagePullPolicy: IfNotPresent
+          ports: 
+            - containerPort: 8083
+              name: http 
+          resources: 
+            requests: 
+              cpu: "100m"
+              memory: "128Mi"
+            limits: 
+              cpu: "200m"
+              memory: "500Mi"
+          volumeMounts: 
+            - name: orders-config 
+              mountPath: /app/config
+          env: 
+            - name: CONFIG_PATH 
+              value: "/app/config/config.yaml"
+
+            - name: DB_PASSWORD 
+              valueFrom: 
+                secretKeyRef:
+                  name: orders-secret
+                  key: DB_PASSWORD 
+
+            - name: JWT_ACCESS_SECRET
+              valueFrom: 
+                secretKeyRef:
+                  name: orders-secret 
+                  key: JWT_ACCESS_SECRET
+
+            - name: JWT_REFRESH_SECRET 
+              valueFrom: 
+                secretKeyRef:
+                  name: orders-secret 
+                  key: JWT_REFRESH_SECRET
+
+            - name: INTERNAL_SERVICE_KEY 
+              valueFrom: 
+                secretKeyRef:
+                  name: orders-secret 
+                  key: INTERNAL_SERVICE_KEY 
+        
+      volumes: 
+        - name: orders-config 
+          configMap: 
+            name: orders-config
+          
+                  

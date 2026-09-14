@@ -63,5 +63,21 @@ func LoadConfig() *Config {
 		log.Fatalf("failed to load config file : %v", err)
 	}
 
+	if value := os.Getenv("DB_PASSWORD"); value != "" {
+		config.DB.Password = value
+	}
+
+	if value := os.Getenv("JWT_ACCESS_SECRET"); value != "" {
+		config.JWT.AccessSecret = value
+	}
+
+	if value := os.Getenv("JWT_REFRESH_SECRET"); value != "" {
+		config.JWT.RefreshSecret = value
+	}
+
+	if value := os.Getenv("INTERNAL_SERVICE_KEY"); value != "" {
+		config.InternalServiceKey = value
+	}
+
 	return &config
 }
