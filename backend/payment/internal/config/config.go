@@ -50,10 +50,7 @@ type Config struct {
 
 func LoadConfig() *Config {
 	// load env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf(".env file is not found : %v", err)
-	}
+	_ = godotenv.Load()
 
 	var configPath string
 
@@ -84,6 +81,30 @@ func LoadConfig() *Config {
 
 	if err := cleanenv.ReadEnv(&config); err != nil {
 		log.Fatalf("error reading environment variables : %v", err)
+	}
+
+	if value := os.Getenv("DB_PASSWORD"); value != "" {
+		config.DB.Password = value
+	}
+
+	if value := os.Getenv("SECRET_KEY"); value != "" {
+		config.Stripe.SecretKey = value
+	}
+
+	if value := os.Getenv("STRIPE_WEBHOOK_SECRET"); value != "" {
+		config.Stripe.WebhookSecret = value
+	}
+
+	if value := os.Getenv("JWT_ACCESS_SECRET"); value != "" {
+		config.JWT.AccessTokenSecret = value
+	}
+
+	if value := os.Getenv("JWT_REFRESH_SECRET"); value != "" {
+		config.JWT.RefreshTokenSecret = value
+	}
+
+	if value := os.Getenv("INTERNAL_SERVICE_KEY"); value != "" {
+		config.InternalServiceKey = value
 	}
 
 	log.Println("config successfully added")

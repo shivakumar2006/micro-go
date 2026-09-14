@@ -1,0 +1,76 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: payment-deployment 
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: payment 
+  template: 
+    metadata: 
+      labels: 
+        app: payment 
+    spec: 
+      containers: 
+        - name: payment-container
+          image: shivakumar2006/fletops-payment:v3
+          ports: 
+            - containerPort: 8084 
+              name: http 
+          resources: 
+            requests: 
+              cpu: "100m"
+              memory: "128Mi"
+            limits: 
+              cpu: "500m"
+              memory: "500Mi"
+          volumeMounts: 
+            - name: payment-config 
+              mountPath: /app/config
+          env: 
+            - name: CONFIG_PATH 
+              value: /app/config/config.yaml
+            
+            - name: DB_PASSWORD
+              valueFrom: 
+                secretKeyRef: 
+                  name: payment-secret 
+                  key: DB_PASSWORD
+
+            - name: SECRET_KEY 
+              valueFrom: 
+                secretKeyRef:
+                  name: payment-secret
+                  key: SECRET_KEY
+
+            - name: STRIPE_WEBHOOK_SECRET 
+              valueFrom: 
+                secretKeyRef:
+                  name: payment-secret
+                  key: STRIPE_WEBHOOK_SECRET
+            
+            - name: JWT_ACCESS_SECRET
+              valueFrom: 
+                secretKeyRef: 
+                  name: payment-secret 
+                  key: JWT_ACCESS_SECRET
+            
+            - name: JWT_REFRESH_SECRET
+              valueFrom: 
+                secretKeyRef: 
+                  name: payment-secret 
+                  key: JWT_REFRESH_SECRET
+            
+            - name: INTERNAL_SERVICE_KEY
+              valueFrom: 
+                secretKeyRef: 
+                  name: payment-secret 
+                  key: INTERNAL_SERVICE_KEY
+
+      volumes: 
+        - name: payment-config 
+          configMap: 
+            name: payment-config
+
+    
