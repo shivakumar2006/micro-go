@@ -1,0 +1,49 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: analytics-deployment 
+  namespace: default
+  labels: 
+    app: analytics
+spec:
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app: analytics 
+  template: 
+    matadata: 
+      labels: 
+        app: analytics 
+    spec: 
+      containers: 
+        - name: analytics-container 
+          image: shivakumar2006/fletops-analytics:v2 
+          imagePullPolicy: IfNotPresent
+          ports: 
+            - containerPort: 8087 
+              name: http 
+          resources: 
+            requests: 
+              cpu: "100m"
+              memory: "128Mi"
+            limits: 
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts: 
+            - name: analytics-config 
+              mountPath: /app/config
+          env: 
+            - name: CONFIG_PATH 
+              value: /app/config/config.yaml
+
+            - name: DB_PASSWORD
+              valueFrom: 
+                secretKeyRef: 
+                  name: analytics-secret 
+                  key: DB_PASSWORD
+        
+    volumes: 
+      - name: analytics-config 
+        configMap: 
+          name: analytics-config
+    

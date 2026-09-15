@@ -1,0 +1,19 @@
+apiVersion: v1 
+kind: ConfigMap 
+metadata: 
+  name: analytics-config 
+data: 
+  config.yaml: | 
+    server:
+      address: ":8087"
+
+    db:
+      host: postgres-service
+      port: 5432
+      user: "postgres"
+      db_name: "analytics_db"
+
+    kafka:
+      address: "kafka-service:9092"
+      topic: "payment-success"
+      group_id: "analytics-group"

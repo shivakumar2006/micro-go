@@ -56,5 +56,9 @@ func LoadConfig() *Config {
 		log.Fatalf("failed to read config file: %v", err)
 	}
 
+	if value := os.Getenv("DB_PASSWORD"); value != "" {
+		config.DB.Password = value
+	}
+
 	return &config
 }
