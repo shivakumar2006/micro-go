@@ -11,7 +11,7 @@ spec:
     matchLabels: 
       app: analytics 
   template: 
-    matadata: 
+    metadata: 
       labels: 
         app: analytics 
     spec: 
@@ -42,8 +42,8 @@ spec:
                   name: analytics-secret 
                   key: DB_PASSWORD
         
-    volumes: 
-      - name: analytics-config 
-        configMap: 
-          name: analytics-config
+      volumes: 
+        - name: analytics-config 
+          configMap: 
+            name: analytics-config
     

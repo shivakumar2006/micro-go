@@ -59,6 +59,8 @@ func main() {
 	stripeClient := client.NewStripeClient(cfg.Stripe.BaseURL, cfg.Stripe.SecretKey, cfg.Stripe.SuccessURL, cfg.Stripe.CancelURL, retry, cb)
 
 	// kafka
+	slog.Info("kafka config loaded", slog.String("kafka", cfg.Kafka.Addr), slog.String("topic", cfg.Kafka.Topic))
+
 	producer := kafka.NewProducer([]string{cfg.Kafka.Addr}, cfg.Kafka.Topic)
 	defer producer.Close()
 

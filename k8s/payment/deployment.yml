@@ -14,7 +14,7 @@ spec:
     spec: 
       containers: 
         - name: payment-container
-          image: shivakumar2006/fletops-payment:v3
+          image: shivakumar2006/fletops-payment:v4
           ports: 
             - containerPort: 8084 
               name: http 
