@@ -319,7 +319,7 @@ function Hero() {
 
           <div className="mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-slate-200 pt-6">
             {[
-              ['5', 'core services'],
+              ['9', 'core services'],
               ['3', 'async consumers'],
               ['1', 'event bus'],
             ].map(([n, l]) => (
