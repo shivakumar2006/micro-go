@@ -1,0 +1,40 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: jaeger-deployment 
+  namespace: default 
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: jaeger 
+  template: 
+    metadata:
+      labels: 
+        app: jaeger
+    spec: 
+      containers: 
+        - name: jaeger 
+          image: jaegertracing/all-in-one:latest 
+          ports: 
+            - containerPort: 16686 # for open the jaeger ui in browser http://localhost:16686/
+              name: ui
+
+            - containerPort: 4317 # for communication using grpc protocol 
+              name: otlp-grpc
+
+            - containerPort: 4318 # for communication using http protocol
+              name: otlp-http
+
+
+
+
+    #             JAEGER
+    #               │
+    #     ┌─────────┼─────────┐
+    #     │         │         │
+    #   16686      4317      4318
+    #     │         │         │
+    #    UI       gRPC      HTTP
+    #     │         │         │
+    # Browser    Traces    Traces
