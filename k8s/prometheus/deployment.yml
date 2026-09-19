@@ -14,7 +14,7 @@ spec:
         app: prometheus
     spec: 
       containers: 
-        - name: prometheus-container
+        - name: prometheus
           image: prom/prometheus:latest
           ports:
             - containerPort: 9090
