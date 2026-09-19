@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: jaeger-service
+  namespace: default
+
+spec:
+  selector:
+    app: jaeger
+
+  ports:
+    # Jaeger UI
+    - name: ui
+      protocol: TCP
+      port: 16686
+      targetPort: 16686
+
+    # OTLP gRPC
+    - name: otlp-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: 4317
+
+    # OTLP HTTP
+    - name: otlp-http
+      protocol: TCP
+      port: 4318
+      targetPort: 4318
+
+  type: ClusterIP
