@@ -9,6 +9,7 @@ import (
 	"auth/internal/pkg"
 	"auth/internal/repository"
 	"auth/internal/services"
+	"auth/internal/telemetry"
 	"context"
 	"log"
 	"log/slog"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/riandyrn/otelchi"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -30,6 +32,21 @@ func main() {
 	if cfg == nil {
 		log.Fatal("failed to load config")
 	}
+
+	// open telemetry
+	tp, err := telemetry.Init(context.Background())
+	if err != nil {
+		log.Fatalf("failed to initialize telemetry : %v", err)
+	}
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := tp.Shutdown(ctx); err != nil {
+			log.Fatalf("failed to shutdown tracer provider : %v", err)
+		}
+	}()
 
 	// db
 	database, err := db.NewDatabase(*cfg)
@@ -51,6 +68,8 @@ func main() {
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
 	router.Use(metrics.MetricsMiddleware)
+
+	router.Use(otelchi.Middleware("auth-service"))
 
 	accessExpiry, err := time.ParseDuration(cfg.JWT.AccessExpiry)
 	if err != nil {
