@@ -4,6 +4,7 @@ import (
 	"api_gateway/internal/config"
 	"api_gateway/internal/proxy"
 	"api_gateway/internal/routes"
+	"api_gateway/internal/telemetry"
 	"context"
 	"log"
 	"log/slog"
@@ -16,6 +17,20 @@ import (
 
 func main() {
 	cfg := config.LoadConfig()
+
+	tp, err := telemetry.Init(context.Background())
+	if err != nil {
+		log.Fatalf("failed to initialize opentelemtry: %v", err)
+	}
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := tp.Shutdown(ctx); err != nil {
+			log.Fatalf("failed to initialized opentelemtry : %v", err)
+		}
+	}()
 
 	// service proxy
 	sp, err := proxy.NewServiceProxy(cfg.Services.Auth.URL, cfg.Services.Cart.URL, cfg.Services.Vehicle.URL, cfg.Services.Orders.URL, cfg.Services.Payment.URL)

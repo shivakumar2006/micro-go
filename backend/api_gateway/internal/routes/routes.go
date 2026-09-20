@@ -12,6 +12,8 @@ import (
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"github.com/riandyrn/otelchi"
 )
 
 func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
@@ -23,6 +25,8 @@ func Setup(cfg *config.Config, serviceProxy *proxy.ServiceProxy) http.Handler {
 	router.Use(chimiddleware.RequestID)
 
 	router.Use(metrics.MetricsMiddleware)
+
+	router.Use(otelchi.Middleware("gateway-service"))
 
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},

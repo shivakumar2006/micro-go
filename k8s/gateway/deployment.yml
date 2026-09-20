@@ -15,7 +15,7 @@ spec:
     spec: 
       containers: 
         - name: gateway-container 
-          image: shivakumar2006/fletops-gateway:v2
+          image: shivakumar2006/fletops-gateway:v3
           imagePullPolicy: IfNotPresent
           ports: 
             - containerPort: 8000
