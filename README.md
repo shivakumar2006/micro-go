@@ -809,6 +809,7 @@ The goal is not simply to create multiple services, but to understand the **engi
 - [x] DLQ (Not Needed in current architecture)
 - [x] Docker
 - [x] Kubernetes
+- [x] Jaeger / OpenTelemetry
 
 ### In Progress
 
