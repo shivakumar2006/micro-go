@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: vehicle-container
-          image: shivakumar2006/fletops-vehicles:v2
+          image: shivakumar2006/fletops-vehicle:v4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081

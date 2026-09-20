@@ -22,6 +22,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/riandyrn/otelchi"
 )
 
 func main() {
@@ -80,6 +81,8 @@ func main() {
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
 	router.Use(metrics.MetricsMiddleware)
+
+	router.Use(otelchi.Middleware("vehicle-service"))
 
 	auth := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
 
