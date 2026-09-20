@@ -11,7 +11,7 @@ import (
 )
 
 func Init(ctx context.Context) (*sdktrace.TracerProvider, error) {
-	exporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithEndpoint("otel-collection-service:4317"), otlptracegrpc.WithInsecure())
+	exporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithEndpoint("otel-collector-service:4317"), otlptracegrpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
