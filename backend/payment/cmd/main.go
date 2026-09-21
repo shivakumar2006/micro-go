@@ -18,12 +18,14 @@ import (
 	"payment/internal/repository"
 	"payment/internal/resilience"
 	"payment/internal/service"
+	"payment/internal/telemetry"
 	"payment/internal/worker"
 	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/riandyrn/otelchi"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -36,6 +38,21 @@ func main() {
 		log.Fatal("failed to open config")
 	}
 	slog.Info("Config file successfully loaded")
+
+	// otel
+	tp, err := telemetry.Init(context.Background())
+	if err != nil {
+		log.Fatalf("failed to initialized telemetry : %v", err)
+	}
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := tp.Shutdown(ctx); err != nil {
+			log.Fatalf("failed to shutdown telemetry : %v", err)
+		}
+	}()
 
 	// db
 	database, err := db.NewDatabase(cfg)
@@ -80,6 +97,8 @@ func main() {
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
 	router.Use(metrics.MetricsMiddleware)
+
+	router.Use(otelchi.Middleware("payment-service"))
 
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.AccessTokenSecret, cfg.JWT.RefreshTokenSecret)
 
