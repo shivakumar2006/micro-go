@@ -15,7 +15,7 @@ spec:
     spec: 
       containers: 
         - name: orders 
-          image: shivakumar2006/fletops-orders:v2 
+          image: shivakumar2006/fletops-orders:v3
           imagePullPolicy: IfNotPresent
           ports: 
             - containerPort: 8083

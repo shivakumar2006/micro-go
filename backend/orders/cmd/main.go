@@ -14,6 +14,7 @@ import (
 	"orders/internal/repository"
 	"orders/internal/resilience"
 	"orders/internal/services"
+	"orders/internal/telemetry"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,6 +23,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/riandyrn/otelchi"
 )
 
 func main() {
@@ -32,6 +34,21 @@ func main() {
 	}
 
 	slog.Info("config loaded successfully", slog.String("env", cfg.Server.Addr))
+
+	// otel
+	tp, err := telemetry.Init(context.Background())
+	if err != nil {
+		log.Fatalf("failed to initialized telemetry : %v", err)
+	}
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := tp.Shutdown(ctx); err != nil {
+			log.Fatalf("failed to shutdown telemetry : %v", err)
+		}
+	}()
 
 	//db
 	database, err := db.NewDatabase(*cfg)
@@ -66,6 +83,8 @@ func main() {
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
 	router.Use(metrics.MetricsMiddleware)
+
+	router.Use(otelchi.Middleware("order-service"))
 
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
