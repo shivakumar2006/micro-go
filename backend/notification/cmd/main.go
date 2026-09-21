@@ -10,6 +10,7 @@ import (
 	"notification/internal/kafka"
 	"notification/internal/metrics"
 	"notification/internal/service"
+	"notification/internal/telemetry"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/riandyrn/otelchi"
 )
 
 func main() {
@@ -27,6 +29,21 @@ func main() {
 
 	slog.Info("config loaded successfully")
 
+	// otel
+	tp, err := telemetry.Init(context.Background())
+	if err != nil {
+		log.Fatalf("failed to initialized telemtry : %v", err)
+	}
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := tp.Shutdown(ctx); err != nil {
+			log.Fatalf("failed to shutdown telemetry : %v", err)
+		}
+	}()
+
 	// client
 	emailClient := client.NewEmailClient(cfg.Brevo.SMTPHost, cfg.Brevo.SMTPPort, cfg.Brevo.SMTPUser, cfg.Brevo.SMTPPassword, cfg.Brevo.SenderEmail, cfg.Brevo.SenderName)
 
@@ -35,6 +52,8 @@ func main() {
 	router := chi.NewRouter()
 
 	router.Use(metrics.MetricsMiddleware)
+
+	router.Use(otelchi.Middleware("notification-service"))
 
 	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		promhttp.Handler().ServeHTTP(w, r)
