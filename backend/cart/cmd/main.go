@@ -11,6 +11,7 @@ import (
 	"cart/internal/repository"
 	"cart/internal/resilience"
 	"cart/internal/service"
+	"cart/internal/telemetry"
 	"context"
 	"log"
 	"log/slog"
@@ -22,6 +23,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/riandyrn/otelchi"
 
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
@@ -32,6 +34,21 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to load config file : %v", err.Error())
 	}
+
+	// otel
+	tp, err := telemetry.Init(context.Background())
+	if err != nil {
+		log.Fatalf("failed to initialize telemetry : %v", err)
+	}
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := tp.Shutdown(ctx); err != nil {
+			log.Fatalf("failed to shutdown telemetry: %v", err)
+		}
+	}()
 
 	// setup db
 	database, err := db.NewCartDatabase(cfg)
@@ -74,6 +91,8 @@ func main() {
 	router.Use(chimiddleware.Timeout(10 * time.Second))
 
 	router.Use(metrics.MetricsMiddleware)
+
+	router.Use(otelchi.Middleware("cart-service"))
 
 	auth := middleware.NewAuthMiddleware(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
 

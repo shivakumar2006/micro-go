@@ -17,7 +17,7 @@ spec:
     spec: 
       containers: 
         - name: cart-container 
-          image: shivakumar2006/fletops-cart:v2 
+          image: shivakumar2006/fletops-cart:v3
           imagePullPolicy: IfNotPresent
           ports: 
             - containerPort: 8082 
