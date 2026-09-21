@@ -11,6 +11,7 @@ import (
 	"inventory/internal/repository"
 	"inventory/internal/resilience"
 	"inventory/internal/service"
+	"inventory/internal/telemetry"
 	"log"
 	"log/slog"
 	"net/http"
@@ -21,6 +22,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/riandyrn/otelchi"
 )
 
 func main() {
@@ -30,6 +32,21 @@ func main() {
 		log.Fatal("cannot load config")
 	}
 	slog.Info("config loaded successfully", slog.String("env", cfg.Server.Addr))
+
+	// otel
+	tp, err := telemetry.Init(context.Background())
+	if err != nil {
+		log.Fatalf("failed to initialized telemetry : %v", err)
+	}
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := tp.Shutdown(ctx); err != nil {
+			log.Fatalf("failed to shutdown telemtry : %v", err)
+		}
+	}()
 
 	// db
 	database, err := db.NewDatabase(*cfg)
@@ -58,6 +75,8 @@ func main() {
 	router := chi.NewRouter()
 
 	router.Use(metrics.MetricsMiddleware)
+
+	router.Use(otelchi.Middleware("inventory-service"))
 
 	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		promhttp.Handler().ServeHTTP(w, r)
