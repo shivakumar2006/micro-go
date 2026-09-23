@@ -20,6 +20,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/riandyrn/otelchi"
 )
 
 func main() {
@@ -66,6 +67,8 @@ func main() {
 	router.Use(chimiddleware.Recoverer)
 	router.Use(chimiddleware.RealIP)
 	router.Use(chimiddleware.RequestID)
+
+	router.Use(otelchi.Middleware("analytics-service"))
 
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
