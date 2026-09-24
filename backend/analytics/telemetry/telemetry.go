@@ -16,7 +16,7 @@ func Init(ctx context.Context) (*sdktrace.TracerProvider, error) {
 		return nil, err
 	}
 
-	res, err := resource.New(ctx, resource.WithAttributes(semconv.ServiceNameKey.String("notification-service")))
+	res, err := resource.New(ctx, resource.WithAttributes(semconv.ServiceNameKey.String("analytics-service")))
 	if err != nil {
 		return nil, err
 	}

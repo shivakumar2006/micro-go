@@ -17,7 +17,7 @@ spec:
     spec: 
       containers: 
         - name: analytics-container 
-          image: shivakumar2006/fletops-analytics:v4
+          image: shivakumar2006/fletops-analytics:v5
           imagePullPolicy: IfNotPresent
           ports: 
             - containerPort: 8087 
