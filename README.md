@@ -810,10 +810,10 @@ The goal is not simply to create multiple services, but to understand the **engi
 - [x] Docker
 - [x] Kubernetes
 - [x] Jaeger / OpenTelemetry
+- [x] CI/CD
 
 ### In Progress
 
-- [ ] CI/CD
 - [ ] Cloud Deployment
 
 ---
