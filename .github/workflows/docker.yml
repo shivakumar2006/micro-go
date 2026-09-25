@@ -1,34 +1,34 @@
 name: Build and Push Docker Images
 
 on:
-  push: 
-    branches: 
-      - main 
+  push:
+    branches:
+      - main
 
-jobs: 
-  docker: 
+jobs:
+  docker:
     name: Build ${{ matrix.service }}
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
 
-    strategy: 
+    strategy:
       fail-fast: false
-      matrix: 
-        include: 
+      matrix:
+        include:
           - service: api_gateway
-            image: fletops-gateway 
-          
-          - service: auth 
-            image: fletops-auth 
-          
+            image: fletops-gateway
+
+          - service: auth
+            image: fletops-auth
+
           - service: vehicles
             image: fletops-vehicle
-          
+
           - service: cart
             image: fletops-cart
 
           - service: orders
-            image: fletops-orders 
-          
+            image: fletops-orders
+
           - service: payment
             image: fletops-payment
 
@@ -41,23 +41,23 @@ jobs:
           - service: analytics
             image: fletops-analytics
 
-    steps: 
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
-        with: 
+        with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-        
-      - name: Build Docker image 
+
+      - name: Build Docker image
         run: |
           docker build \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest \
             ./backend/${{ matrix.service }}
-      
-      - name: Push Docker image 
-        run: | 
-          docker push \ 
+
+      - name: Push Docker image
+        run: |
+          docker push \
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
